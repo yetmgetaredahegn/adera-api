@@ -80,3 +80,55 @@ async def upsert_tender(
     existing.last_seen_at = now
     await session.flush()
     return existing, (UpsertResult.UPDATED if changed else UpsertResult.UNCHANGED)
+
+
+def tender_text(tender: Tender) -> str:
+    """Canonical embedding input for a tender — the mirror of profiles.service.
+    profile_text. One place, so the two sides of the match can't drift in format."""
+    parts = [
+        tender.title,
+        f"Buyer: {tender.buyer}" if tender.buyer else "",
+        f"Type: {tender.summary}" if tender.summary else "",
+        f"Region: {tender.region}" if tender.region else "",
+    ]
+    return "\n".join(p for p in parts if p)
+
+
+async def embed_pending(session: AsyncSession, batch_size: int = 32) -> int:
+    """Embed every tender that doesn't have a vector yet (pipeline stage `embed`).
+
+    Owned by ingestion because tenders are this module's table (NFR-MAINT-1 —
+    no cross-module table writes). Idempotent: already-embedded rows are skipped,
+    so re-running is free, like every other pipeline stage.
+    """
+    from app.kernel.embeddings import embed_texts  # lazy: torch-heavy
+
+    pending = (
+        (await session.execute(select(Tender).where(Tender.embedding.is_(None)))).scalars().all()
+    )
+    for start in range(0, len(pending), batch_size):
+        chunk = list(pending[start : start + batch_size])
+        vectors = embed_texts([tender_text(t) for t in chunk])
+        for tender, vector in zip(chunk, vectors, strict=True):
+            tender.embedding = vector
+    await session.flush()
+    return len(pending)
+
+
+async def rank_by_embedding(
+    session: AsyncSession, query_vector: list[float], limit: int = 10
+) -> list[tuple[Tender, float]]:
+    """Nearest tenders to a query vector, as (tender, similarity 0..1).
+
+    The service-interface read other modules (matching) call instead of querying
+    this module's table themselves. Note: no HNSW index yet by design (06 §5 —
+    build after bulk-load); at current volume a seq scan is fine.
+    """
+    distance = Tender.embedding.cosine_distance(query_vector)
+    rows = await session.execute(
+        select(Tender, distance.label("distance"))
+        .where(Tender.embedding.is_not(None))
+        .order_by(distance)
+        .limit(limit)
+    )
+    return [(tender, 1.0 - float(dist)) for tender, dist in rows.all()]
