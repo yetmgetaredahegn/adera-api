@@ -1,0 +1,56 @@
+"""FastAPI application factory.
+
+Thin by design: it mounts routers, middleware, and exception handlers. Business
+logic lives in modules (05 §2). Routers are added here as each module lands.
+"""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from sqlalchemy import text
+
+from app.core.config import settings
+from app.core.db import engine
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    # Startup/shutdown hook. Kept minimal; the pipeline runs in workers, not here.
+    yield
+    await engine.dispose()
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="ADERA API",
+        version="0.1.0",
+        debug=settings.debug,
+        lifespan=lifespan,
+    )
+
+    @app.get("/healthz", tags=["ops"])
+    async def healthz() -> dict[str, object]:
+        """Liveness + dependency check.
+
+        Returns ok=False with per-dependency status rather than raising, so an
+        uptime probe can distinguish "app down" from "Postgres down".
+        """
+        checks: dict[str, bool] = {}
+
+        try:
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            checks["db"] = True
+        except Exception:
+            checks["db"] = False
+
+        return {"ok": all(checks.values()), "checks": checks}
+
+    # Routers mounted here as modules land:
+    #   app.include_router(sources.router.router)   # Week 2
+    #   app.include_router(profiles.router.router)  # Week 3
+    return app
+
+
+app = create_app()
