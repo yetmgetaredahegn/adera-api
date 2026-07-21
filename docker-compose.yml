@@ -1,0 +1,45 @@
+# Local development stack. Production compose lives in infra/ (09 §3) and adds
+# api/worker/beat/web/caddy — all three Python roles from ONE image (ADR-001:
+# three processes, one codebase).
+#
+# PORTS: deliberately non-default. The n8n prototype stack (blih-tender-postgres,
+# blih_brk-redis-1) already owns 5432/6379 on this machine, and it is the
+# shadow-run parity oracle for Phase 1 (ADR-008) — it must keep running
+# untouched until it has produced its parity report and earned its retirement.
+name: adera
+
+services:
+  db:
+    # pgvector/pgvector ships Postgres 16 with the extension already built —
+    # ADR-006 keeps vectors in Postgres, so this is the datastore, not an extra.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: adera
+      POSTGRES_PASSWORD: adera
+      POSTGRES_DB: adera
+    ports:
+      - "5435:5432"   # not 5432 — the n8n prototype owns that
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adera -d adera"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6380:6379"   # not 6379 — blih_brk-redis-1 owns that
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  redisdata:
