@@ -1,0 +1,123 @@
+[project]
+name = "adera"
+version = "0.1.0"
+description = "ADERA (አደራ) — AI-native tender intelligence for Ethiopian public procurement"
+requires-python = ">=3.12"
+
+# Core runtime. Heavier ML/parsing deps live in optional groups so Week-1
+# installs stay fast; they arrive with the pipeline that needs them (Weeks 2-3).
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "pgvector>=0.3.6",
+    "redis>=5.2",
+    "celery>=5.4",
+    "croniter>=6.0",
+    "httpx>=0.28",
+    "argon2-cffi>=23.1",
+    "python-multipart>=0.0.20",
+]
+
+[project.optional-dependencies]
+# Week 2: ingestion + document parsing
+pipeline = [
+    "selectolax>=0.3.27",
+    "pypdfium2>=4.30",
+    "boto3>=1.35",          # Cloudflare R2 (S3-compatible) via the storage adapter
+]
+# Week 2-3: the AI Kernel
+ai = [
+    "litellm>=1.55",
+]
+# Week 3: embeddings. Large (torch); installed only when the spike needs it.
+embeddings = [
+    "sentence-transformers>=3.3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "hypothesis>=6.122",
+    "testcontainers[postgres]>=4.9",
+    "types-croniter>=5.0",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "ASYNC",    # async correctness
+    "S",        # bandit (security)
+    "T20",      # no print()
+    "RUF",
+]
+ignore = [
+    "E501",  # line length is handled by the formatter
+    "B008",  # FastAPI's Depends() in defaults is the documented idiom
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]            # asserts are the point in tests
+"app/core/config.py" = ["S105"]  # field names that look like secrets
+"app/cli.py" = ["T201"]          # a CLI is exactly where print() belongs
+
+# NFR-INTL-2: money is integer minor units; float arithmetic is banned in money paths.
+# Enforced here as a lint rule so the ban is mechanical, not cultural.
+# (Extend `files` as payments/engagements modules land.)
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+exclude = ["^migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["celery.*", "pgvector.*", "selectolax.*", "litellm.*", "sentence_transformers.*", "boto3.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+markers = [
+    "integration: requires Postgres/Redis (testcontainers)",
+]
