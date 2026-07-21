@@ -1,11 +1,17 @@
-.PHONY: help install up down api worker beat migrate revision fmt lint type test test-unit test-int check demo openapi clean
+.PHONY: help install install-hooks up down api worker beat migrate revision fmt lint type test test-unit test-int check demo openapi clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install:  ## Sync deps and create .env from the example
+install:  ## Sync deps, create .env, install git hooks
 	uv sync
 	@test -f .env || (cp .env.example .env && echo "created .env from .env.example")
+	@$(MAKE) install-hooks
+
+install-hooks:  ## Install the commit-msg guard (rejects AI co-author trailers — AGENTS.md rule 16)
+	cp scripts/git-hooks/commit-msg .git/hooks/commit-msg
+	chmod +x .git/hooks/commit-msg
+	@echo "commit-msg hook installed"
 
 up:  ## Start Postgres(+pgvector) and Redis
 	docker compose up -d db redis
