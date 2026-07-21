@@ -1,0 +1,99 @@
+"""Alembic environment.
+
+Autogenerate only sees a module's tables if that module is imported here. When a
+new module lands, add it to the import block below or its migration silently
+won't exist.
+"""
+
+import asyncio
+from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from app.core.config import settings
+from app.core.db import Base
+
+# --- model imports: registers tables on Base.metadata -----------------------
+from app.modules.identity import models as identity_models  # noqa: F401
+from app.modules.ingestion import models as ingestion_models  # noqa: F401
+from app.modules.matching import models as matching_models  # noqa: F401
+from app.modules.profiles import models as profiles_models  # noqa: F401
+from app.modules.runledger import models as runledger_models  # noqa: F401
+from app.modules.sources import models as sources_models  # noqa: F401
+
+config = context.config
+config.set_main_option("sqlalchemy.url", str(settings.database_url))
+
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+target_metadata = Base.metadata
+
+
+def _include_object(obj, name, type_, reflected, compare_to):  # type: ignore[no-untyped-def]
+    # pgvector creates its own types; don't let autogenerate try to manage them.
+    if type_ == "table" and name in {"vector"}:
+        return False
+    return True
+
+
+def _render_item(type_, obj, autogen_context):  # type: ignore[no-untyped-def]
+    """Render pgvector columns with their import.
+
+    Without this, autogenerate emits `pgvector.sqlalchemy.vector.VECTOR(dim=1024)`
+    but never imports pgvector, so every generated migration fails F821 (and would
+    NameError at runtime). Registering the import here fixes it at the source
+    instead of hand-patching each migration.
+    """
+    if type_ == "type" and obj.__class__.__module__.startswith("pgvector"):
+        autogen_context.imports.add("import pgvector.sqlalchemy")
+        return f"pgvector.sqlalchemy.Vector(dim={obj.dim})"
+    return False
+
+
+def run_migrations_offline() -> None:
+    context.configure(
+        url=config.get_main_option("sqlalchemy.url"),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def do_run_migrations(connection: Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
+        include_object=_include_object,
+        render_item=_render_item,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
+    connectable = async_engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
+
+
+def run_migrations_online() -> None:
+    asyncio.run(run_async_migrations())
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
