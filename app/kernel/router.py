@@ -77,8 +77,16 @@ class Kernel:
         return obj
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        """Local BGE-M3 embeddings (ADR-009). Wired in Week 3 (the matching spike)."""
-        raise NotImplementedError("embeddings arrive in Week 3 with sentence-transformers (06 §5)")
+        """Local BGE-M3 embeddings (ADR-009) — $0, no budget check needed.
+
+        Encoding is blocking CPU work, so it runs in a thread to keep the event
+        loop responsive; in production it belongs on the Celery `cpu` queue.
+        """
+        import asyncio
+
+        from app.kernel.embeddings import embed_texts
+
+        return await asyncio.to_thread(embed_texts, texts)
 
 
 def build_kernel() -> Kernel:

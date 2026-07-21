@@ -53,6 +53,17 @@ dev = [
 [tool.uv]
 default-groups = ["dev"]
 
+# CPU-only torch: production is a CPU VPS (ADR-012) and BGE-M3 runs on CPU by
+# design (06 §5). The default index pulls the CUDA build + ~5GB of NVIDIA wheels
+# we can never use — this pin keeps dev, CI, and the Docker image honest.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
