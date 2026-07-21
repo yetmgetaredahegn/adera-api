@@ -8,6 +8,9 @@ Claude-specific additions only, below.
 ## Standing founder instructions (this repo)
 - **Never `git commit` or `git push` unless the founder explicitly asks in the current
   conversation.** Leave work staged and report it. (Founder instruction, 2026-07-16.)
+- **Never add a `Co-Authored-By` trailer for Claude (or any AI agent) to a commit.**
+  Commit as the founder; the "why" belongs in the commit body, not the author
+  field. (Founder instruction, 2026-07-21 — see AGENTS.md rule 16.)
 - Founder-review-mandatory (propose, never merge silently): auth, billing,
   payments/ledger/payouts, kernel permissions & budgets, migrations altering existing
   tables, prompt versions, KYB/vetting logic (master plan Appendix E).

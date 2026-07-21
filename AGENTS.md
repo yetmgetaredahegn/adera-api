@@ -93,6 +93,12 @@ and a vetted facilitator marketplace.
     (propose, don't implement — §12.3).
 15. **Personas may not be cited in product decisions** until cast with real,
     interviewed people (master plan §8). Never invent a user's preference.
+16. **No AI agent is ever a commit co-author — no `Co-Authored-By` trailer, in any
+    repo.** *Why:* commit authorship is a human accountability record for a real
+    product going in front of investors, not an attribution credit. The founder
+    authors every commit; an agent's contribution is captured in the commit body
+    (what/why), never in the author metadata. Standing policy, applies to
+    `adera-api`, `adera-mobile`, and `adera-web` alike.
 
 ## 5. Environment facts (this machine)
 
