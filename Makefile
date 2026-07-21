@@ -52,8 +52,10 @@ test: test-unit  ## Alias for the fast suite
 
 check: lint type test-unit  ## What CI runs
 
-demo:  ## Week 3 spike: print real matches + "why this fits you" explanations
-	@echo "not built yet — Week 3. See the plan."
+demo:  ## Week 3 spike: seed demo profiles, embed tenders, match, print the judgment sheet
+	DEBUG=false uv run python -m app.cli seed-profiles
+	DEBUG=false uv run python -m app.cli embed
+	DEBUG=false uv run python -m app.cli demo
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache
