@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #F4F0E9; font-family: 'IBM Plex Sans', sans-serif; color: #2B211A; }
+    a { color: #B05A38; } a:hover { color: #8C4225; }
+  </style>
+</helmet>
+
+<section style="padding: 40px; display: flex; flex-direction: column; gap: 48px;">
+  <div>
+    <div style="font-size: 24px; font-weight: 700;">ADERA — Data Flow Diagrams</div>
+    <div style="font-size: 14px; color: #6B5D4F; margin-top: 4px;">Level 0: high-level pipeline · Level 1: detailed system shape per master plan §12.2</div>
+    <div style="display: flex; gap: 18px; margin-top: 12px; font-size: 12px; color: #6B5D4F; align-items: center;">
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 4px; background: #2B211A;"></span> external actor / source</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 4px; background: #FFFDFA; border: 1.5px solid #B05A38;"></span> process</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; background: #FFFDFA; border: 1.5px solid #2F7A55; border-top-width: 4px;"></span> data store</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 999px; background: #FBF0DC; border: 1.5px solid #D9A441;"></span> output to user</span>
+    </div>
+  </div>
+
+  <!-- LEVEL 0 -->
+  <div data-screen-label="DFD Level 0" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">LEVEL 0 · Tender pipeline — sources to user</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; overflow-x: auto;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">e-GP portal</div>
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Donor portals</div>
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Org sites / PDFs</div>
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Verified posters</div>
+        </div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Ingest<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">scheduled fetch, idempotent upsert</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Parse / OCR<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">PDF text · Tesseract eng+amh</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Extract<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">LLM → schema + confidences</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Qualify<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">rules prefilter → LLM verdict</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Classify eligibility<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">NCB/ICB/donor + chips per org_type</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap;">Match<br><span style="font-weight: 400; font-size: 11px; color: #6B5D4F;">pgvector similarity + grounded "why"</span></div>
+        <span style="color: #B4A494; font-size: 18px;">→</span>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #FBF0DC; border: 1.5px solid #D9A441; border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600; white-space: nowrap;">TZ-aware digest / instant alert</div>
+          <div style="background: #FBF0DC; border: 1.5px solid #D9A441; border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600; white-space: nowrap;">Portal feed + Q&A + calendar</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px dashed #E0D4C4; align-items: center; font-size: 12px;">
+        <span style="font-weight: 700; color: #2F7A55;">Stores:</span>
+        <span style="border: 1.5px solid #2F7A55; border-top-width: 4px; padding: 6px 12px; font-family: 'IBM Plex Mono', monospace;">Postgres 16 + pgvector</span>
+        <span style="border: 1.5px solid #2F7A55; border-top-width: 4px; padding: 6px 12px; font-family: 'IBM Plex Mono', monospace;">R2: raw pages · docs · law corpus · proofs</span>
+        <span style="border: 1.5px solid #2F7A55; border-top-width: 4px; padding: 6px 12px; font-family: 'IBM Plex Mono', monospace;">run_ledger: cost + errors per stage</span>
+        <span style="color: #6B5D4F;">every stage idempotent · retried ×3 · dead-lettered</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL 2 · END-TO-END DATA JOURNEY -->
+  <div data-screen-label="DFD Level 2 End-to-End" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">LEVEL 2 · End-to-end data journey — one user's data, cradle to loop</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; display: flex; flex-direction: column; gap: 20px; overflow-x: auto;">
+
+      <!-- Stage A: identity -->
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 1400px;">
+        <span style="width: 110px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66;">A · IDENTITY</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Signup + profile wizard</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">identity/profiles module</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">users · orgs(org_type, country, tz) · company_profiles</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">embed worker</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">profile embedding (pgvector, HNSW)</div>
+      </div>
+
+      <!-- Stage B: matching -->
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 1400px;">
+        <span style="width: 110px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66;">B · MATCH</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">tender embeddings (from pipeline)</div>
+        <span style="color: #B4A494;">×</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">profile embedding</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">match worker: similarity + rules + eligibility(org_type)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">matches(unique tender,org) + grounded explanation</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">notify worker (user tz, quiet hours)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="background: #FBF0DC; border: 1.5px solid #D9A441; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; white-space: nowrap;">email / Telegram digest</div>
+        <span style="color: #B4A494;">+</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">notifications_log (idempotency)</div>
+      </div>
+
+      <!-- Stage C: decide -->
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 1400px;">
+        <span style="width: 110px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66;">C · DECIDE</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">User opens tender · asks question</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Q&A: retrieval over tender doc + law KB (citation-grade)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">qa_messages</div>
+        <span style="color: #B4A494;">·</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">"not relevant" dismiss</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">feedback → ranking model</div>
+        <span style="color: #B4A494;">·</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">calendar sync</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">calendar_events</div>
+      </div>
+
+      <!-- Stage D: engage / money -->
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 1400px;">
+        <span style="width: 110px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66;">D · ENGAGE $</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Accept quote</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">payment rail (G-PAY) → webhook /webhooks/&#123;rail&#125; sig-verified</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">payments ledger (append-only, integer minor units)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">engagements module: milestones</div>
+        <span style="color: #B4A494;">←</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Facilitator proof upload</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">R2 proof artifacts (immutable)</div>
+      </div>
+
+      <!-- Stage E: outcome loop -->
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 1400px;">
+        <span style="width: 110px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66;">E · LOOP ↺</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Approval → release · rating</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">facilitator performance history</div>
+        <span style="color: #B4A494;">·</span>
+        <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">Opening result</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 4px; border-radius: 4px; padding: 8px 14px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap;">outcomes → tender corpus (moat)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 8px 14px; font-size: 12px; white-space: nowrap;">better matching + win-probability (Phase 5)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="background: #FBF0DC; border: 1.5px solid #D9A441; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; white-space: nowrap;">next digest ↺</div>
+      </div>
+
+      <div style="font-size: 12px; color: #6B5D4F; border-top: 1px dashed #E0D4C4; padding-top: 14px;">Every stage writes to <span style="font-family: 'IBM Plex Mono', monospace;">run_ledger</span> (latency, token spend, errors) · admin review queues sit between low-confidence writes and users.</div>
+    </div>
+  </div>
+
+  <!-- LEVEL 1 -->
+  <div data-screen-label="DFD Level 1" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">LEVEL 1 · System shape (§12.2) — modular monolith on one VPS</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- top row: clients → edge → app -->
+      <div style="display: flex; align-items: stretch; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 10px 16px; font-size: 13px; text-align: center;">Browser</div>
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 10px 16px; font-size: 13px; text-align: center;">Telegram</div>
+          <div style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 10px 16px; font-size: 13px; text-align: center;">Payment rail webhooks</div>
+        </div>
+        <div style="display: flex; align-items: center; color: #B4A494;">→</div>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 14px 18px; font-size: 13px; font-weight: 600; display: flex; align-items: center; text-align: center;">Caddy<br>TLS</div>
+        <div style="display: flex; align-items: center; color: #B4A494;">→</div>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 14px 18px; font-size: 13px; display: flex; flex-direction: column; justify-content: center; gap: 4px; text-align: center;"><strong>web</strong><span style="font-size: 11px; color: #6B5D4F;">Next.js SSR<br>portal · SEO pages</span></div>
+        <div style="display: flex; align-items: center; color: #B4A494;">⇄</div>
+        <div style="border: 2px solid #B05A38; border-radius: 10px; padding: 14px 20px; font-size: 13px; display: flex; flex-direction: column; justify-content: center; gap: 4px; text-align: center; background: #FDF7F2;"><strong>api — FastAPI</strong><span style="font-size: 11px; color: #6B5D4F;">REST + OpenAPI<br>/webhooks/&#123;rail&#125; sig-verified, idempotent</span></div>
+        <div style="display: flex; align-items: center; color: #B4A494;">⇄</div>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 5px; border-radius: 4px; padding: 14px 18px; font-size: 13px; display: flex; flex-direction: column; justify-content: center; gap: 4px; text-align: center;"><strong style="font-family: 'IBM Plex Mono', monospace;">Postgres 16 + pgvector</strong><span style="font-size: 11px; color: #6B5D4F;">tenders · matches · profiles(embeddings) · engagements · payments ledger · run_ledger</span></div>
+      </div>
+
+      <!-- middle row: queue + workers -->
+      <div style="display: flex; align-items: stretch; gap: 14px; margin-left: 120px;">
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 5px; border-radius: 4px; padding: 12px 18px; font-size: 13px; display: flex; align-items: center; font-family: 'IBM Plex Mono', monospace;">Redis (queue)</div>
+        <div style="display: flex; align-items: center; color: #B4A494;">←</div>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; display: flex; flex-direction: column; justify-content: center; gap: 2px; text-align: center;"><strong>worker ×N — Celery</strong><span style="font-size: 11px; color: #6B5D4F;">runs the pipeline stages</span></div>
+        <div style="display: flex; align-items: center; color: #B4A494;">←</div>
+        <div style="border: 1.5px solid #B05A38; border-radius: 10px; padding: 12px 18px; font-size: 13px; display: flex; align-items: center;">Beat (scheduler)</div>
+        <div style="display: flex; align-items: center; color: #B4A494;">→</div>
+        <div style="border: 1.5px solid #2F7A55; border-top-width: 5px; border-radius: 4px; padding: 12px 18px; font-size: 13px; display: flex; flex-direction: column; justify-content: center; text-align: center;"><strong style="font-family: 'IBM Plex Mono', monospace;">R2 object storage</strong><span style="font-size: 11px; color: #6B5D4F;">raw pages · tender docs · law corpus · proof artifacts (immutable)</span></div>
+      </div>
+
+      <!-- pipeline strip -->
+      <div style="border: 1px dashed #B4A494; border-radius: 10px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 700; color: #6B5D4F; text-transform: uppercase; letter-spacing: 1px;">Worker pipeline (each stage idempotent · retry ×3 · dead-letter · cost-metered in run_ledger)</div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: 'IBM Plex Mono', monospace; font-size: 12px;">
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">fetch</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">parse/OCR</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">extract</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">upsert</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">prefilter</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">qualify</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">embed</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">eligibility-classify</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">match</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1px solid #B05A38; border-radius: 6px; padding: 6px 12px;">notify (TZ-aware)</span>
+        </div>
+      </div>
+
+      <!-- marketplace / money flow -->
+      <div style="border: 1px dashed #B4A494; border-radius: 10px; padding: 18px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; font-weight: 700; color: #6B5D4F; text-transform: uppercase; letter-spacing: 1px;">Marketplace & money flow (Phase 3: invoiced fee → Phase 5: provider-held milestones)</div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px;">
+          <span style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 7px 13px;">Bidder</span><span style="color: #B4A494;">— accept quote →</span>
+          <span style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 7px 13px;">payments module<br><span style="font-size: 10px; color: #6B5D4F;">integer minor units · append-only ledger</span></span><span style="color: #B4A494;">— hold →</span>
+          <span style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 7px 13px;">payment rail (G-PAY)</span><span style="color: #B4A494;">→</span>
+          <span style="border: 1.5px solid #B05A38; border-radius: 8px; padding: 7px 13px;">engagements module<br><span style="font-size: 10px; color: #6B5D4F;">milestones · proofs → R2</span></span><span style="color: #B4A494;">— proof approved →</span>
+          <span style="background: #2B211A; color: #FAF6F0; border-radius: 8px; padding: 7px 13px;">Facilitator payout (ETB)</span>
+          <span style="color: #B4A494;">·</span>
+          <span style="background: #FBF0DC; border: 1.5px solid #D9A441; border-radius: 999px; padding: 6px 13px; font-weight: 600;">15–20% platform fee</span>
+        </div>
+      </div>
+
+      <!-- modules footer -->
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #6B5D4F;">
+        <span style="font-weight: 700; color: #2B211A; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px;">Modules (service-interface boundaries only):</span>
+        <span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">identity</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">sources</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">ingestion</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">documents</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">extraction</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">qualification</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">profiles</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">matching</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">notifications</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">portal_api</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">billing</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">admin</span><span style="background: #F1EAE0; border-radius: 4px; padding: 3px 8px;">runledger</span><span style="background: #FBF0DC; border-radius: 4px; padding: 3px 8px;">marketplace</span><span style="background: #FBF0DC; border-radius: 4px; padding: 3px 8px;">engagements</span><span style="background: #FBF0DC; border-radius: 4px; padding: 3px 8px;">payments</span><span style="background: #FBF0DC; border-radius: 4px; padding: 3px 8px;">eligibility</span><span style="background: #FBF0DC; border-radius: 4px; padding: 3px 8px;">posting</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

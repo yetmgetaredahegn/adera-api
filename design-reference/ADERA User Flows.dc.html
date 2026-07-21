@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #F4F0E9; font-family: 'IBM Plex Sans', sans-serif; color: #2B211A; }
+    a { color: #B05A38; } a:hover { color: #8C4225; }
+  </style>
+</helmet>
+
+<section style="padding: 40px; display: flex; flex-direction: column; gap: 48px;">
+  <div>
+    <div style="font-size: 24px; font-weight: 700;">ADERA — User Flow Diagrams</div>
+    <div style="font-size: 14px; color: #6B5D4F; margin-top: 4px;">Flow 1: P1 diaspora bidder end-to-end · Flow 2: Facilitator lifecycle · Flow 3: Poster KYB & publishing</div>
+    <div style="display: flex; gap: 18px; margin-top: 12px; font-size: 12px; color: #6B5D4F; align-items: center;">
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 4px; background: #FFFDFA; border: 1.5px solid #8C7A66;"></span> screen / step</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; background: #FBF0DC; border: 1.5px solid #D9A441; transform: skewX(-12deg); border-radius: 2px;"></span> decision</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 999px; background: #2F7A55;"></span> outcome / money moment</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 20px; height: 13px; border-radius: 4px; background: #EFE6DA; border: 1.5px dashed #B4A494;"></span> system action (invisible to user)</span>
+    </div>
+  </div>
+
+  <!-- FLOW 0 · END-TO-END SWIMLANES -->
+  <div data-screen-label="Flow 0 End-to-End" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">FLOW 0 · End-to-end journey — all actors, one map (swimlanes)</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 28px 32px; overflow-x: auto; display: flex; flex-direction: column; gap: 0;">
+
+      <!-- Phase header row -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; margin-bottom: 14px; min-width: 1500px;">
+        <div></div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">① DISCOVER</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">② MATCH</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">③ DECIDE</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">④ ENGAGE</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">⑤ SUBMIT & PROVE</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; color: #8C7A66; text-align: center; border-bottom: 2px solid #E0D4C4; padding-bottom: 6px;">⑥ OUTCOME & LOOP</div>
+      </div>
+
+      <!-- Lane: Bidder -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px dashed #E0D4C4; min-width: 1500px; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #B05A38;">BIDDER<br><span style="font-weight: 400; color: #8C7A66;">diaspora / SME</span></div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Lands via SEO / referral → signs up, builds profile</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Gets digest → opens feed, reads "why this fits"</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Reads eligibility verdict, asks Q&A, runs win brief</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Compares quotes → accepts → <strong>pays into escrow</strong></div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Reviews proof per milestone → approves releases</div>
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 8px 12px; font-size: 12px; font-weight: 600;">Rates facilitator · logs outcome · next match ↺</div>
+      </div>
+
+      <!-- Lane: ADERA System -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px dashed #E0D4C4; min-width: 1500px; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #2F7A55;">ADERA<br><span style="font-weight: 400; color: #8C7A66;">AI + platform</span></div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Ingests all sources daily → extracts, qualifies</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Embeds profile ↔ tenders → matches + grounded explanations → TZ-aware notify</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Eligibility chips per org_type · cited Q&A answers · checklist</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;"><strong>Holds funds</strong> · opens engagement thread + milestones</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Stores proof artifacts (immutable) · releases on approval · 48h dispute SLA</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Feedback → ranking model · outcomes → corpus moat</div>
+      </div>
+
+      <!-- Lane: Facilitator -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px dashed #E0D4C4; min-width: 1500px; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #9A6A12;">FACILITATOR<br><span style="font-weight: 400; color: #8C7A66;">local hands</span></div>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Applies → ID + license vetting → monitored trial</div>
+        <div style="font-size: 11px; color: #B4A494; text-align: center;">— listed in marketplace —</div>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Receives quote request → scopes milestones + price</div>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Executes: buys docs, arranges CPO, site visit</div>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Submits bid physically → uploads proof (photo+GPS+receipt) → attends opening</div>
+        <div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 8px 12px; font-size: 12px; font-weight: 600;">$ ETB payout on approval · rating builds rank ↺</div>
+      </div>
+
+      <!-- Lane: Poster -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px dashed #E0D4C4; min-width: 1500px; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #5C4F43;">POSTER<br><span style="font-weight: 400; color: #8C7A66;">verified business</span></div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">KYB: license + TIN + signatory ID → Verified badge</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Composes tender → AI lint → publishes → enters corpus</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Answers bidder Q&A · sees views/saves</div>
+        <div style="font-size: 11px; color: #B4A494; text-align: center;">—</div>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Receives bids via own opening process</div>
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 8px 12px; font-size: 12px; font-weight: 600;">Closes & awards → posts next tender ↺</div>
+      </div>
+
+      <!-- Lane: Admin -->
+      <div style="display: grid; grid-template-columns: 130px repeat(6, 1fr); gap: 10px; padding: 12px 0 4px; min-width: 1500px; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #9A2E1B;">ADMIN / OPS<br><span style="font-weight: 400; color: #8C7A66;">founder</span></div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Manages source registry · watches run ledger</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Clears extraction / qualification review queues</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Handles user error reports → corrections persist</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Vets facilitators + poster KYB approvals</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Mediates disputes (48h) → resolve / refund</div>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 10px; font-size: 12px;">Weekly spend + quality gates → tune pipeline ↺</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FLOW 1 -->
+  <div data-screen-label="Flow 1 Diaspora" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">FLOW 1 · P1 Diaspora bidder — discover → win support</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; overflow-x: auto;">
+      <!-- Row 1: acquisition → onboarding -->
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">Entry: SEO answer page / referral / Telegram</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Landing: "Get matched free"</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Sign up (email / Google)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Profile wizard: org type → sectors → certs → capacity</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">System: embed profile · match against corpus</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; white-space: nowrap;">"8 tenders match you today" (aha moment)</div>
+      </div>
+      <div style="margin-left: 60px; color: #B4A494; font-size: 18px; line-height: 1;">↓</div>
+      <!-- Row 2: engage loop -->
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Daily digest (email/Telegram)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Feed: match cards + "why this fits"</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 6px; padding: 10px 18px; font-size: 13px; font-weight: 600; transform: skewX(-8deg); white-space: nowrap;"><span style="display: inline-block; transform: skewX(8deg);">Interesting?</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #2F7A55;">yes →</span><div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Tender detail: summary · eligibility · checklist · Q&A</div></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #9A2E1B;">no →</span><div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Dismiss "not relevant" → match model learns</div></div>
+        </div>
+      </div>
+      <div style="margin-left: 60px; color: #B4A494; font-size: 18px; line-height: 1;">↓</div>
+      <!-- Row 3: monetize -->
+      <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0;">
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">"Can we win this?" brief (Pro)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 6px; padding: 10px 18px; font-size: 13px; font-weight: 600; transform: skewX(-8deg); white-space: nowrap;"><span style="display: inline-block; transform: skewX(8deg);">Needs local hands?</span></div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Marketplace: compare 3 quotes</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">$ Accept quote → funds held in escrow</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Engagement timeline: milestones + proof uploads</div>
+      </div>
+      <div style="margin-left: 60px; color: #B4A494; font-size: 18px; line-height: 1;">↓</div>
+      <!-- Row 4: close loop -->
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 6px; padding: 10px 18px; font-size: 13px; font-weight: 600; transform: skewX(-8deg); white-space: nowrap;"><span style="display: inline-block; transform: skewX(8deg);">Proof OK?</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #2F7A55;">approve →</span><div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 8px 16px; font-size: 13px; font-weight: 600; white-space: nowrap;">$ Milestone released → rating exchanged</div></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #9A2E1B;">dispute →</span><div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Ops mediation (48h SLA) → resolve / refund</div></div>
+        </div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Bid opening report → outcome logged</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">Retention loop: next matched tender ↺</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW 2 -->
+  <div data-screen-label="Flow 2 Facilitator" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">FLOW 2 · Facilitator lifecycle — apply → vetted → earning</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; overflow-x: auto;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">Entry: "Earn with ADERA" page</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Apply: ID (Fayda/passport) + trade license + references</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Ops review: doc check + reference calls</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 6px; padding: 10px 18px; font-size: 13px; font-weight: 600; transform: skewX(-8deg); white-space: nowrap;"><span style="display: inline-block; transform: skewX(8deg);">Pass?</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #2F7A55;">yes →</span><div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Trial engagement (monitored, capped value)</div></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #9A2E1B;">no →</span><div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Rejected w/ reason · reapply in 90d</div></div>
+        </div>
+      </div>
+      <div style="margin-left: 60px; color: #B4A494; font-size: 18px; line-height: 1;">↓</div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+        <div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">✓ Vetted badge · listed in marketplace</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Quote requests → respond w/ scoped milestones</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Execute: buy docs · CPO · submit · attend opening</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Upload proof per milestone (photo + GPS + receipt)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">$ Payout on approval (ETB, minus 15–20%)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Rating updates rank · repeat ↺</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOW 3 -->
+  <div data-screen-label="Flow 3 Poster KYB" style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; color: #B05A38;">FLOW 3 · Poster — KYB & tender publishing (fraud gate)</div>
+    <div style="background: #FFFDFA; border: 1px solid #E0D4C4; border-radius: 12px; padding: 32px; overflow-x: auto;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">Entry: "Post a tender"</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Business signup + KYB: license, TIN, signatory ID</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Auto-checks + ops verification (≤48h)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #D9A441; background: #FBF0DC; border-radius: 6px; padding: 10px 18px; font-size: 13px; font-weight: 600; transform: skewX(-8deg); white-space: nowrap;"><span style="display: inline-block; transform: skewX(8deg);">Verified?</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #2F7A55;">yes →</span><div style="border-radius: 999px; background: #2F7A55; color: #FFFDFA; padding: 8px 16px; font-size: 13px; font-weight: 600; white-space: nowrap;">✓ Verified Business badge</div></div>
+          <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: #9A2E1B;">no →</span><div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap;">Request more docs / reject</div></div>
+        </div>
+      </div>
+      <div style="margin-left: 60px; color: #B4A494; font-size: 18px; line-height: 1;">↓</div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Compose tender (guided form / RFQ template)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">AI lint: missing dates, vague specs, fraud signals</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Publish (free tier / featured $)</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px dashed #B4A494; background: #EFE6DA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Enters matching corpus → notifies matched bidders</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border: 1.5px solid #8C7A66; background: #FFFDFA; border-radius: 8px; padding: 10px 16px; font-size: 13px; white-space: nowrap;">Poster dashboard: views · saves · Q&A to answer</div>
+        <span style="color: #B4A494;">→</span>
+        <div style="border-radius: 999px; background: #2B211A; color: #FAF6F0; padding: 10px 18px; font-size: 13px; font-weight: 600; white-space: nowrap;">Close & award → outcome data ↺</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #DDD6CC; font-family: 'IBM Plex Sans', sans-serif; color: #33302B; }
+    a { color: #5C554B; } a:hover { color: #33302B; }
+  </style>
+</helmet>
+
+<section style="padding: 40px; display: flex; flex-direction: column; gap: 32px;">
+  <div>
+    <div style="font-size: 22px; font-weight: 700;">ADERA — Wireframes (mid-fi) · desktop 1280</div>
+    <div style="font-size: 14px; color: #6B655B; margin-top: 4px;">Structure + real copy, no visual design. Screens: Landing · Tender Feed · Tender Detail · Facilitator Marketplace · Engagement Timeline</div>
+  </div>
+
+  <div style="display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start;">
+
+    <!-- W1 LANDING -->
+    <div data-screen-label="W1 Landing" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;">W1 · Landing</div>
+      <div style="width: 1280px; background: #FBFAF8; border: 1px solid #B8B0A2; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+        <!-- nav -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 40px; border-bottom: 1px solid #D8D2C8;">
+          <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 32px; height: 32px; background: #C8C2B6; border-radius: 6px;"></div><span style="font-weight: 700; font-size: 16px;">ADERA · አደራ</span></div>
+          <div style="display: flex; gap: 24px; font-size: 14px; color: #6B655B;"><span>Tenders</span><span>Facilitators</span><span>For posters</span><span>Pricing</span></div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="border: 1px solid #B8B0A2; border-radius: 6px; padding: 6px 12px; font-size: 13px;">EN / አማ</div>
+            <div style="border: 1px solid #6B655B; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: 600;">Sign in</div>
+            <div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: 600;">Get matched free</div>
+          </div>
+        </div>
+        <!-- hero -->
+        <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 56px 40px;">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="font-size: 42px; font-weight: 700; line-height: 1.15;">Ethiopian tenders, matched to your business — wherever you are.</div>
+            <div style="font-size: 17px; color: #6B655B; max-width: 480px;">AI reads every tender daily. You get the ones you can actually win — with eligibility explained in plain language.</div>
+            <div style="display: flex; gap: 12px;">
+              <div style="background: #6B655B; color: #FBFAF8; border-radius: 8px; padding: 14px 24px; font-size: 15px; font-weight: 600;">Get matched free</div>
+              <div style="border: 1px solid #6B655B; border-radius: 8px; padding: 14px 24px; font-size: 15px; font-weight: 600;">Browse this week's tenders</div>
+            </div>
+            <div style="display: flex; gap: 20px; font-size: 13px; color: #6B655B; margin-top: 8px;"><span>▢ 1,200+ tenders tracked</span><span>▢ Vetted facilitators</span><span>▢ Proof-of-submission escrow</span></div>
+          </div>
+          <div style="background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 300px; flex-direction: column; gap: 8px;">
+            <div style="font-size: 14px; color: #6B655B;">[ Product shot: matched feed w/ eligibility chips ]</div>
+            <div style="width: 70%; height: 14px; background: #C8C2B6; border-radius: 4px;"></div>
+            <div style="width: 60%; height: 14px; background: #C8C2B6; border-radius: 4px;"></div>
+            <div style="width: 65%; height: 14px; background: #C8C2B6; border-radius: 4px;"></div>
+          </div>
+        </div>
+        <!-- 3-step -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 40px; background: #F1EEE8; border-top: 1px solid #D8D2C8;">
+          <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px;">01</div><div style="font-weight: 700; font-size: 17px;">Tell us what you do</div><div style="font-size: 14px; color: #6B655B;">5-minute profile: sectors, certifications, capacity, where you're registered.</div></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px;">02</div><div style="font-weight: 700; font-size: 17px;">Get matched daily</div><div style="font-size: 14px; color: #6B655B;">Email/Telegram digest with "why this fits you" and honest deadlines in your timezone.</div></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px;">03</div><div style="font-weight: 700; font-size: 17px;">Bid with local hands</div><div style="font-size: 14px; color: #6B655B;">Hire a vetted facilitator; funds held until you approve proof of submission.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W2 FEED -->
+    <div data-screen-label="W2 Tender Feed" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;">W2 · Tender Feed (matched)</div>
+      <div style="width: 1280px; background: #FBFAF8; border: 1px solid #B8B0A2; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 32px; border-bottom: 1px solid #D8D2C8;">
+          <span style="font-weight: 700;">ADERA</span>
+          <div style="display: flex; gap: 20px; font-size: 13px; color: #6B655B;"><span style="font-weight: 700; color: #33302B; border-bottom: 2px solid #33302B; padding-bottom: 10px; margin-bottom: -13px;">My matches</span><span>All tenders</span><span>Saved</span><span>Engagements</span></div>
+          <div style="display: flex; gap: 10px; align-items: center;"><div style="width: 220px; border: 1px solid #C8C2B6; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #A29A8B;">Search tenders…</div><div style="width: 30px; height: 30px; border-radius: 50%; background: #C8C2B6;"></div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 240px 1fr; gap: 0;">
+          <!-- filters -->
+          <div style="border-right: 1px solid #D8D2C8; padding: 24px; display: flex; flex-direction: column; gap: 20px; font-size: 13px;">
+            <div><div style="font-weight: 700; margin-bottom: 8px;">Sector</div><div style="display: flex; flex-direction: column; gap: 6px; color: #6B655B;"><span>☑ Construction</span><span>☑ Energy / Solar</span><span>☐ ICT & Software</span><span>☐ Medical supply</span><span>☐ Consulting</span></div></div>
+            <div><div style="font-weight: 700; margin-bottom: 8px;">Eligibility</div><div style="display: flex; flex-direction: column; gap: 6px; color: #6B655B;"><span>☑ Diaspora / foreign OK</span><span>☐ Local only</span><span>☐ JV possible</span></div></div>
+            <div><div style="font-weight: 700; margin-bottom: 8px;">Deadline</div><div style="display: flex; flex-direction: column; gap: 6px; color: #6B655B;"><span>☐ ≤ 7 days</span><span>☑ ≤ 30 days</span></div></div>
+            <div><div style="font-weight: 700; margin-bottom: 8px;">Budget floor</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 6px 10px; color: #A29A8B;">ETB 1,000,000+</div></div>
+          </div>
+          <!-- list -->
+          <div style="padding: 24px 32px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 15px; font-weight: 700;">8 matches this week</span><span style="font-size: 13px; color: #6B655B;">Sort: Best match ▾</span></div>
+            <!-- card 1 -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; gap: 16px;"><span style="font-weight: 700; font-size: 16px;">Supply & Installation of Solar Mini-Grid Equipment — 12 Sites, Oromia</span><span style="border: 1px solid #6B655B; border-radius: 999px; padding: 3px 10px; font-size: 12px; white-space: nowrap;">● 11 days</span></div>
+              <div style="display: flex; gap: 8px; font-size: 12px;"><span style="background: #E8E3D9; border-radius: 4px; padding: 3px 8px; font-family: 'IBM Plex Mono', monospace;">ICB</span><span style="border: 1px solid #A29A8B; border-radius: 999px; padding: 3px 10px;">✓ Diaspora eligible</span><span style="border: 1px solid #A29A8B; border-radius: 999px; padding: 3px 10px;">🏦 CPO ETB 250k</span></div>
+              <div style="background: #F1EEE8; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #55504A;"><strong>Why this fits:</strong> off-grid solar EPC in profile; scope matches 2 completed mini-grid projects.</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;"><span style="font-family: 'IBM Plex Mono', monospace; color: #6B655B;">Closes 22 Jul — 10:00 your time / 20:00 EAT</span><div style="display: flex; gap: 8px;"><div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 7px 14px; font-weight: 600;">View & ask</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 7px 14px;">Save</div><div style="padding: 7px 6px; color: #A29A8B;">Not relevant ✕</div></div></div>
+            </div>
+            <!-- card 2 -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; gap: 16px;"><span style="font-weight: 700; font-size: 16px;">Design & Build of Regional Health Center — Amhara Region</span><span style="border: 1px solid #6B655B; border-radius: 999px; padding: 3px 10px; font-size: 12px; white-space: nowrap;">● 5 days</span></div>
+              <div style="display: flex; gap: 8px; font-size: 12px;"><span style="background: #E8E3D9; border-radius: 4px; padding: 3px 8px; font-family: 'IBM Plex Mono', monospace;">NCB</span><span style="border: 1px dashed #A29A8B; border-radius: 999px; padding: 3px 10px;">⚠ Local JV likely required</span></div>
+              <div style="background: #F1EEE8; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #55504A;"><strong>Why this fits:</strong> grade-1 contractor license + hospital build in portfolio. JV partner needed — 3 candidates in marketplace.</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;"><span style="font-family: 'IBM Plex Mono', monospace; color: #6B655B;">Closes 16 Jul — 09:00 your time / 19:00 EAT</span><div style="display: flex; gap: 8px;"><div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 7px 14px; font-weight: 600;">View & ask</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 7px 14px;">Save</div><div style="padding: 7px 6px; color: #A29A8B;">Not relevant ✕</div></div></div>
+            </div>
+            <!-- card 3 condensed -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-weight: 700; font-size: 16px;">Procurement of Networking Equipment — Ethio Telecom Data Center</span><div style="display: flex; gap: 8px; font-size: 12px;"><span style="background: #E8E3D9; border-radius: 4px; padding: 3px 8px; font-family: 'IBM Plex Mono', monospace;">ICB</span><span style="border: 1px solid #A29A8B; border-radius: 999px; padding: 3px 10px;">✓ Diaspora eligible</span></div></div>
+              <span style="border: 1px solid #6B655B; border-radius: 999px; padding: 3px 10px; font-size: 12px; white-space: nowrap;">● 21 days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W3 DETAIL -->
+    <div data-screen-label="W3 Tender Detail" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;">W3 · Tender Detail — eligibility, Q&A, checklist</div>
+      <div style="width: 1280px; background: #FBFAF8; border: 1px solid #B8B0A2; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+        <div style="padding: 12px 32px; border-bottom: 1px solid #D8D2C8; font-size: 13px; color: #6B655B;">← Back to matches</div>
+        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 28px 32px;">
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 26px; font-weight: 700; line-height: 1.25;">Supply & Installation of Solar Mini-Grid Equipment — 12 Sites, Oromia Region</div>
+              <div style="display: flex; gap: 8px; font-size: 12px;"><span style="background: #E8E3D9; border-radius: 4px; padding: 3px 8px; font-family: 'IBM Plex Mono', monospace;">ICB</span><span style="border: 1px solid #A29A8B; border-radius: 999px; padding: 3px 10px;">✓ Diaspora eligible</span><span style="border: 1px solid #A29A8B; border-radius: 999px; padding: 3px 10px;">🏦 Bid security ETB 250,000</span><span style="border: 1px solid #6B655B; border-radius: 999px; padding: 3px 10px;">● 11 days</span></div>
+              <div style="font-size: 13px; color: #6B655B;">Source: Ethiopian Electric Utility · <span style="text-decoration: underline;">original notice ↗</span> · extracted with high confidence ● · <span style="text-decoration: underline;">report an error</span></div>
+            </div>
+            <!-- summary -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; font-size: 14px;">Plain-language summary</div>
+              <div style="font-size: 14px; color: #55504A; line-height: 1.6;">EEU seeks a contractor to supply and install solar mini-grid equipment across 12 rural sites in Oromia. Foreign bidders may participate under ICB; bid security of ETB 250,000 must be a CPO or bank guarantee from a bank recognized by the NBE. Documents cost ETB 500, payable locally.</div>
+              <div style="font-size: 12px; color: #A29A8B;">▸ What we checked (5 items)</div>
+            </div>
+            <!-- eligibility for you -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-weight: 700; font-size: 14px;">Can you bid? — for your US-registered LLC</div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #55504A;">
+                <div>✓ Foreign firms eligible under ICB (ITB clause 4.1)</div>
+                <div>✓ No local registration required to bid — required at award</div>
+                <div>⚠ Bid security must come from local bank or one with an NBE-recognized correspondent</div>
+                <div>? Power-of-attorney authentication path — ask Counsel</div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 4px;"><div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600;">Generate "Can we win this?" brief</div><div style="border: 1px solid #6B655B; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600;">Ask a question</div></div>
+            </div>
+            <!-- Q&A -->
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 22px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-weight: 700; font-size: 14px;">Ask about this tender</div>
+              <div style="background: #F1EEE8; border-radius: 6px; padding: 10px 14px; font-size: 13px;"><strong>You:</strong> Do I need to be in Addis to buy the documents?</div>
+              <div style="border: 1px solid #D8D2C8; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #55504A;"><strong>ADERA:</strong> No — a facilitator can purchase them on your behalf (ETB 500, EEU HQ, Addis). Scanned copies are typically allowed for review; the original receipt travels with your bid. <span style="color: #A29A8B;">Source: notice §2.3 ●</span></div>
+              <div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #A29A8B;">Type your question…</div>
+            </div>
+          </div>
+          <!-- right rail -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-weight: 700; font-size: 14px;">Key dates</div>
+              <div style="font-size: 13px; color: #55504A; display: flex; flex-direction: column; gap: 6px; font-family: 'IBM Plex Mono', monospace;">
+                <div>Docs on sale — now</div><div>Site visit — 15 Jul (optional)</div><div>Questions close — 17 Jul</div><div><strong>Bid close — 22 Jul 10:00 your time / 20:00 EAT</strong></div><div>Opening — 22 Jul, public</div>
+              </div>
+              <div style="border: 1px solid #6B655B; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; text-align: center;">＋ Add all to calendar</div>
+            </div>
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-weight: 700; font-size: 14px;">Requirements checklist</div>
+              <div style="font-size: 13px; color: #55504A; display: flex; flex-direction: column; gap: 6px;">
+                <div>☐ Bid form + price schedule</div><div>☐ Bid security (CPO ETB 250k)</div><div>☐ Trade license / registration cert.</div><div>☐ Tax clearance (or foreign equiv.)</div><div>☐ 2+ similar project references</div><div>☐ Manufacturer authorization</div><div>☐ Power of attorney (authenticated)</div>
+              </div>
+            </div>
+            <div style="border: 2px solid #6B655B; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; background: #F1EEE8;">
+              <div style="font-weight: 700; font-size: 14px;">Need local hands?</div>
+              <div style="font-size: 13px; color: #55504A;">3 vetted facilitators in Addis can buy documents, arrange CPO, and submit for you. Funds held until you approve proof.</div>
+              <div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 9px 14px; font-size: 13px; font-weight: 600; text-align: center;">Request quotes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- W4 MARKETPLACE -->
+    <div data-screen-label="W4 Facilitator Marketplace" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;">W4 · Facilitator Marketplace + profile</div>
+      <div style="width: 1280px; background: #FBFAF8; border: 1px solid #B8B0A2; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+        <div style="padding: 24px 32px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid #D8D2C8;">
+          <div style="font-size: 24px; font-weight: 700;">Vetted facilitators in Addis Ababa</div>
+          <div style="font-size: 14px; color: #6B655B;">Every facilitator passes ID + license checks and a monitored trial engagement. Payments are held by ADERA until you approve proof of work.</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px 32px;">
+          <!-- fac card -->
+          <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; gap: 14px; align-items: center;">
+              <div style="width: 52px; height: 52px; border-radius: 50%; background: #C8C2B6;"></div>
+              <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 700; font-size: 16px;">Meseret T. — Bid Logistics Pro</span><span style="font-size: 13px; color: #6B655B;">★ 4.9 (27 engagements) · Responds ~2h · EN / አማ</span></div>
+              <span style="margin-left: auto; border: 1.5px solid #55504A; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700;">✓ Vetted · trial passed</span>
+            </div>
+            <div style="display: flex; gap: 8px; font-size: 12px; flex-wrap: wrap;"><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">Document purchase</span><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">CPO arrangement</span><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">Physical submission</span><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">Opening attendance</span></div>
+            <div style="font-size: 13px; color: #55504A;">Typical bundle: docs + CPO + submission + opening report — <strong>$140–190</strong> · escrow-protected</div>
+            <div style="display: flex; gap: 8px;"><div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600;">Request quote</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 8px 16px; font-size: 13px;">View profile</div></div>
+          </div>
+          <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; gap: 14px; align-items: center;">
+              <div style="width: 52px; height: 52px; border-radius: 50%; background: #C8C2B6;"></div>
+              <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 700; font-size: 16px;">Dawit & Sons Agency</span><span style="font-size: 13px; color: #6B655B;">★ 4.7 (41 engagements) · Responds ~4h · EN / አማ / OR</span></div>
+              <span style="margin-left: auto; border: 1.5px solid #55504A; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700;">✓ Vetted · licensed agent</span>
+            </div>
+            <div style="display: flex; gap: 8px; font-size: 12px; flex-wrap: wrap;"><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">Legal representation</span><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">JV brokering</span><span style="background: #E8E3D9; border-radius: 999px; padding: 3px 10px;">Document authentication</span></div>
+            <div style="font-size: 13px; color: #55504A;">Registered commercial agent — suits ICB bids requiring a named local agent. <strong>Custom quotes.</strong></div>
+            <div style="display: flex; gap: 8px;"><div style="background: #6B655B; color: #FBFAF8; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600;">Request quote</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 8px 16px; font-size: 13px;">View profile</div></div>
+          </div>
+        </div>
+        <!-- quote flow strip -->
+        <div style="padding: 20px 32px 28px; border-top: 1px solid #D8D2C8; display: flex; align-items: center; gap: 14px; font-size: 13px; color: #55504A;">
+          <span style="font-weight: 700;">How escrow works:</span>
+          <span style="border: 1px solid #C8C2B6; border-radius: 999px; padding: 5px 12px;">1 · Accept quote & pay (card/PayPal)</span><span>→</span>
+          <span style="border: 1px solid #C8C2B6; border-radius: 999px; padding: 5px 12px;">2 · ADERA holds funds</span><span>→</span>
+          <span style="border: 1px solid #C8C2B6; border-radius: 999px; padding: 5px 12px;">3 · Facilitator uploads proof per milestone</span><span>→</span>
+          <span style="border: 1px solid #C8C2B6; border-radius: 999px; padding: 5px 12px;">4 · You approve → funds release</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- W5 ENGAGEMENT -->
+    <div data-screen-label="W5 Engagement Timeline" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500;">W5 · Engagement Timeline — proof-of-submission</div>
+      <div style="width: 1280px; background: #FBFAF8; border: 1px solid #B8B0A2; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+        <div style="padding: 24px 32px; border-bottom: 1px solid #D8D2C8; display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 22px; font-weight: 700;">Engagement #A-1042 — Solar Mini-Grid bid submission</div>
+            <div style="font-size: 13px; color: #6B655B;">with Meseret T. · started 12 Jul · escrow: <strong>$165 held by ADERA</strong></div>
+          </div>
+          <div style="display: flex; gap: 8px;"><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 8px 16px; font-size: 13px;">Message</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 8px 16px; font-size: 13px;">Dispute</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 28px 32px;">
+          <div style="display: flex; flex-direction: column; gap: 0;">
+            <!-- milestone done -->
+            <div style="display: flex; gap: 16px;">
+              <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 26px; height: 26px; border-radius: 50%; background: #55504A; color: #FBFAF8; display: flex; align-items: center; justify-content: center; font-size: 13px;">✓</div><div style="width: 2px; flex: 1; background: #C8C2B6;"></div></div>
+              <div style="padding-bottom: 24px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                <div style="font-weight: 700; font-size: 15px;">Documents purchased <span style="font-weight: 400; color: #6B655B; font-size: 13px;">· 13 Jul · $25 released</span></div>
+                <div style="display: flex; gap: 10px;"><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[receipt photo]</div><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[doc cover]</div></div>
+                <div style="font-size: 13px; color: #55504A;">You approved 13 Jul · "Receipt #4482, EEU HQ"</div>
+              </div>
+            </div>
+            <!-- milestone done -->
+            <div style="display: flex; gap: 16px;">
+              <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 26px; height: 26px; border-radius: 50%; background: #55504A; color: #FBFAF8; display: flex; align-items: center; justify-content: center; font-size: 13px;">✓</div><div style="width: 2px; flex: 1; background: #C8C2B6;"></div></div>
+              <div style="padding-bottom: 24px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                <div style="font-weight: 700; font-size: 15px;">CPO arranged — ETB 250,000 <span style="font-weight: 400; color: #6B655B; font-size: 13px;">· 18 Jul · $40 released</span></div>
+                <div style="display: flex; gap: 10px;"><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[CPO scan]</div></div>
+              </div>
+            </div>
+            <!-- milestone pending -->
+            <div style="display: flex; gap: 16px;">
+              <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid #55504A; background: #FBFAF8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">3</div><div style="width: 2px; flex: 1; background: #E0DAD0;"></div></div>
+              <div style="padding-bottom: 24px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                <div style="font-weight: 700; font-size: 15px;">Bid submitted — proof uploaded <span style="font-weight: 400; color: #6B655B; font-size: 13px;">· today 09:12 · $80 awaiting your approval</span></div>
+                <div style="display: flex; gap: 10px;"><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[stamped receipt]</div><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[submission photo]</div><div style="width: 120px; height: 80px; background: #E8E3D9; border: 1px dashed #A29A8B; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B655B;">[GPS + time]</div></div>
+                <div style="display: flex; gap: 8px;"><div style="background: #55504A; color: #FBFAF8; border-radius: 6px; padding: 9px 18px; font-size: 13px; font-weight: 700;">Approve — release $80</div><div style="border: 1px solid #C8C2B6; border-radius: 6px; padding: 9px 18px; font-size: 13px;">Request changes</div></div>
+              </div>
+            </div>
+            <!-- milestone future -->
+            <div style="display: flex; gap: 16px;">
+              <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 26px; height: 26px; border-radius: 50%; border: 2px dashed #C8C2B6; background: #FBFAF8; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #A29A8B;">4</div></div>
+              <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                <div style="font-weight: 700; font-size: 15px; color: #A29A8B;">Bid opening attendance + result report <span style="font-weight: 400; font-size: 13px;">· 22 Jul · $20</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- right rail -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; font-size: 14px;">Escrow status</div>
+              <div style="font-size: 13px; font-family: 'IBM Plex Mono', monospace; color: #55504A; display: flex; flex-direction: column; gap: 4px;"><div>Total held: $165</div><div>Released: $65</div><div>Awaiting approval: $80</div><div>Remaining: $20</div></div>
+              <div style="height: 8px; background: #E8E3D9; border-radius: 4px; overflow: hidden;"><div style="width: 39%; height: 100%; background: #55504A;"></div></div>
+            </div>
+            <div style="border: 1px solid #C8C2B6; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 700; font-size: 14px;">Messages</div>
+              <div style="font-size: 13px; color: #55504A; display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: #F1EEE8; border-radius: 6px; padding: 8px 12px;">Meseret: Submitted at 09:05, box #3. Receipt stamped — photos up.</div>
+                <div style="border: 1px solid #D8D2C8; border-radius: 6px; padding: 8px 12px; color: #A29A8B;">Reply…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

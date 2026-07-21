@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Serif:wght@500;600;700&family=Noto+Sans+Ethiopic:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #EFE8DE; font-family: 'IBM Plex Sans', sans-serif; color: #2B211A; }
+    a { color: #B05A38; } a:hover { color: #8C4225; }
+  </style>
+</helmet>
+
+<section style="padding: 48px; display: flex; flex-direction: column; gap: 40px; max-width: 1480px;">
+
+  <!-- Header -->
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;">
+      <span style="font-family: 'Noto Serif', serif; font-size: 40px; font-weight: 700; letter-spacing: -0.5px;">ADERA</span>
+      <span style="font-family: 'Noto Sans Ethiopic', sans-serif; font-size: 28px; color: #B05A38;">አደራ</span>
+      <span style="font-size: 14px; color: #7A6A5C; font-family: 'IBM Plex Mono', monospace;">Design System v1</span>
+    </div>
+    <p style="margin: 0; font-size: 16px; color: #5C4F43; max-width: 640px;">The trusted bridge to Ethiopian tenders. Warm earth identity — clay, ochre, coffee — with trust rendered as transparency: eligibility chips, confidence dots, verification badges.</p>
+  </div>
+
+  <!-- 1. Color -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">01 · Color</h2>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #B05A38;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Clay</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#B05A38 · primary</div></div>
+      </div>
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #D9A441;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Ochre</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#D9A441 · accent</div></div>
+      </div>
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #2F7A55;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Verified Green</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#2F7A55 · trust</div></div>
+      </div>
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #2B211A;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Coffee Ink</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#2B211A · text</div></div>
+      </div>
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #FAF6F0; border-bottom: 1px solid #E8DCCE;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Warm Paper</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#FAF6F0 · surface</div></div>
+      </div>
+      <div style="width: 160px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(43,33,26,0.12);">
+        <div style="height: 84px; background: #5C4F43;"></div>
+        <div style="background: #FFFDFA; padding: 10px 12px;"><div style="font-weight: 600; font-size: 13px;">Umber</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">#5C4F43 · secondary text</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Type -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">02 · Typography</h2>
+    <div style="background: #FFFDFA; border-radius: 12px; padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);">
+      <div style="display: flex; align-items: baseline; gap: 24px;">
+        <div style="font-family: 'Noto Serif', serif; font-size: 40px; font-weight: 700;">Entrusted. Delivered. Won.</div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">Noto Serif 700 / 40 — display</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 24px;">
+        <div style="font-family: 'Noto Serif', serif; font-size: 24px; font-weight: 600;">Can a US company bid on Ethiopian tenders?</div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">Noto Serif 600 / 24 — heading</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 24px;">
+        <div style="font-size: 16px; max-width: 560px;">Yes — through International Competitive Bidding, with a local agent, authenticated documents, and bid security via a recognized local bank.</div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">IBM Plex Sans 400 / 16 — body</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 24px;">
+        <div style="font-family: 'Noto Sans Ethiopic', sans-serif; font-size: 20px; font-weight: 600;">አደራ — የታመነ ድልድይ ወደ ኢትዮጵያ ጨረታዎች</div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">Noto Sans Ethiopic 600 / 20 — Amharic</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 24px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #5C4F43;">Closes in 2d 14h — 10:00 your time / 20:00 EAT</div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7A6A5C;">IBM Plex Mono 400 / 14 — data & deadlines</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Chips -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">03 · Chips — eligibility & urgency (the signature)</h2>
+    <div style="background: #FFFDFA; border-radius: 12px; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #7A6A5C;">Eligibility chips (per org type, always cited)</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #E5F0E9; color: #1F5C3E; border: 1px solid #9CC4AD; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600;">✓ Diaspora eligible</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #FBF0DC; color: #7A5410; border: 1px solid #E0C185; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600;">⚠ Local JV likely required</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #F3EAE2; color: #6B4B33; border: 1px solid #D2B79F; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600;">🏦 Bid security via local bank</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #EFEBE6; color: #5C4F43; border: 1px dashed #B4A494; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600;">? Ask Counsel</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #7A6A5C;">Urgency chips</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #F8E3DC; color: #9A2E1B; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700;">● ≤ 7 days</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #FBF0DC; color: #9A6A12; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700;">● ≤ 14 days</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: #E5F0E9; color: #2F7A55; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700;">● > 14 days</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #7A6A5C;">Track chips + confidence dots</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <span style="background: #2B211A; color: #FAF6F0; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">ICB</span>
+          <span style="background: #5C4F43; color: #FAF6F0; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">NCB</span>
+          <span style="background: #8C7A5B; color: #FAF6F0; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">DONOR</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #5C4F43; margin-left: 12px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #2F7A55;"></span> high confidence</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #5C4F43;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #D9A441;"></span> medium</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #5C4F43;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #C0B4A6;"></span> needs review</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Buttons & badges -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">04 · Buttons & badges</h2>
+    <div style="background: #FFFDFA; border-radius: 12px; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);">
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <button style="background: #B05A38; color: #FFFDFA; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;" style-hover="background: #8C4225;">Get matched free</button>
+        <button style="background: #2B211A; color: #FAF6F0; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;" style-hover="background: #453626;">Request a quote</button>
+        <button style="background: transparent; color: #B05A38; border: 1.5px solid #B05A38; border-radius: 8px; padding: 11px 24px; font-size: 15px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;" style-hover="background: #F8EDE6;">Why this fits you</button>
+        <button style="background: transparent; color: #5C4F43; border: none; padding: 12px 12px; font-size: 15px; font-weight: 500; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;">Dismiss</button>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <span style="display: inline-flex; align-items: center; gap: 7px; background: #2F7A55; color: #FFFDFA; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700;">✓ Verified Business</span>
+        <span style="display: inline-flex; align-items: center; gap: 7px; background: #FFFDFA; color: #2F7A55; border: 1.5px solid #2F7A55; border-radius: 8px; padding: 7px 16px; font-size: 13px; font-weight: 700;">✓ Vetted Facilitator · trial verified</span>
+        <span style="display: inline-flex; align-items: center; gap: 7px; background: #EFEBE6; color: #5C4F43; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;">Responds in ~4h</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Tender card -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">05 · Tender card (composed)</h2>
+    <div style="background: #FFFDFA; border-radius: 12px; padding: 24px 28px; max-width: 720px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 2px 8px rgba(43,33,26,0.12); border: 1px solid #EDE2D4;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+        <div style="font-family: 'Noto Serif', serif; font-size: 19px; font-weight: 600; line-height: 1.35;">Supply & Installation of Solar Mini-Grid Equipment — 12 Sites, Oromia Region</div>
+        <span style="flex-shrink: 0; background: #FBF0DC; color: #9A6A12; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 700; white-space: nowrap;">● 11 days</span>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <span style="background: #2B211A; color: #FAF6F0; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">ICB</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; background: #E5F0E9; color: #1F5C3E; border: 1px solid #9CC4AD; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">✓ Diaspora eligible</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; background: #F3EAE2; color: #6B4B33; border: 1px solid #D2B79F; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">🏦 CPO ETB 250,000</span>
+      </div>
+      <div style="background: #FAF6F0; border-left: 3px solid #D9A441; border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 14px; line-height: 1.55; color: #453626;"><strong>Why this fits you:</strong> Your profile lists off-grid solar EPC experience and two completed mini-grid projects in East Africa; this tender's scope and site count match your stated delivery capacity.</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #5C4F43;">Closes 22 Jul — 10:00 your time / 20:00 EAT</span>
+        <div style="display: flex; gap: 8px;">
+          <button style="background: #B05A38; color: #FFFDFA; border: none; border-radius: 7px; padding: 9px 18px; font-size: 13px; font-weight: 600; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;">View & ask</button>
+          <button style="background: transparent; color: #5C4F43; border: 1px solid #D9C9B8; border-radius: 7px; padding: 8px 16px; font-size: 13px; font-weight: 500; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Principles -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h2 style="margin: 0; font-family: 'Noto Serif', serif; font-size: 22px; border-bottom: 2px solid #D9C9B8; padding-bottom: 8px;">06 · Voice & principles</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1100px;">
+      <div style="background: #FFFDFA; border-radius: 12px; padding: 20px 22px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);"><div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #B05A38;">Plain language always</div><div style="font-size: 13px; line-height: 1.5; color: #5C4F43;">"Why this fits you," never "RAG." "Held until you approve the proof," never "escrow milestone capture."</div></div>
+      <div style="background: #FFFDFA; border-radius: 12px; padding: 20px 22px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);"><div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #B05A38;">Trust through transparency</div><div style="font-size: 13px; line-height: 1.5; color: #5C4F43;">Source link-outs, confidence dots, cited eligibility, what-we-checked expanders, one-tap error report.</div></div>
+      <div style="background: #FFFDFA; border-radius: 12px; padding: 20px 22px; box-shadow: 0 1px 4px rgba(43,33,26,0.10);"><div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #B05A38;">Timezone honesty</div><div style="font-size: 13px; line-height: 1.5; color: #5C4F43;">Every deadline shows the user's local time with EAT alongside. Countdowns, not just dates.</div></div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

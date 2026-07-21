@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Serif:wght@500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #EFE8DE; font-family: 'IBM Plex Sans', sans-serif; color: #2B211A; }
+    a { color: #B05A38; } a:hover { color: #8C4225; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column;">
+
+  <!-- Prototype step rail -->
+  <div style="background: #2B211A; color: #C9B99F; padding: 10px 24px; display: flex; align-items: center; gap: 16px; font-size: 12px; font-family: 'IBM Plex Mono', monospace;">
+    <span style="color: #D9A441; font-weight: 700;">PROTOTYPE · P1 diaspora journey</span>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <sc-for list="{{ steps }}" as="step" hint-placeholder-count="6">
+        <button onClick="{{ step.go }}" style="{{ step.style }}">{{ step.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: signup ============ -->
+  <sc-if value="{{ showSignup }}" hint-placeholder-val="{{ true }}">
+    <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 640px;">
+      <div style="background: #FAF6F0; display: flex; flex-direction: column; justify-content: center; padding: 72px; gap: 24px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-family: 'Noto Serif', serif; font-size: 26px; font-weight: 800;">ADERA</span>
+          <span style="font-family: 'Noto Sans Ethiopic', sans-serif; font-size: 17px; color: #B05A38;">አደራ</span>
+        </div>
+        <div style="font-family: 'Noto Serif', serif; font-size: 38px; font-weight: 800; line-height: 1.15; max-width: 440px;">Find Ethiopian tenders you can actually win.</div>
+        <div style="font-size: 16px; color: #5C4F43; max-width: 400px; line-height: 1.6;">Free to start. Tell us what your business does — we'll show you matching tenders in about 5 minutes.</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 380px;">
+          <div style="border: 1.5px solid #D9C9B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: #8C7A66; background: #FFFDFA;">you@company.com</div>
+          <button onClick="{{ goProfile1 }}" style="background: #B05A38; color: #FFFDFA; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #8C4225;">Continue with email →</button>
+          <button onClick="{{ goProfile1 }}" style="background: #FFFDFA; color: #2B211A; border: 1.5px solid #D9C9B8; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #F3EDE4;">Continue with Google</button>
+        </div>
+        <div style="font-size: 12px; color: #8C7A66;">No credit card · Weekly digest free forever</div>
+      </div>
+      <div style="background: linear-gradient(160deg, #B05A38 0%, #8C4225 60%, #6B3218 100%); display: flex; flex-direction: column; justify-content: center; padding: 72px; gap: 20px; color: #FAF6F0;">
+        <div style="font-family: 'Noto Sans Ethiopic', sans-serif; font-size: 44px; font-weight: 700; color: #EDC77E;">አደራ</div>
+        <div style="font-family: 'Noto Serif', serif; font-size: 24px; font-weight: 700; line-height: 1.4; max-width: 400px;">"Adera" means <em>entrusted</em>. What you entrust to us, we deliver — with proof.</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 15px; color: #F0DFC8; margin-top: 8px;">
+          <span>✓ Every tender read by AI daily, deadlines in your timezone</span>
+          <span>✓ Eligibility explained before you spend a dollar</span>
+          <span>✓ Vetted local facilitators — funds held until you approve</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SCREEN: profile wizard ============ -->
+  <sc-if value="{{ showProfile }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; background: #FAF6F0; display: flex; flex-direction: column; align-items: center; padding: 56px 24px; min-height: 640px;">
+      <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 28px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-family: 'Noto Serif', serif; font-size: 26px; font-weight: 800;">{{ wizardTitle }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #8C7A66;">step {{ wizardStepNum }} of 3</span>
+          </div>
+          <div style="height: 6px; background: #EADDCB; border-radius: 3px; overflow: hidden;"><div style="{{ wizardBarStyle }}"></div></div>
+        </div>
+
+        <sc-if value="{{ wizardIs1 }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 15px; color: #5C4F43;">Where is your business registered?</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <button onClick="{{ pickOrgDiaspora }}" style="{{ orgDiasporaStyle }}">🌍 Outside Ethiopia<div style="font-size: 13px; font-weight: 400; color: #8C7A66; margin-top: 4px;">Diaspora or foreign company</div></button>
+              <button onClick="{{ pickOrgLocal }}" style="{{ orgLocalStyle }}">🇪🇹 In Ethiopia<div style="font-size: 13px; font-weight: 400; color: #8C7A66; margin-top: 4px;">Locally registered SME</div></button>
+            </div>
+            <div style="font-size: 15px; color: #5C4F43; margin-top: 8px;">Country of registration</div>
+            <div style="border: 1.5px solid #D9C9B8; border-radius: 10px; padding: 13px 16px; font-size: 15px; background: #FFFDFA; display: flex; justify-content: space-between;"><span>United States</span><span style="color: #8C7A66;">▾</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ wizardIs2 }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 15px; color: #5C4F43;">Pick the sectors you work in (choose all that apply)</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <sc-for list="{{ sectors }}" as="sec" hint-placeholder-count="8">
+                <button onClick="{{ sec.toggle }}" style="{{ sec.style }}">{{ sec.label }}</button>
+              </sc-for>
+            </div>
+            <div style="font-size: 13px; color: #8C7A66;">{{ sectorCount }} selected — the more precise, the better your matches.</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ wizardIs3 }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="font-size: 15px; color: #5C4F43;">Tell us about your capacity — one line is enough.</div>
+            <div style="border: 1.5px solid #D9C9B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; background: #FFFDFA; line-height: 1.6; color: #2B211A;">Off-grid solar EPC firm, 25 staff. Completed two mini-grid projects in Kenya and Uganda (2023–25). ISO 9001. Can mobilize teams to East Africa within 30 days.</div>
+            <div style="display: flex; gap: 10px; align-items: center; font-size: 13px; color: #8C7A66;">
+              <span style="background: #E5F0E9; color: #1F5C3E; border-radius: 999px; padding: 4px 12px; font-weight: 600;">✓ Enough to match</span>
+              <span>You can add certifications and past projects later.</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+          <button onClick="{{ wizardBack }}" style="background: transparent; color: #5C4F43; border: none; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; text-decoration: underline; text-underline-offset: 3px;">← Back</button>
+          <button onClick="{{ wizardNext }}" style="background: #B05A38; color: #FFFDFA; border: none; border-radius: 10px; padding: 14px 32px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #8C4225;">{{ wizardNextLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SCREEN: feed ============ -->
+  <sc-if value="{{ showFeed }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; background: #FAF6F0; min-height: 640px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 40px; border-bottom: 1px solid #EADDCB; background: #FFFDFA;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-family: 'Noto Serif', serif; font-size: 20px; font-weight: 800;">ADERA</span><span style="font-family: 'Noto Sans Ethiopic', sans-serif; font-size: 14px; color: #B05A38;">አደራ</span></div>
+        <div style="display: flex; gap: 4px; background: #F3EDE4; border-radius: 10px; padding: 4px;">
+          <span style="background: #2B211A; color: #FAF6F0; border-radius: 7px; padding: 7px 16px; font-size: 13px; font-weight: 700;">My matches · 8</span>
+          <span style="padding: 7px 16px; font-size: 13px; color: #8C7A66; font-weight: 500;">All tenders</span>
+          <span style="padding: 7px 16px; font-size: 13px; color: #8C7A66; font-weight: 500;">Saved</span>
+          <button onClick="{{ goEngagement }}" style="padding: 7px 16px; font-size: 13px; color: #8C7A66; font-weight: 500; background: none; border: none; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Engagements · 1</button>
+        </div>
+        <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #B05A38, #D9A441); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #FFFDFA;">S</div>
+      </div>
+      <div style="max-width: 880px; margin: 0 auto; padding: 36px 24px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-family: 'Noto Serif', serif; font-size: 28px; font-weight: 800;">Good morning — <span style="color: #B05A38;">8 tenders</span> fit you this week.</div>
+          <div style="font-size: 14px; color: #8C7A66;">Matched against your solar EPC profile · updated 2h ago</div>
+        </div>
+        <!-- card 1 (clickable) -->
+        <div onClick="{{ goDetail }}" style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 22px 26px; display: flex; flex-direction: column; gap: 13px; cursor: pointer; box-shadow: 0 2px 8px rgba(43,33,26,0.07);" style-hover="border-color: #B05A38; box-shadow: 0 6px 18px rgba(43,33,26,0.14);">
+          <div style="display: flex; justify-content: space-between; gap: 14px; align-items: flex-start;">
+            <div style="font-family: 'Noto Serif', serif; font-size: 19px; font-weight: 700; line-height: 1.35;">Supply & Installation of Solar Mini-Grid Equipment — 12 Sites, Oromia Region</div>
+            <span style="flex-shrink: 0; background: #FBF0DC; color: #9A6A12; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 700;">● 11 days</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span style="background: #2B211A; color: #FAF6F0; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">ICB</span>
+            <span style="background: #E5F0E9; color: #1F5C3E; border: 1px solid #9CC4AD; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">✓ Diaspora eligible</span>
+            <span style="background: #F3EAE2; color: #6B4B33; border: 1px solid #D2B79F; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">🏦 CPO ETB 250,000</span>
+          </div>
+          <div style="background: #FAF6F0; border-left: 3px solid #D9A441; padding: 11px 15px; font-size: 14px; line-height: 1.55; color: #453626; border-radius: 0 8px 8px 0;"><strong>Why this fits you:</strong> your off-grid solar EPC experience and two completed East-Africa mini-grid projects match this tender's scope and site count.</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8C7A66;">Closes 22 Jul — 10:00 your time / 20:00 EAT</span>
+            <span style="background: #B05A38; color: #FFFDFA; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700;">View & ask →</span>
+          </div>
+        </div>
+        <!-- card 2 -->
+        <div style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 22px 26px; display: flex; flex-direction: column; gap: 13px; opacity: 0.85;">
+          <div style="display: flex; justify-content: space-between; gap: 14px; align-items: flex-start;">
+            <div style="font-family: 'Noto Serif', serif; font-size: 19px; font-weight: 700; line-height: 1.35;">Design & Build of Regional Health Center — Amhara Region</div>
+            <span style="flex-shrink: 0; background: #F8E3DC; color: #9A2E1B; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 700;">● 5 days</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span style="background: #5C4F43; color: #FAF6F0; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">NCB</span>
+            <span style="background: #FBF0DC; color: #7A5410; border: 1px dashed #E0C185; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">⚠ Local JV likely required</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8C7A66;">Closes 16 Jul — 09:00 your time / 19:00 EAT</span>
+            <span style="border: 1px solid #D9C9B8; color: #5C4F43; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;">View & ask</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SCREEN: detail ============ -->
+  <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; background: #FAF6F0; min-height: 640px;">
+      <div style="padding: 12px 40px; border-bottom: 1px solid #EADDCB; background: #FFFDFA;">
+        <button onClick="{{ goFeed }}" style="background: none; border: none; font-size: 13px; color: #8C7A66; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">← Back to matches</button>
+      </div>
+      <div style="max-width: 1100px; margin: 0 auto; padding: 32px 24px; display: grid; grid-template-columns: 1fr 340px; gap: 32px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-family: 'Noto Serif', serif; font-size: 27px; font-weight: 800; line-height: 1.25;">Supply & Installation of Solar Mini-Grid Equipment — 12 Sites, Oromia Region</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <span style="background: #2B211A; color: #FAF6F0; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;">ICB</span>
+              <span style="background: #E5F0E9; color: #1F5C3E; border: 1px solid #9CC4AD; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">✓ Diaspora eligible</span>
+              <span style="background: #F3EAE2; color: #6B4B33; border: 1px solid #D2B79F; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 600;">🏦 Bid security ETB 250,000</span>
+              <span style="background: #FBF0DC; color: #9A6A12; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 700;">● 11 days</span>
+            </div>
+            <div style="font-size: 13px; color: #8C7A66;">Source: Ethiopian Electric Utility · <span style="text-decoration: underline;">original notice ↗</span> · extracted with <span style="color: #2F7A55; font-weight: 600;">high confidence ●</span> · <span style="text-decoration: underline;">report an error</span></div>
+          </div>
+          <div style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-weight: 700; font-size: 14px;">Can you bid? — for your US-registered company</div>
+            <div style="display: flex; flex-direction: column; gap: 9px; font-size: 14px; color: #453626; line-height: 1.5;">
+              <span><strong style="color: #2F7A55;">✓</strong> Foreign firms eligible under ICB <span style="color: #8C7A66; font-size: 12px;">(ITB clause 4.1)</span></span>
+              <span><strong style="color: #2F7A55;">✓</strong> No local registration required to bid — only at award</span>
+              <span><strong style="color: #9A6A12;">⚠</strong> Bid security must come from a local bank or one with an NBE-recognized correspondent</span>
+              <span><strong style="color: #8C7A66;">?</strong> Power-of-attorney authentication path — ask below</span>
+            </div>
+          </div>
+          <div style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-weight: 700; font-size: 14px;">Ask about this tender</div>
+            <sc-if value="{{ qaAsked }}" hint-placeholder-val="{{ false }}">
+              <div style="background: #F3EDE4; border-radius: 10px; padding: 11px 15px; font-size: 14px; align-self: flex-end; max-width: 80%;">Do I need to be in Addis to buy the documents?</div>
+              <div style="border: 1px solid #EADDCB; border-radius: 10px; padding: 12px 16px; font-size: 14px; color: #453626; line-height: 1.6;"><strong>ADERA:</strong> No. A facilitator can purchase them on your behalf (ETB 500 at EEU HQ, Addis Ababa). Scanned copies are typically acceptable for your review; the original receipt travels with your bid. <span style="color: #8C7A66; font-size: 12px;">Source: notice §2.3 · high confidence ●</span></div>
+            </sc-if>
+            <sc-if value="{{ qaNotAsked }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ askQuestion }}" style="border: 1.5px dashed #D9C9B8; background: #FFFDFA; border-radius: 10px; padding: 12px 16px; font-size: 14px; color: #8C7A66; cursor: pointer; text-align: left; font-family: 'IBM Plex Sans', sans-serif;" style-hover="border-color: #B05A38; color: #B05A38;">Try: "Do I need to be in Addis to buy the documents?" →</button>
+            </sc-if>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-weight: 700; font-size: 14px;">Key dates</div>
+            <div style="font-size: 12px; color: #453626; display: flex; flex-direction: column; gap: 6px; font-family: 'IBM Plex Mono', monospace;">
+              <span>Docs on sale — now</span><span>Site visit — 15 Jul (optional)</span><span>Questions close — 17 Jul</span><span style="font-weight: 700;">Bid close — 22 Jul 10:00 your time</span><span>Opening — 22 Jul, public</span>
+            </div>
+          </div>
+          <div style="background: #F3E7D7; border: 1.5px solid #D9A441; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-weight: 700; font-size: 15px;">Need local hands?</div>
+            <div style="font-size: 13px; color: #5C4F43; line-height: 1.55;">3 vetted facilitators in Addis can buy documents, arrange the CPO, and submit for you. Funds held by ADERA until you approve proof.</div>
+            <button onClick="{{ goMarketplace }}" style="background: #B05A38; color: #FFFDFA; border: none; border-radius: 9px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #8C4225;">Request quotes →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SCREEN: marketplace ============ -->
+  <sc-if value="{{ showMarketplace }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; background: #FAF6F0; min-height: 640px;">
+      <div style="padding: 12px 40px; border-bottom: 1px solid #EADDCB; background: #FFFDFA;">
+        <button onClick="{{ goDetail }}" style="background: none; border: none; font-size: 13px; color: #8C7A66; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">← Back to tender</button>
+      </div>
+      <div style="max-width: 880px; margin: 0 auto; padding: 36px 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-family: 'Noto Serif', serif; font-size: 27px; font-weight: 800;">Quotes for your Solar Mini-Grid bid</div>
+          <div style="font-size: 14px; color: #8C7A66;">Scope: buy documents · arrange CPO ETB 250k · physical submission · attend opening</div>
+        </div>
+        <div style="background: #FFFDFA; border: 2px solid #2F7A55; border-radius: 14px; padding: 24px 26px; display: flex; flex-direction: column; gap: 14px; position: relative;">
+          <span style="position: absolute; top: -11px; left: 22px; background: #2F7A55; color: #FFFDFA; border-radius: 999px; padding: 3px 12px; font-size: 11px; font-weight: 700;">RECOMMENDED</span>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #B05A38, #D9A441); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; color: #FFFDFA;">M</div>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-weight: 700; font-size: 17px;">Meseret T. — Bid Logistics Pro</span>
+              <span style="font-size: 13px; color: #8C7A66;">★ 4.9 (27 engagements) · responds ~2h · EN / <span style="font-family: 'Noto Sans Ethiopic', sans-serif;">አማ</span></span>
+            </div>
+            <span style="margin-left: auto; border: 1.5px solid #2F7A55; color: #2F7A55; border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700;">✓ Vetted · trial passed</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <div style="background: #FAF6F0; border-radius: 10px; padding: 12px 14px;"><div style="font-size: 12px; color: #8C7A66;">Documents</div><div style="font-weight: 700; font-size: 15px; font-family: 'IBM Plex Mono', monospace;">$25</div></div>
+            <div style="background: #FAF6F0; border-radius: 10px; padding: 12px 14px;"><div style="font-size: 12px; color: #8C7A66;">CPO arrangement</div><div style="font-weight: 700; font-size: 15px; font-family: 'IBM Plex Mono', monospace;">$40</div></div>
+            <div style="background: #FAF6F0; border-radius: 10px; padding: 12px 14px;"><div style="font-size: 12px; color: #8C7A66;">Submission + proof</div><div style="font-weight: 700; font-size: 15px; font-family: 'IBM Plex Mono', monospace;">$80</div></div>
+            <div style="background: #FAF6F0; border-radius: 10px; padding: 12px 14px;"><div style="font-size: 12px; color: #8C7A66;">Opening report</div><div style="font-weight: 700; font-size: 15px; font-family: 'IBM Plex Mono', monospace;">$20</div></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 14px; color: #453626;">Total <strong style="font-size: 18px; font-family: 'IBM Plex Mono', monospace;">$165</strong> · held by ADERA, released per milestone you approve</div>
+            <button onClick="{{ acceptQuote }}" style="background: #2F7A55; color: #FFFDFA; border: none; border-radius: 10px; padding: 13px 26px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #226044;">Accept & pay into escrow →</button>
+          </div>
+        </div>
+        <div style="background: #FFFDFA; border: 1px solid #EADDCB; border-radius: 14px; padding: 20px 26px; display: flex; align-items: center; gap: 14px; opacity: 0.8;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; background: #D9C9B8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #FFFDFA;">D</div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+            <span style="font-weight: 700; font-size: 15px;">Dawit & Sons Agency</span>
+            <span style="font-size: 13px; color: #8C7A66;">★ 4.7 (41) · quoted <strong>$190</strong> · includes legal-agent representation</span>
+          </div>
+          <span style="border: 1px solid #D9C9B8; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; color: #5C4F43;">View quote</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ SCREEN: engagement ============ -->
+  <sc-if value="{{ showEngagement }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; background: #FAF6F0; min-height: 640px;">
+      <div style="padding: 12px 40px; border-bottom: 1px solid #EADDCB; background: #FFFDFA; display: flex; justify-content: space-between; align-items: center;">
+        <button onClick="{{ goFeed }}" style="background: none; border: none; font-size: 13px; color: #8C7A66; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">← Back to matches</button>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8C7A66;">Engagement #A-1042 · escrow: {{ escrowSummary }}</span>
+      </div>
+      <div style="max-width: 820px; margin: 0 auto; padding: 36px 24px; display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-family: 'Noto Serif', serif; font-size: 26px; font-weight: 800;">Solar Mini-Grid bid — with Meseret T.</div>
+          <div style="font-size: 14px; color: #8C7A66;">Funds held by ADERA · released only when you approve each proof</div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <!-- m1 -->
+          <div style="display: flex; gap: 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 28px; height: 28px; border-radius: 50%; background: #2F7A55; color: #FFFDFA; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;">✓</div><div style="width: 2px; flex: 1; background: #D9C9B8;"></div></div>
+            <div style="padding-bottom: 22px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; font-size: 15px;">Documents purchased <span style="font-weight: 400; color: #8C7A66; font-size: 13px;">· 13 Jul · $25 released</span></div>
+              <div style="font-size: 13px; color: #5C4F43;">Receipt #4482, EEU HQ — you approved</div>
+            </div>
+          </div>
+          <!-- m2 -->
+          <div style="display: flex; gap: 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 28px; height: 28px; border-radius: 50%; background: #2F7A55; color: #FFFDFA; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;">✓</div><div style="width: 2px; flex: 1; background: #D9C9B8;"></div></div>
+            <div style="padding-bottom: 22px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-weight: 700; font-size: 15px;">CPO arranged — ETB 250,000 <span style="font-weight: 400; color: #8C7A66; font-size: 13px;">· 18 Jul · $40 released</span></div>
+            </div>
+          </div>
+          <!-- m3 interactive -->
+          <div style="display: flex; gap: 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center;"><div style="{{ m3DotStyle }}">{{ m3DotLabel }}</div><div style="width: 2px; flex: 1; background: #EADDCB;"></div></div>
+            <div style="padding-bottom: 22px; display: flex; flex-direction: column; gap: 10px; flex: 1;">
+              <div style="font-weight: 700; font-size: 15px;">Bid submitted — proof uploaded <span style="font-weight: 400; color: #8C7A66; font-size: 13px;">· today 09:12 · {{ m3Status }}</span></div>
+              <div style="display: flex; gap: 10px;">
+                <div style="width: 132px; height: 90px; background: linear-gradient(135deg, #EADDCB, #D9C9B8); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B5D4F; font-weight: 600;">📄 stamped receipt</div>
+                <div style="width: 132px; height: 90px; background: linear-gradient(135deg, #EADDCB, #D9C9B8); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B5D4F; font-weight: 600;">📸 submission photo</div>
+                <div style="width: 132px; height: 90px; background: linear-gradient(135deg, #EADDCB, #D9C9B8); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #6B5D4F; font-weight: 600;">📍 GPS 09:05 EAT</div>
+              </div>
+              <sc-if value="{{ m3Pending }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; gap: 10px;">
+                  <button onClick="{{ approveProof }}" style="background: #2F7A55; color: #FFFDFA; border: none; border-radius: 9px; padding: 11px 22px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;" style-hover="background: #226044;">Approve — release $80</button>
+                  <button style="background: transparent; border: 1px solid #D9C9B8; color: #5C4F43; border-radius: 9px; padding: 11px 20px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;">Request changes</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m3Approved }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #E5F0E9; border: 1px solid #9CC4AD; border-radius: 10px; padding: 12px 16px; font-size: 14px; color: #1F5C3E; font-weight: 600;">✓ Approved — $80 released to Meseret. Your bid is officially in. 🎉</div>
+              </sc-if>
+            </div>
+          </div>
+          <!-- m4 -->
+          <div style="display: flex; gap: 16px;">
+            <div style="width: 28px; height: 28px; border-radius: 50%; border: 2px dashed #D9C9B8; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #B4A494; font-weight: 700;">4</div>
+            <div style="font-weight: 700; font-size: 15px; color: #B4A494; padding-top: 4px;">Bid opening attendance + result report <span style="font-weight: 400; font-size: 13px;">· 22 Jul · $20</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1280, &quot;height&quot;: 800}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'signup',       // signup | profile | feed | detail | marketplace | engagement
+    wizardStep: 1,
+    orgType: 'diaspora',
+    sectors: { 'Energy / Solar': true, 'Construction': true, 'ICT & Software': false, 'Medical supply': false, 'Consulting': false, 'Agriculture': false, 'Logistics': false, 'Water & Sanitation': false },
+    qaAsked: false,
+    m3Approved: false,
+  };
+
+  go(screen) { this.setState({ screen }); }
+
+  renderVals() {
+    const s = this.state;
+    const stepDefs = [
+      ['signup', '1 Sign up'], ['profile', '2 Profile'], ['feed', '3 Matches'],
+      ['detail', '4 Tender'], ['marketplace', '5 Quotes'], ['engagement', '6 Proof'],
+    ];
+    const steps = stepDefs.map(([key, label]) => ({
+      label,
+      go: () => this.go(key),
+      style: 'border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-family:IBM Plex Mono,monospace;cursor:pointer;font-weight:600;' +
+        (s.screen === key ? 'background:#D9A441;color:#2B211A;' : 'background:#453626;color:#C9B99F;'),
+    }));
+
+    const wizardTitles = { 1: 'Where are you based?', 2: 'What do you do?', 3: 'Your capacity' };
+    const sectorCount = Object.values(s.sectors).filter(Boolean).length;
+    const sectors = Object.keys(s.sectors).map((label) => ({
+      label,
+      toggle: () => this.setState((st) => ({ sectors: { ...st.sectors, [label]: !st.sectors[label] } })),
+      style: 'border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:IBM Plex Sans,sans-serif;' +
+        (s.sectors[label]
+          ? 'background:#B05A38;color:#FFFDFA;border:1.5px solid #B05A38;'
+          : 'background:#FFFDFA;color:#5C4F43;border:1.5px solid #D9C9B8;'),
+    }));
+
+    const orgBtn = (active) => 'text-align:left;border-radius:12px;padding:16px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:IBM Plex Sans,sans-serif;' +
+      (active ? 'background:#F3E7D7;border:2px solid #B05A38;color:#2B211A;' : 'background:#FFFDFA;border:1.5px solid #D9C9B8;color:#2B211A;');
+
+    return {
+      steps,
+      showSignup: s.screen === 'signup',
+      showProfile: s.screen === 'profile',
+      showFeed: s.screen === 'feed',
+      showDetail: s.screen === 'detail',
+      showMarketplace: s.screen === 'marketplace',
+      showEngagement: s.screen === 'engagement',
+
+      goProfile1: () => this.setState({ screen: 'profile', wizardStep: 1 }),
+      goFeed: () => this.go('feed'),
+      goDetail: () => this.go('detail'),
+      goMarketplace: () => this.go('marketplace'),
+      goEngagement: () => this.go('engagement'),
+      acceptQuote: () => this.go('engagement'),
+
+      wizardTitle: wizardTitles[s.wizardStep],
+      wizardStepNum: s.wizardStep,
+      wizardIs1: s.wizardStep === 1,
+      wizardIs2: s.wizardStep === 2,
+      wizardIs3: s.wizardStep === 3,
+      wizardBarStyle: 'height:100%;background:#B05A38;border-radius:3px;transition:width .3s;width:' + (s.wizardStep * 33.4) + '%',
+      wizardNextLabel: s.wizardStep === 3 ? 'See my matches →' : 'Continue →',
+      wizardNext: () => {
+        if (s.wizardStep === 3) this.go('feed');
+        else this.setState({ wizardStep: s.wizardStep + 1 });
+      },
+      wizardBack: () => {
+        if (s.wizardStep === 1) this.go('signup');
+        else this.setState({ wizardStep: s.wizardStep - 1 });
+      },
+      pickOrgDiaspora: () => this.setState({ orgType: 'diaspora' }),
+      pickOrgLocal: () => this.setState({ orgType: 'local' }),
+      orgDiasporaStyle: orgBtn(s.orgType === 'diaspora'),
+      orgLocalStyle: orgBtn(s.orgType === 'local'),
+      sectors,
+      sectorCount,
+
+      qaAsked: s.qaAsked,
+      qaNotAsked: !s.qaAsked,
+      askQuestion: () => this.setState({ qaAsked: true }),
+
+      m3Pending: !s.m3Approved,
+      m3Approved: s.m3Approved,
+      approveProof: () => this.setState({ m3Approved: true }),
+      m3DotStyle: 'width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;' +
+        (s.m3Approved ? 'background:#2F7A55;color:#FFFDFA;' : 'border:2px solid #B05A38;background:#FFFDFA;color:#B05A38;'),
+      m3DotLabel: s.m3Approved ? '✓' : '3',
+      m3Status: s.m3Approved ? '$80 released ✓' : '$80 awaiting your approval',
+      escrowSummary: s.m3Approved ? '$145 released · $20 remaining' : '$65 released · $100 held',
+    };
+  }
+}
+</script>
+</body>
+</html>
