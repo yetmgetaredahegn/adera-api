@@ -64,6 +64,13 @@ jobs:
       - name: Tests
         run: uv run pytest tests
 
+      - name: Contract drift check (ADR-025)
+        # Client repos generate from contracts/openapi.json; a code change that
+        # alters the API without regenerating the committed contract must fail.
+        run: |
+          make openapi
+          git diff --exit-code contracts/
+
       # Week 2+: the eval harness gates everything after it (06 §9).
       # - name: AI evals (smoke)
       #   run: make eval-smoke

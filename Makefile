@@ -1,4 +1,4 @@
-.PHONY: help install up down api worker beat migrate revision fmt lint type test test-unit test-int check demo clean
+.PHONY: help install up down api worker beat migrate revision fmt lint type test test-unit test-int check demo openapi clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -56,6 +56,12 @@ demo:  ## Week 3 spike: seed demo profiles, embed tenders, match, print the judg
 	DEBUG=false uv run python -m app.cli seed-profiles
 	DEBUG=false uv run python -m app.cli embed
 	DEBUG=false uv run python -m app.cli demo
+
+openapi:  ## Regenerate the published API contract (clients generate from this — ADR-025)
+	@mkdir -p contracts
+	DEBUG=false uv run python -c "import json; from app.main import create_app; \
+	print(json.dumps(create_app().openapi(), indent=2, sort_keys=True))" > contracts/openapi.json
+	@echo "contracts/openapi.json regenerated"
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache
