@@ -32,7 +32,10 @@ celery_app.conf.update(
         "io": {"exchange": "io", "routing_key": "io"},
         "cpu": {"exchange": "cpu", "routing_key": "cpu"},
     },
-    # Modules register tasks here as they land (Week 2+).
-    imports=(),
+    # Every module with a tasks.py MUST be listed here — the worker only knows
+    # tasks it imports. Forgetting this line is invisible at dispatch time
+    # (.delay() happily queues the message) and fails only in the worker with
+    # NotRegistered. Found the hard way; see AGENTS.md §6.
+    imports=("app.modules.ingestion.tasks",),
     beat_schedule={},
 )
