@@ -32,7 +32,7 @@ app/
 ├── kernel/                # AI Kernel: router.py (LiteLLM), prompts.py (registry loader),
 │                          # tools.py (tool registry), budget.py, cache.py, traces.py
 └── workers/celery_app.py  # Celery config: two queues (io, cpu), beat schedule dict
-prompts/  evals/  infra/  web/  docs/
+prompts/  evals/  infra/  contracts/  docs/   # web/ moved to the adera-web repo (ADR-025)
 ```
 The one law: **cross-module imports go through `service.py` only** (NFR-MAINT-1). `matching/service.py` may call `profiles.service.get_profile(org_id)`; it may never `from app.modules.profiles.models import CompanyProfile` to query directly.
 

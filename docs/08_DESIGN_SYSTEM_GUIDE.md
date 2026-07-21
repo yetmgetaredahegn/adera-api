@@ -1,6 +1,9 @@
 # 08 — Design System Guide: from the ADERA design artifacts to shipped UI
 *You already have generated design artifacts: wireframes, user-flow + data-flow diagrams, a clickable prototype, and two hi-fi suites — **Paper & Clay** (light: paper background, clay/ochre accents, coffee text) and **Bridge at Dusk** (dark: deep coffee ground, gold accents) — 8 core screens in light plus dark companions, Noto Serif display + Ethiopic accents, eligibility chips and the አደራ trust motif throughout. This doc is the repeatable workflow that turns those HTML design files into the production frontend, and the rules that keep every new screen consistent.*
 
+> **Repo note (ADR-025):** the production frontend lives in `adera-web`; client repos carry a labeled mirror of the token contract (`docs/DESIGN.md`) — canonical remains `adera-api/docs/agents/DESIGN.md`.
+
+
 ## 1. The translation workflow (artifact → code, five steps, repeat per screen)
 1. **Extract tokens once (§2):** open the design HTML files, copy every color/font/radius/shadow value into `web/src/styles/tokens.css` as CSS variables. From then on, the design files are *reference*, tokens are *truth* — if a hex appears in a component, that's a bug.
 2. **Inventory the screen (§4):** name the components it contains against the inventory table; anything new gets a row before it gets code.

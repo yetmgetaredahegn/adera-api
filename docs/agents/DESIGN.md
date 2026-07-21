@@ -8,6 +8,9 @@ in this file, it is not on-system — add it here *before* using it in code.
 Source: `ADERA Design System.dc.html` + the bundle README (exact values verified
 2026-07-16). Direction A "Paper & Clay" = light; Direction B "Bridge at Dusk" = dark.
 
+> **This file is canonical.** Client repos (`adera-mobile`, `adera-web`) carry labeled
+> mirrors at `docs/DESIGN.md` — update HERE, then refresh the mirrors (ADR-025).
+
 ## 1. Tokens (paste-ready for `web/src/styles/tokens.css` when the frontend starts)
 
 ```css

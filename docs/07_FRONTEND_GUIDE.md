@@ -1,6 +1,9 @@
 # 07 — Frontend Development Guide (Next.js 14, App Router)
 *Structure, concepts-per-feature, SEO, i18n, performance — enough that a junior ships screens that match the design system (08).*
 
+> **Repo note (ADR-025):** the web app lives in the separate **`adera-web`** repository — paths below (`web/src/...`) are relative to that repo. The API contract it consumes is generated from `adera-api/contracts/openapi.json`.
+
+
 ## 1. Why these tools (one line each)
 Next.js App Router → server rendering for the SEO channel (FR-9.1) + streaming UI; TypeScript → contract safety with the generated API client; Tailwind + shadcn/ui → the design tokens from 08 become utility classes and accessible components; next-intl → en/am locales (ADR-018); TanStack Query → client-side caching/mutations for the interactive app surfaces; openapi-typescript → the backend's /openapi.json becomes typed functions, so a schema change breaks the build, not production.
 
