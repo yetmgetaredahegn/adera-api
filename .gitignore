@@ -34,6 +34,10 @@ htmlcov/
 /models/
 .cache/
 
+# Agent working memory — volatile session state, deliberately not committed
+# (stable contract lives in AGENTS.md; see templates/agentic-workflow/README.md)
+HANDOFF.md
+
 # OS / editor
 .DS_Store
 Thumbs.db

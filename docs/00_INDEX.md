@@ -16,6 +16,9 @@ These documents are the working-level companions to the **master plan** (`00_MAS
 | 10 | SOLO_EXECUTION_TIMELINE.md | Exactly what one person builds first, week by week | Now; revisit weekly |
 | 11 | API_REFERENCE.md | Endpoint catalog (`/api/v1`), and the conventions every route obeys: auth, tenant isolation, idempotency, keyset pagination, RFC-7807 errors | Phase 1 onward; whenever wiring frontend to backend |
 | — | `ADRs/` | Expanded architecture-decision records. The master plan §12.3 carries the one-line index; a full ADR file is written when a decision needs its reasoning recorded or revised (see `ADRs/001-modular-monolith.md`) | Before proposing any architecture change |
+| — | `agents/SKILLS.md` | Step-by-step recipes for recurring tasks (add a source, change schema, endpoints, prompts, tests, ADRs, UI) — follow exactly; small models work from these only | Before any recurring task type |
+| — | `agents/DESIGN.md` | The implementable design contract: tokens (exact hex), typography, component inventory, voice rules, do-not-build deltas | Before any UI work |
+| — | `/AGENTS.md` (repo root) | The working contract for any AI agent or contributor: hard rules, environment, traps, the task loop. `/CLAUDE.md` is a thin Claude shim over it; `/HANDOFF.md` (gitignored) is the living session state | First file any agent reads |
 
 ## Feature → Module → Doc map
 | Feature | Module (master plan §10) | Build docs |

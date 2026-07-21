@@ -72,6 +72,11 @@ Deep coffee-black (#1C1410) background, gold (#E8B54D) accent, same content — 
 - `m3Approved` (boolean — has the current milestone been approved); in production this generalizes to a milestone list with per-milestone status (pending/awaiting_approval/approved) — see Data Flow diagram, Level 2, Stage D/E. ⛔ **Delta 1:** the mock's **escrow ledger (held/released amounts) is not launch state** — no platform-held balance exists (FR-15.2). The real tables are `engagements` + `engagement_events` + `proof_artifacts` (Master Plan, Appendix A). `ledger_entries` is double-entry accounting for platform-mediated balances (ADR-017), **not** an escrow float — and money is **integer minor units, never float** (NFR-INTL-2).
 
 ## Design tokens (from ADERA Design System.dc.html)
+
+> **For implementers (human or AI):** these values are extracted into a
+> machine-readable contract at **`../docs/agents/DESIGN.md`** — tokens as paste-ready
+> CSS variables, component inventory, voice rules, and the do-not-build deltas.
+> Build from that file; use this bundle for visual reference only.
 **Color**
 - Clay (primary): `#B05A38` / hover `#8C4225`
 - Ochre (accent): `#D9A441`
