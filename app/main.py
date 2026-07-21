@@ -47,9 +47,10 @@ def create_app() -> FastAPI:
 
         return {"ok": all(checks.values()), "checks": checks}
 
-    # Routers mounted here as modules land:
-    #   app.include_router(sources.router.router)   # Week 2
-    #   app.include_router(profiles.router.router)  # Week 3
+    # Routers mounted here as modules land.
+    from app.modules.ingestion.router import router as tenders_router
+
+    app.include_router(tenders_router)
     return app
 
 

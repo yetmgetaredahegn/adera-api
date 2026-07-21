@@ -7,8 +7,10 @@ this function is how we act on it and report which of the three things happened.
 """
 
 import enum
+import uuid
 from datetime import UTC, datetime
 
+import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -132,3 +134,37 @@ async def rank_by_embedding(
         .limit(limit)
     )
     return [(tender, 1.0 - float(dist)) for tender, dist in rows.all()]
+
+
+# --- public read API (M9 public portion, FR-9.1) ---------------------------
+# Keyset pagination over (created_at DESC, id DESC): created_at is NOT NULL, so
+# the cursor is total-ordered and stable — unlike closing_at, which is often null
+# (donor awards) and would make keyset math ambiguous. OFFSET is banned in hot
+# paths (05 §12: re-reads N rows at depth N).
+
+
+def encode_cursor(tender: Tender) -> str:
+    return f"{tender.created_at.isoformat()}|{tender.id}"
+
+
+def _decode_cursor(cursor: str) -> tuple[datetime, uuid.UUID]:
+    created_raw, _, id_raw = cursor.partition("|")
+    return datetime.fromisoformat(created_raw), uuid.UUID(id_raw)
+
+
+async def list_tenders(
+    session: AsyncSession, after: str | None = None, limit: int = 20
+) -> list[Tender]:
+    """One keyset page, newest-first. Invalid cursors raise ValueError — the
+    router maps that to 422 rather than guessing a page."""
+    query = select(Tender).order_by(Tender.created_at.desc(), Tender.id.desc()).limit(limit)
+    if after is not None:
+        created_at, tender_id = _decode_cursor(after)
+        # row-tuple comparison: (created_at, id) < (cursor values) — one index-friendly
+        # predicate instead of the nested OR that hand-rolled keyset logic needs
+        query = query.where(sa.tuple_(Tender.created_at, Tender.id) < (created_at, tender_id))
+    return list((await session.execute(query)).scalars().all())
+
+
+async def get_tender(session: AsyncSession, tender_id: uuid.UUID) -> Tender | None:
+    return await session.get(Tender, tender_id)
