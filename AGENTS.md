@@ -125,6 +125,10 @@ and a vetted facilitator marketplace.
 - **pytest + async engine:** the autouse fixture in `tests/conftest.py` disposes the
   pool between tests; removing it brings back "Event loop is closed" flakes.
 - **Docker pulls can fail transiently (DNS)** — retry once before diagnosing deeper.
+- **A new `tasks.py` MUST be added to `imports=` in `app/workers/celery_app.py`.**
+  `.delay()` succeeds either way (it only queues a message); the WORKER fails with
+  `NotRegistered` — invisible until a real worker runs. Exact same trap class as
+  the `migrations/env.py` imports.
 
 ## 7. The loop (every task, no exceptions)
 
