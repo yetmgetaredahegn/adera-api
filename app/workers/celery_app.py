@@ -1,0 +1,38 @@
+"""Celery configuration (ADR-005).
+
+Two queues, one image, three roles (ADR-001):
+  io  — network-bound: fetching pages/documents. High concurrency.
+  cpu — OCR, embedding, parsing. Concurrency ~= cores, or they fight.
+
+This split is what buys independent scaling and crash isolation WITHOUT
+microservices (ADR-001 §3) — a runaway Playwright scrape cannot take the API down.
+"""
+
+from celery import Celery
+
+from app.core.config import settings
+
+celery_app = Celery("adera")
+
+celery_app.conf.update(
+    broker_url=str(settings.redis_url),
+    result_backend=str(settings.redis_url),
+    task_serializer="json",
+    accept_content=["json"],
+    result_serializer="json",
+    timezone="UTC",  # NFR-INTL-1: schedules reason in UTC, render local
+    enable_utc=True,
+    task_track_started=True,
+    # Retry semantics (§12.2): every stage idempotent, retried x3, dead-lettered.
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    worker_prefetch_multiplier=1,
+    task_default_queue="io",
+    task_queues={
+        "io": {"exchange": "io", "routing_key": "io"},
+        "cpu": {"exchange": "cpu", "routing_key": "cpu"},
+    },
+    # Modules register tasks here as they land (Week 2+).
+    imports=(),
+    beat_schedule={},
+)
