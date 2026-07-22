@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ false }}   # DISABLED — flip this to go live once server+secrets exist
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Placeholder
         run: |
           echo "Planned (doc 09): build image -> push ghcr.io -> ssh to VPS -> docker compose pull && up -d"
