@@ -1,6 +1,8 @@
 # 06 — RAG & AI Pipeline Guide (from foundations to production)
 *Teaches the concepts once, then builds ADERA's two RAG systems and the token-economy discipline around them. This is the one doc where models are discussed, because here they're the machinery.*
 
+> **Built vs planned:** this guide describes *how* to build; what is actually implemented right now lives in `PROGRESS.md` (this repo). A section here describing a feature does not imply it exists yet.
+
 ## 1. Foundations in five paragraphs (skip if you know RAG)
 **Embedding:** a model turns text into a vector (list of ~1024 numbers) where *similar meaning → nearby vectors*. "web development tender" and "website design bid" land close together even sharing few words — this is why semantic search beats keywords for A2's problem.
 **Vector search:** store vectors in Postgres via **pgvector**; `ORDER BY embedding <=> :query_vec` returns nearest neighbors (`<=>` = cosine distance). An **HNSW index** makes this fast at scale (a graph structure that hops toward the neighborhood instead of scanning everything).

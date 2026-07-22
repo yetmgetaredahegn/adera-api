@@ -47,3 +47,7 @@ Thumbs.db
 
 # Design-tool exports keep their own runtime; keep them, but ignore browser cruft
 design-reference/**/*.log
+
+# Assembled onboarding bundle for the team — generated from docs/, not source
+team-pack/
+*.zip

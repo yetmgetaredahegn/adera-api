@@ -10,8 +10,8 @@ These documents are the working-level companions to the **master plan** (`00_MAS
 | 04 | ARCHITECTURE_SYSTEM_DESIGN.md | Architecture style, multi-tenancy, idempotency, soft delete, scalability/bottleneck playbook, load testing | Before writing backend code |
 | 05 | BACKEND_GUIDE.md | Repo layout, FastAPI concepts→features, module/function map, DB schema & query optimization, testing | Phase 1 daily companion |
 | 06 | RAG_AI_PIPELINE_GUIDE.md | Embeddings→RAG from zero, both corpora, token economy, evals | Phase 1–2 |
-| 07 | FRONTEND_GUIDE.md | Next.js structure per feature, SEO, i18n, performance, testing | Phase 2–3 |
-| 08 | DESIGN_SYSTEM_GUIDE.md | Translating the ADERA design artifacts (Paper & Clay / Bridge at Dusk) into code | Phase 2–3 |
+| 07 | FRONTEND_GUIDE.md | **Moved → `adera-web/docs/07_FRONTEND_GUIDE.md`** (docs live with the code they describe — ADR-025) | Phase 2–3 |
+| 08 | DESIGN_SYSTEM_GUIDE.md | **Moved → `adera-web/docs/08_DESIGN_SYSTEM_GUIDE.md`** (canonical design tokens stay here in `agents/DESIGN.md`) | Phase 2–3 |
 | 09 | DEVOPS_DEPLOYMENT.md | Git workflow, CI/CD (GitHub Actions), Docker, deploy strategy, backups, monitoring | Phase 1 setup, then ongoing |
 | 10 | SOLO_EXECUTION_TIMELINE.md | Exactly what one person builds first, week by week | Now; revisit weekly |
 | 11 | API_REFERENCE.md | Endpoint catalog (`/api/v1`), and the conventions every route obeys: auth, tenant isolation, idempotency, keyset pagination, RFC-7807 errors | Phase 1 onward; whenever wiring frontend to backend |

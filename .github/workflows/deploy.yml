@@ -1,0 +1,20 @@
+name: Deploy
+# Guarded SCAFFOLD (ADR-026 + doc 09). Does nothing until a VPS + secrets exist.
+# To enable: add secrets (GHCR auth, SSH_HOST/USER/KEY), remove the `if: false`
+# guard, and switch the trigger to release tags. Docker Compose on one VPS
+# (ADR-012) — NOT k8s.
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ false }}   # DISABLED — flip this to go live once server+secrets exist
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder
+        run: |
+          echo "Planned (doc 09): build image -> push ghcr.io -> ssh to VPS -> docker compose pull && up -d"
+      # - name: Build & push image
+      #   uses: docker/build-push-action@v6
+      # - name: Deploy over SSH
+      #   uses: appleboy/ssh-action@v1

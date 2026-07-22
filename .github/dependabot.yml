@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Python deps (reads pyproject.toml). If GitHub's UI offers a native "uv"
+  # ecosystem later, switch package-ecosystem to "uv".
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

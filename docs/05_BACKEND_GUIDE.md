@@ -1,6 +1,8 @@
 # 05 — Backend Development Guide (FastAPI monolith)
 *Read top-to-bottom once, then use as a reference while building. Assumes Python basics; explains every framework concept the first time it's used.*
 
+> **Built vs planned:** this guide describes *how* to build; what is actually implemented right now lives in `PROGRESS.md` (this repo). A section here describing a feature does not imply it exists yet.
+
 ## 1. Environment setup (once)
 ```bash
 git clone <repo> && cd adera

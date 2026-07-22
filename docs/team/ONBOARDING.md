@@ -62,25 +62,47 @@ digital-government consulting capabilities.        [match score 0.67]
 generates its **Dart** client from it; web generates its **TypeScript** client.
 You never hand-write API models — regenerate when the contract changes.
 
+**How the three repos become one product** — the data flow, running all three
+together locally, the cross-repo change protocol, and the path from scaffolds to a
+shipped app: **`adera-api/docs/SYSTEM.md`** (client repos carry a labeled mirror at
+`docs/SYSTEM.md`). Read it once; it's the map.
+
+**The work loop (every task, every repo):** research your domain → open a
+**proposal PR** for anything non-trivial → implement on a `feat/…` branch →
+open a PR → **the founder is the only reviewer/approver and the only one who merges
+to `main`.** You never merge your own PR. Full loop in each repo's `CONTRIBUTING.md`.
+
+**Your first task is NOT code** — it's research + a proposal PR
+(`docs/proposals/FIRST_TASK.md` in your repo). It gets you productive and safely
+exercises the PR flow before real code.
+
 **Ground rules (all of us, including AI assistants):**
-1. Branch + PR — never commit to `main` directly.
-2. Backend PRs: `make check` must be green (format, lint, strict typing, tests) +
-   paste proof the change actually runs. Client repos: analyzer/tests equivalent.
-3. **Founder-review-mandatory** (never merge alone): auth, billing/payments,
-   prompt changes, DB migrations, anything touching money or law.
-4. Working with an AI assistant? It must read the repo's `AGENTS.md` first —
-   each repo has one; it carries the rules and known traps.
-5. Deadlines are sacred in this product: all times stored UTC, always displayed
-   in the user's timezone **and** EAT. Money is integer minor units, never floats.
+1. Branch + PR — never commit to `main`; never merge your own PR.
+2. Backend PRs: `make check` green + paste proof it runs. Client repos: analyzer/tests + a manual pass.
+3. **Founder-review-mandatory** (flag loudly): auth, billing/payments, prompt
+   changes, DB migrations, anything touching money or law.
+4. Working with an AI assistant? It reads the repo's `AGENTS.md` first — same rules
+   bind agents and humans (branch+PR, no AI co-author, update PROGRESS).
+5. Deadlines are sacred: times stored UTC, shown user-local **and** EAT. Money is
+   integer minor units, never floats.
+6. **Update your repo's `docs/PROGRESS.md` in the same PR** as the change.
+
+**Ideas & corrections are contribution, not noise.** If the plan is wrong or you
+know a better way, open an Issue or a proposal PR. You were hired for judgment, not
+just hands.
 
 ## 4. Who does what + your day-1 reading
 
-| Role | Repo | Read first (in order) |
+Our team is five: a Next.js dev (web), a Flutter dev (mobile), a security engineer,
+a Python/FastAPI backend dev, and the founder (architect + sole reviewer). Each
+person's day-1 path, ending at their **first task** (research + proposal PR):
+
+| Role | Repo | Read first (in order) → then FIRST_TASK |
 |---|---|---|
-| Backend | `adera-api` | `README.md` → `AGENTS.md` → `docs/05_BACKEND_GUIDE.md` (has a Django→FastAPI map) → `docs/agents/SKILLS.md` |
-| Mobile (Flutter) | `adera-mobile` | your `BRIEF_MOBILE.md` → repo `README.md` → `docs/DESIGN.md` (tokens & components — this is law) |
-| Web (Next.js) | `adera-web` | your `BRIEF_WEB.md` → `docs/07_FRONTEND_GUIDE.md` → `docs/agents/DESIGN.md` |
-| Security | `adera-api` | your `BRIEF_SECURITY.md` → `AGENTS.md` §4 → the prompts in `prompts/` |
+| Backend (Python) | `adera-api` | `README` → `CONTRIBUTING` → `docs/05_BACKEND_GUIDE` (Django→FastAPI map) → `docs/PROGRESS` → `docs/SYSTEM` → **`docs/proposals/FIRST_TASK`** |
+| Mobile (Flutter) | `adera-mobile` | `README` → `CONTRIBUTING` → `docs/PRODUCT` → `docs/MOBILE_GUIDE` → `docs/DESIGN` (law) → `docs/PROGRESS` → **`docs/proposals/FIRST_TASK`** |
+| Web (Next.js) | `adera-web` | `README` → `CONTRIBUTING` → `docs/PRODUCT` → `docs/07_FRONTEND_GUIDE` → `docs/DESIGN` (law) → `docs/PROGRESS` → **`docs/proposals/FIRST_TASK`** |
+| Security | `adera-api` | `BRIEF_SECURITY.md` → `CONTRIBUTING` → `AGENTS.md` §4 → `prompts/` → **`docs/proposals/FIRST_TASK`** (security track) |
 
 ## 5. Prepare today (before repo access)
 

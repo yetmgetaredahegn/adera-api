@@ -99,6 +99,13 @@ and a vetted facilitator marketplace.
     authors every commit; an agent's contribution is captured in the commit body
     (what/why), never in the author metadata. Standing policy, applies to
     `adera-api`, `adera-mobile`, and `adera-web` alike.
+17. **Team workflow (humans and agents alike): work on `feat/…` (or `fix/…`,
+    `docs/…`) branches → open a PR → the founder is the sole reviewer/approver and
+    the only one who merges to `main`. Never merge your own PR; never push to
+    `main` directly.** Update this repo's `docs/PROGRESS.md` in the same PR as the
+    change it describes. *Why:* one reviewer/architect keeps a real product
+    coherent; `main` stays always-green. (Standing founder instruction, 2026-07-22.
+    Full loop: `CONTRIBUTING.md`.)
 
 ## 5. Environment facts (this machine)
 
