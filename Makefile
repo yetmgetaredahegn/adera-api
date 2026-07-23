@@ -3,8 +3,8 @@
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install:  ## Sync deps, create .env, install git hooks
-	uv sync
+install:  ## Sync deps (incl. AI kernel), create .env, install git hooks
+	uv sync --extra ai
 	@test -f .env || (cp .env.example .env && echo "created .env from .env.example")
 	@$(MAKE) install-hooks
 

@@ -26,7 +26,7 @@ Full analysis: `docs/ADRs/025-repo-strategy-polyrepo.md`. Team onboarding:
 
 - **Backend / FastAPI (from Django too):** this README → [`docs/05_BACKEND_GUIDE.md`](docs/05_BACKEND_GUIDE.md) (has a Django→FastAPI map) → [`docs/agents/SKILLS.md`](docs/agents/SKILLS.md) (step-by-step recipes)
 - **AI / pipeline / prompts:** [`docs/06_RAG_AI_PIPELINE_GUIDE.md`](docs/06_RAG_AI_PIPELINE_GUIDE.md) → `app/kernel/` → `prompts/`
-- **Frontend (Phase 2):** [`docs/07_FRONTEND_GUIDE.md`](docs/07_FRONTEND_GUIDE.md) → [`docs/agents/DESIGN.md`](docs/agents/DESIGN.md) (design tokens + components)
+- **Frontend (Phase 2):** now lives in `adera-web` — see `docs/07_FRONTEND_GUIDE.md` there → [`docs/agents/DESIGN.md`](docs/agents/DESIGN.md) here (canonical design tokens + components)
 - **AI agent (any model):** [`AGENTS.md`](AGENTS.md) is the working contract; `HANDOFF.md` (gitignored) is the live state
 - **Requirements / the "why":** [`docs/00_MASTER_PLAN.md`](docs/00_MASTER_PLAN.md) is the source of truth; [`docs/00_INDEX.md`](docs/00_INDEX.md) is the reading order
 

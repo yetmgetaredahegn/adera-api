@@ -70,8 +70,10 @@ type flows through. That's the whole integration model.
 
 ```bash
 # 1. Backend (this repo)
-make up && make migrate && make api      # api on :8000, /docs is the live API console
-make ingest worldbank                     # (or: uv run python -m app.cli ingest worldbank) → real data
+make up && make migrate                                    # Postgres+Redis, schema applied
+uv run python -m app.cli seed                              # register the World Bank source
+uv run python -m app.cli ingest worldbank                  # fetch + upsert → real tenders
+make api                                                    # :8000, /docs is the live API console
 
 # 2. Find your machine's LAN IP (clients can't reach the backend via "localhost")
 ip addr | grep 'inet 192'                 # e.g. 192.168.1.20

@@ -142,6 +142,16 @@ and a vetted facilitator marketplace.
   `.delay()` succeeds either way (it only queues a message); the WORKER fails with
   `NotRegistered` — invisible until a real worker runs. Exact same trap class as
   the `migrations/env.py` imports.
+- **AI kernel deps are the `ai` optional extra** (`pyproject.toml`) — plain
+  `uv sync` does NOT install `litellm`; use `uv sync --extra ai` (`make install`
+  already does this).
+- **`kernel.complete` needs an explicit `max_tokens`** — without one, litellm
+  defaults to the model's full context window, which can 402 a metered API key
+  on the very first call. Per-task caps live in `MAX_TOKENS` (`app/kernel/router.py`).
+- **Claude via OpenRouter wraps JSON replies in a ` ```json ` fence** even with
+  `response_format={"type": "json_object"}` set — the direct Anthropic API does
+  not do this. `_strip_code_fence()` in `app/kernel/router.py` handles it; if you
+  add a new provider/route, verify this assumption still holds for it.
 
 ## 7. The loop (every task, no exceptions)
 

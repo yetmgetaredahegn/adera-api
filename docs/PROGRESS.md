@@ -5,7 +5,7 @@
 same PR as the change it describes.** Every `[x]` cites evidence — a commit, a
 test, or a command that proves it.*
 
-**Updated:** 2026-07-22 · **Phase:** 1 (ingestion spine) done → early Phase 2.
+**Updated:** 2026-07-23 · **Phase:** 1 (ingestion spine) done → early Phase 2.
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ---
@@ -29,7 +29,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ## Documents & Extraction — M3/M4 · Phase 1
 - [x] Deterministic extraction for structured sources (WB) — `feat(extraction)`
-- [~] LLM extraction path for unstructured sources — built, **🔑 unexercised (needs `ANTHROPIC_API_KEY`)**
+- [x] LLM extraction path for unstructured sources — **live, proven** via
+  `OPENROUTER_API_KEY` — real synthetic tender doc → correct `TenderExtraction`
+  (fields, TZ-aware dates, integer-minor-unit money). Two kernel bugs found +
+  fixed in the process (`max_tokens` cap; OpenRouter markdown-fence stripping) —
+  see `app/kernel/router.py`, `HANDOFF.md`.
 - [ ] PDF fetch + OCR (Tesseract eng+amh) — Phase 4 (no source needs it yet)
 
 ## AI Kernel — Phase 1
@@ -41,7 +45,9 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [x] Company profile model + embedding service — `feat(profiles)`
 - [x] Semantic matching (vector similarity + floor) — `feat(matching)`
 - [x] **Matching spike JUDGED GREEN** (3 profiles → correct, non-overlapping lists) — `make demo`
-- [ ] LLM re-rank + grounded "why this fits you" (B3) — Phase 2 — 🔑 needs key
+- [ ] LLM re-rank + grounded "why this fits you" (B3) — Phase 2 — key path is
+  proven (see Documents & Extraction above); **no service function calls it
+  yet** — this is now an implementation task, not a key-blocked one
 - [ ] Qualification prefilter (drop awarded/noise before matching) — Phase 2, **next up**
 
 ## Public API — M9 · Phase 2
@@ -60,10 +66,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ## What's next (the founder's build queue)
 1. Qualification prefilter (improves what every client feed shows).
-2. Eval harness in CI.
-3. LLM explanations + extraction — **the moment an `ANTHROPIC_API_KEY` lands.**
+2. Wire the `explain` (B3) service function — key path is proven, prompt exists,
+   only the caller is missing (mirrors `app/modules/extraction/service.py`).
+3. Eval harness in CI.
 4. Auth design → per-user matches (founder-review-mandatory).
 
 ## Blocked on the founder
-- `ANTHROPIC_API_KEY` in `.env` → unblocks explanations + LLM extraction + Q&A.
 - e-GP login → unblocks the primary tender source.

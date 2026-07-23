@@ -14,32 +14,40 @@ agent can't toggle these settings; this is the handoff.
    cd ~/projects/Adera/adera-web    && git push -u origin main
    ```
 
-## ② Invite the team — **Write** permission only (not Admin/Maintain)
-Per repo: Settings → Collaborators → Add people. Give each teammate **Write**.
-- **Write** = push branches, open PRs. **Cannot** change settings or bypass branch
-  protection or merge a blocked PR. Exactly what you want.
-- Admin/Maintain would let them change protections — don't.
+## ② Invite the team — Collaborators
+Per repo: Settings → Collaborators → Add people.
+- These are **personal repos, not a GitHub Organization** — there is no
+  Read/Triage/Write/Maintain/Admin tier picker here (that's an org-only feature).
+  Adding someone as a collaborator is the only option; they get repo access, can
+  push branches and open PRs, but cannot touch repo Settings — CODEOWNERS + the
+  Ruleset (below) are what actually stop them from merging past you, not the
+  invite step itself.
 - Access map: backend + security → `adera-api`; web dev → `adera-web`; mobile dev →
-  `adera-mobile`. (Give security read on all three if you want cross-repo review.)
+  `adera-mobile`. (Add security as a collaborator on all three if you want
+  cross-repo review.)
 
-## ③ Protect `main` on each repo
-Settings → Branches → Add branch protection rule → branch name `main`:
-- ☑ **Require a pull request before merging** → Require approvals: **1**
-- ☑ **Require review from Code Owners** ← this is what makes *you* the only approver
+## ③ Protect `main` on each repo — Rulesets
+Settings → Rules → Rulesets → New branch ruleset → target `main` (or `default`):
+- **Restrict deletions**, **Block force pushes**
+- **Require a pull request before merging** → Required approvals: **1**
+- **Require review from Code Owners** ← this is what makes *you* the only approver
   (CODEOWNERS = `* @yetmgetaredahegn`)
-- ☑ **Do not allow force pushes** · ☑ Do not allow deletions
-- ☑ Require conversation resolution before merging (optional, tidy)
+- **Require status checks to pass** — see the ordering trap below
+- **Bypass list:** Repository admin role only (that's you) — leave it at just
+  that; no other bypass entries.
 
-**Ordering trap — required status checks:** the "Require status checks to pass" box
-only lists checks that have **already run once** on the repo. On the fresh
-web/mobile repos there are none yet. So: enable the PR + Code-Owner rules now; after
-the first PR triggers CI, come back and tick the CI check as required. (`adera-api`
-already has CI runs, so you can require its `check` job immediately.)
+**Ordering trap — required status checks:** a check can only be added to the
+Ruleset **after it has run at least once** on the repo. On the fresh web/mobile
+repos there are none yet. So: turn on the Ruleset now with everything above
+*except* the status-check requirement; after the first PR triggers CI, come back
+and add the `check` job as required. (`adera-api` already has CI runs, so you can
+require its `check` job immediately.)
 
-**Admin bypass:** by default you (admin) can still merge past protection. Keeping
-that for yourself early is a legitimate velocity choice — you're the reviewer
-anyway. Teammates can never bypass regardless. If you later want *no one*
-(including you) to bypass, tick "Do not allow bypassing the above settings."
+**Admin bypass:** the bypass list above is scoped to the Repository admin role,
+which is only you. Teammates are never on it and can never merge past the
+Ruleset regardless of what else changes. That's the actual enforcement
+mechanism — verified live: a push to `adera-api`'s protected `main` logs GitHub's
+own bypass-eligibility check and still requires the PR path for everyone else.
 
 ## ④ Cross-repo oversight (see docs/MANAGING.md)
 Create one GitHub **Project** (board) spanning all three repos so every task/PR is

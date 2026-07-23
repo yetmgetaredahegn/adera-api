@@ -21,12 +21,39 @@ from app.kernel.cache import ResponseCache, cache_key
 
 TModel = TypeVar("TModel", bound=BaseModel)
 
+
+def _strip_code_fence(content: str) -> str:
+    """Some providers (Claude via OpenRouter, observed) wrap JSON in a ```json
+    fence even when response_format={"type": "json_object"} is requested —
+    unlike the direct Anthropic API. Strip it before validation."""
+    text = content.strip()
+    if not text.startswith("```"):
+        return text
+    lines = text.split("\n")
+    lines = lines[1:]  # drop the opening ``` or ```json line
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
+
+
 # Task -> model tier. Cheapest capable model per task; edit here, measure with evals.
+# Routed via OpenRouter (OPENROUTER_API_KEY) rather than a direct Anthropic key —
+# litellm dispatches on the "openrouter/" prefix and reads that env var itself.
 MODEL_ROUTES: dict[str, str] = {
-    "extract": "anthropic/claude-haiku-4-5-20251001",
-    "qualify": "anthropic/claude-haiku-4-5-20251001",
-    "explain": "anthropic/claude-sonnet-5",
-    "eligibility": "anthropic/claude-sonnet-5",
+    "extract": "openrouter/anthropic/claude-haiku-4.5",
+    "qualify": "openrouter/anthropic/claude-haiku-4.5",
+    "explain": "openrouter/anthropic/claude-sonnet-5",
+    "eligibility": "openrouter/anthropic/claude-sonnet-5",
+}
+
+# Hard output cap per task (NFR-COST-1: without this, litellm defaults to the
+# model's max context — e.g. 64k tokens — which both wastes budget on runaway
+# completions and can exceed what a metered API key can afford in one call).
+MAX_TOKENS: dict[str, int] = {
+    "extract": 2000,
+    "qualify": 500,
+    "explain": 1000,
+    "eligibility": 1500,
 }
 
 
@@ -66,9 +93,10 @@ class Kernel:
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
+            max_tokens=MAX_TOKENS.get(task, MAX_TOKENS["extract"]),
             response_format={"type": "json_object"},
         )
-        content = resp.choices[0].message.content or "{}"
+        content = _strip_code_fence(resp.choices[0].message.content or "{}")
         usd = float(getattr(resp, "_hidden_params", {}).get("response_cost", 0.0) or 0.0)
         await self._budget.record(usd)
 
