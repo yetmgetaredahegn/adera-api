@@ -36,9 +36,12 @@ paragraph is fine. The written proposal follows tonight or tomorrow.
   price." That needs a corpus we may not have — or may already be ingesting
   without realising (a lot of what we pull from the World Bank *is* award
   data). Worth finding out, because it changes what's possible.
-- **Qualification prefilter** — `docs/QUALIFICATION_PREFILTER.md` is an open
-  problem statement and it's yours to fill in. Real next build item
-  (FR-5.1/5.2), and it decides what every client's feed shows.
+- **Qualification prefilter** — a first implementation now exists
+  (`app/modules/qualification/`, built ahead of your research so there's
+  something real to react to, not a blank page). `docs/QUALIFICATION_PREFILTER.md`
+  has what was built, why, and the open questions it left — review it, verify
+  the claims yourself, and rework whatever your own judgment says is wrong.
+  Real next build item (FR-5.1/5.2), and it decides what every client's feed shows.
 - **RAG critique** — `docs/06_RAG_AI_PIPELINE_GUIDE.md` + ADR-024. Chunking,
   reranking, the law-corpus/tender-corpus split, eval strategy. What's weak?
 - **API design review** — `contracts/openapi.json` + `docs/11_API_REFERENCE.md`.

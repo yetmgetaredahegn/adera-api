@@ -1,71 +1,92 @@
-# Qualification prefilter — open problem
+# Qualification prefilter
 
-**Status:** Open. No design decided. **Owner: Temesgen.**
+**Status:** A first implementation exists (`app/modules/qualification/`) — built
+ahead of your research, at the tech lead's explicit direction, so it's a
+working baseline rather than a blank page. **It is not final. Rework or
+replace any part of it that your research says is wrong — that's still the
+point of this task, not a formality.**
+**Owner: Temesgen.**
 **Requirements:** FR-5.1 (zero-cost keyword/rule prefilter first), FR-5.2 (LLM
 qualification → `qualified`/`rejected`/`needs_review` + urgency + sector +
 reasons + confidence; model + raw response persisted).
 
-> This file states the problem and the facts around it. It does **not** propose
-> a solution — that's the work, and it's yours. Bring what you know from outside
-> this repo: your experience, how you've solved this before, current practice.
-> This is deliberately incomplete, not a quiz with a hidden answer key.
+> Bring what you know from outside this repo: your experience, how you've
+> solved this before, current practice. Reviewing and critiquing a real
+> implementation is exactly as valuable as designing one from scratch — more,
+> if you can find what's wrong with it.
 >
-> And this is one thing that needs deciding, not the only thing you can work on.
-> If you see something more important, say so.
+> And this is one thing to review, not the only thing you can work on. If you
+> see something more important, say so.
 
-## The problem
+## What was actually built (verify all of this yourself — don't trust this file)
 
-`app/modules/matching/service.py` currently ranks every ingested tender with no
-qualification step at all — its own docstring says so ("No sector pre-filter
-yet: tenders don't carry a sector until qualification (M5, Week 4) assigns one").
+Two stages, cheapest first, in `app/modules/qualification/service.py`:
 
-Meanwhile a large share of what we ingest isn't biddable. Most World Bank
-procurement notices are **contract awards** — records of a contract already
-given to someone — not open solicitations. They typically have no
-`closing_at`. Surfacing them in a "here's what to bid on" feed is noise at
-best, misleading at worst.
+1. **Rule stage (free).** `_rule_reject(tender)` checks
+   `tender.raw_data["notice_type"]` against a hardcoded reject set — currently
+   just `{"Contract Award"}`. This was **not guessed**: verified against the
+   real ingested corpus before writing any code —
+   ```
+   docker compose exec -T db psql -U adera -d adera -c \
+     "select raw_data->>'notice_type', count(*), count(closing_at) from tenders group by 1;"
+   ```
+   gave 121/121 "Contract Award" notices with no `closing_at`, and 0/15 of
+   every other notice type missing one. That correlation is the entire
+   justification for the rule — it is a World-Bank-specific empirical fact,
+   not a general principle, and it may not hold for other sources at all.
+2. **LLM stage (prompt B2, `prompts/qualify/v1.md`)** for everything the rule
+   didn't reject: `kernel.complete(task="qualify", schema=QualifyOut)` returns
+   `status`/`urgency`/`sector`/`reasons`/`confidence`. A failure (bad JSON,
+   rate limit, budget breaker) persists `NEEDS_REVIEW` with confidence 0 and a
+   reason saying qualification failed — **never a guessed status**
+   (AGENTS.md rule 11).
 
-Nothing decides which tenders are worth showing. That's the gap.
+**Schema:** a new `qualifications` table (`app/modules/qualification/models.py`,
+migration `677995c87c69`) — one row per tender, FK to `tenders`, updated in
+place on re-run (not appended). Carries `method` (rule/llm, for cost
+transparency), `model` + `raw_response` (FR-5.2's audit requirement — JSONB,
+`none_as_null=True` set deliberately; see the comment on that column for a real
+bug this caught), and `corrected_status`/`correction_note` as an unused landing
+spot for FR-5.4's human-correction flow.
 
-## Facts you'll need (verify them; don't trust this file)
+**CLI:** `uv run python -m app.cli qualify` runs it over every tender without a
+verdict yet.
 
-- **What exists in the kernel:** `app/kernel/router.py` already has a `qualify`
-  route (cheap model tier) and a `MAX_TOKENS["qualify"]` cap. Nothing calls it.
-  There is no `prompts/qualify/` directory yet.
-- **What data is available to filter on:** `app/modules/ingestion/models.py`
-  `Tender` carries `closing_at`, `title`, `summary`, and `raw_data` — the full
-  original adapter payload as JSONB, GIN-indexed. The World Bank adapter
-  (`app/modules/ingestion/adapters/worldbank.py`) maps `notice_type` into
-  `summary` and keeps everything in `raw_data`.
-- **Real data to look at, rather than guess from:**
-  ```
-  docker compose exec -T db psql -U adera -d adera -c \
-    "select raw_data->>'notice_type', count(*) from tenders group by 1 order by 2 desc;"
-  ```
-- **Nearest test patterns:** `tests/test_worldbank_adapter.py` and
-  `tests/test_ingestion_idempotency.py` — fixture-based, no live network.
-- **Related requirement:** FR-5.4 (review queue; corrections become golden
-  labels) suggests the design should assume human correction exists eventually.
+**Live-proven, not just tested:** run against the full real corpus (136
+tenders): **121 rejected** (rule stage, matching the empirical count exactly),
+**14 qualified**, **1 needs_review** (a genuinely ambiguous case — a 2027
+closing date on a thin summary — not a failure; confidence 0.35 with real
+reasoning). Two real bugs were found and fixed while proving this live, both in
+`app/kernel/router.py` (repo-wide, not qualification-specific — see
+`_strip_code_fence` and the `none_as_null` note above): a model response that
+put commentary *after* a closing code fence broke the old fence-stripping
+logic, silently turning 11/15 real verdicts into fake `NEEDS_REVIEW` failures
+before the fix.
 
-## Open questions — Temesgen closes these
+## Open questions — Temesgen closes these (unchanged from before, still real)
 
-- [ ] **TODO(temesgen): what actually distinguishes biddable from not?** Decide
-  from real ingested data, not from assumption. Which fields carry the signal?
-- [ ] **TODO(temesgen): rules, model, or both — and in what order?** FR-5.1 and
-  FR-5.2 describe both a rule pass and an LLM pass. Whether both are needed, and
-  which runs first, is a design decision with real cost implications. Yours.
-- [ ] **TODO(temesgen): what does the filter output?** A hard drop, a flag, a
-  score, a status column? This affects the schema and what `matching` consumes.
-- [ ] **TODO(temesgen): how do you know it's working?** A rule that's too
-  aggressive silently drops real biddable tenders — invisible, and worse than
-  showing noise. What's the measurement approach with no labeled data yet?
-- [ ] **TODO(temesgen): what's the honest scope for right now** versus what
-  follows later?
+- [ ] **TODO(temesgen): does the rule stay this narrow?** One notice type, one
+  source. Is there more free signal being left on the table, or is the current
+  scope exactly right and anything broader is guessing?
+- [ ] **TODO(temesgen): is the two-stage order right?** Rule-reject only
+  (never qualify) vs. rule-flag-and-still-send-to-LLM vs. something else
+  entirely — the current code hard-skips the LLM on a rule reject. Right call?
+- [ ] **TODO(temesgen): is a single `qualifications` table the right shape**,
+  or should this live differently (e.g. columns on `Tender` directly)? The
+  current choice followed the existing `matches`-table pattern (own table, FK)
+  rather than adding columns to `Tender` — worth challenging.
+- [ ] **TODO(temesgen): how do you know it's working**, with no labeled data
+  yet? The 14/121/1 split is a real run, not a golden-set evaluation — is that
+  distinction being made clearly enough elsewhere (PROGRESS.md, eval harness)?
+- [ ] **TODO(temesgen): what's missing entirely?** FR-5.3 (re-qualification on
+  revision) has no trigger anywhere. FR-5.4 (the correction review queue) has
+  schema fields and zero endpoint. Both are real gaps, not implemented, and not
+  necessarily this task's job to close — but say so if either should move up.
 
 ## Where this fits
 
-The qualification step sits between ingestion and matching. Whatever you decide
-here changes what every client's feed shows, so it's worth deciding
-deliberately. Write it up as a proposal PR (`docs/proposals/`, copy
-`TEMPLATE.md`) — and if the design turns out to have architectural weight, it
-may deserve a full ADR in `docs/ADRs/`.
+The qualification step sits between ingestion and matching — `matching/service.py`
+still has no sector pre-filter wired in, so a qualified tender's `sector` field
+isn't consumed by anything downstream yet. That wiring is also open. Write your
+findings up as a proposal PR (`docs/proposals/`, copy `TEMPLATE.md`) — and if
+your rework has architectural weight, it may deserve a full ADR in `docs/ADRs/`.

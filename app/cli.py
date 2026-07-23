@@ -5,6 +5,7 @@
     uv run python -m app.cli tenders           # show what's in the DB
     uv run python -m app.cli seed-profiles     # Week-3 spike: 3 demo company profiles
     uv run python -m app.cli embed             # embed tenders that lack vectors
+    uv run python -m app.cli qualify           # rule + LLM qualify tenders that lack a verdict
     uv run python -m app.cli demo              # match every profile + print judgment sheet
 
 This is the "admin dry-run" surface (FR-11.3) until the real admin UI exists.
@@ -171,6 +172,34 @@ async def _embed() -> None:
     print(f"embedded {n} tenders (already-embedded rows skipped — idempotent)")
 
 
+async def _qualify() -> None:
+    """Rule stage (free) + LLM stage (prompt B2) over every tender without a
+    qualification row yet. Rule-rejected tenders never reach the LLM — see
+    app/modules/qualification/service.py for which notice types and why."""
+    from app.kernel.router import build_kernel
+    from app.modules.qualification.models import Qualification, QualificationStatus
+    from app.modules.qualification.service import qualify_tender
+
+    kernel = build_kernel()
+    counts: dict[str, int] = {}
+    async with async_session_factory() as session:
+        already = select(Qualification.tender_id)
+        pending = (await session.execute(select(Tender).where(Tender.id.not_in(already)))).scalars()
+        for tender in pending:
+            q = await qualify_tender(session, tender, kernel)
+            counts[q.status.value] = counts.get(q.status.value, 0) + 1
+        await session.commit()
+    if not counts:
+        print("nothing to qualify — every tender already has a verdict")
+        return
+    for status in (
+        QualificationStatus.QUALIFIED,
+        QualificationStatus.REJECTED,
+        QualificationStatus.NEEDS_REVIEW,
+    ):
+        print(f"{status.value}: {counts.get(status.value, 0)}")
+
+
 async def _demo() -> None:
     """The judgment sheet: every profile's top matches, scores visible.
 
@@ -228,6 +257,8 @@ def main() -> None:
             asyncio.run(_seed_profiles())
         case "embed":
             asyncio.run(_embed())
+        case "qualify":
+            asyncio.run(_qualify())
         case "demo":
             asyncio.run(_demo())
         case _:

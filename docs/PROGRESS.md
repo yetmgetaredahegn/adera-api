@@ -61,10 +61,29 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
   supply tender was a poor fit rather than forcing a positive spin. A model
   failure (bad JSON, rate limit, budget breaker) returns `None`, never a faked
   explanation (AGENTS.md rule 11).
-- [~] Qualification prefilter (drop awarded/noise before matching) — Phase 2,
-  **next up**; open problem statement `docs/QUALIFICATION_PREFILTER.md`,
-  design owned by Temesgen (his first task) — deliberately not built ahead of
-  his research; he reworks/replaces whatever exists here once his proposal lands
+- [x] **Qualification prefilter (M5, FR-5.1/5.2) — built and proven live.**
+  Two stages in `app/modules/qualification/`: a free rule stage
+  (`_rule_reject`) rejects World Bank "Contract Award" notices — verified
+  empirically first, not assumed: 121/121 awards in the real corpus have no
+  `closing_at`, 0/15 non-award notices lack one. Everything the rule doesn't
+  reject goes to an LLM stage (prompt B2, `prompts/qualify/v1.md`) for the
+  real `status`/`urgency`/`sector`/`reasons`/`confidence` judgment. New
+  `qualifications` table (migration `677995c87c69`), CLI:
+  `uv run python -m app.cli qualify`. **Run against the full real corpus:
+  121 rejected, 14 qualified, 1 needs_review** (a genuinely ambiguous case,
+  not a failure — confidence 0.35 with real reasoning about a suspicious
+  2027 closing date). Two real bugs found + fixed while proving this live,
+  both in `app/kernel/router.py` (repo-wide fixes, not qualification-only —
+  see HANDOFF.md): the fence-stripping helper broke on trailing commentary
+  after a closing fence (was silently turning 11/15 real verdicts into fake
+  failures before the fix); a JSONB column stored Python `None` as the JSON
+  literal `null` instead of SQL `NULL` (`none_as_null=True` fixes it).
+  Built ahead of Temesgen's research at the tech lead's explicit direction —
+  `docs/QUALIFICATION_PREFILTER.md` documents exactly what exists and the
+  open questions he still owns; not a design he must accept as-is.
+- [ ] Qualified tenders' `sector` isn't consumed downstream yet —
+  `matching/service.py` still has no sector pre-filter wired in. Real next
+  wiring task, not started.
 
 ## Public API — M9 · Phase 2
 - [x] `GET /api/v1/tenders` (keyset-paginated) + `GET /api/v1/tenders/{id}` — `feat(api)`; `tests/test_tenders_api.py`
@@ -83,16 +102,20 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ## Reference material / open decisions landed this session (2026-07-23)
 - [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
-- [~] `docs/QUALIFICATION_PREFILTER.md` — open problem statement; design owned by Temesgen (first task)
+- [x] `docs/QUALIFICATION_PREFILTER.md` — now documents a real, working
+  implementation + Temesgen's open questions on it (not a blank problem
+  statement anymore)
 
 ---
 
 ## What's next (the tech lead's build queue)
 1. Review `docs/proposals/001-auth-implementation-plan.md` — the actual next
    unblock (per-org matches endpoint waits on it).
-2. Qualification prefilter — Temesgen's, in progress.
-3. Eval harness in CI.
+2. Wire qualified tenders' `sector` into `matching/service.py`'s ranking.
+3. Eval harness in CI — still nobody's.
 4. Per-org matches endpoint, once auth lands.
+5. Temesgen's review of the qualification prefilter — rework whatever his
+   research says is wrong.
 
 ## Blocked on the founder
 - ADR-027 resolution (security review of source-access legality; possibly a

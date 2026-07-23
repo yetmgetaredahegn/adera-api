@@ -21,6 +21,7 @@ from app.modules.identity import models as identity_models  # noqa: F401
 from app.modules.ingestion import models as ingestion_models  # noqa: F401
 from app.modules.matching import models as matching_models  # noqa: F401
 from app.modules.profiles import models as profiles_models  # noqa: F401
+from app.modules.qualification import models as qualification_models  # noqa: F401
 from app.modules.runledger import models as runledger_models  # noqa: F401
 from app.modules.sources import models as sources_models  # noqa: F401
 

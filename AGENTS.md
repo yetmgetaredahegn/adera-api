@@ -152,6 +152,18 @@ and a vetted facilitator marketplace.
   `response_format={"type": "json_object"}` set — the direct Anthropic API does
   not do this. `_strip_code_fence()` in `app/kernel/router.py` handles it; if you
   add a new provider/route, verify this assumption still holds for it.
+- **A model can ALSO append commentary after the closing fence** despite a
+  "return ONLY a JSON object" instruction — `_strip_code_fence()` extracts the
+  fenced block from anywhere in the string for exactly this reason (a real
+  qualification call did this and silently turned 11/15 real verdicts into
+  fake failures before the fix). If you touch this function, keep the
+  "trailing commentary after fence" test case in `tests/test_kernel_router.py`.
+- **A JSONB column needs `none_as_null=True`** if a Python `None` should mean
+  "genuinely absent" — without it, SQLAlchemy stores the JSON literal `null`
+  (a non-NULL row), and any raw-SQL `IS NULL`/`count()` on that column silently
+  misclassifies every such row. The ORM round-trips it back to Python `None`
+  either way, which is exactly why this is easy to miss in app code and only
+  shows up in SQL.
 
 ## 7. The loop (every task, no exceptions)
 

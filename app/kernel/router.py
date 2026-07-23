@@ -10,6 +10,7 @@ for extraction" is a config change measured by evals, not a hunt through the cod
 (06 §8: tier the models; nothing defaults to a frontier model).
 """
 
+import re
 from typing import TypeVar
 
 import redis.asyncio as aioredis
@@ -21,19 +22,27 @@ from app.kernel.cache import ResponseCache, cache_key
 
 TModel = TypeVar("TModel", bound=BaseModel)
 
+# Matches a ```json ... ``` or ``` ... ``` fenced block anywhere in the string.
+_FENCE_RE = re.compile(r"```(?:json)?\s*\n(.*?)```", re.DOTALL)
+
 
 def _strip_code_fence(content: str) -> str:
     """Some providers (Claude via OpenRouter, observed) wrap JSON in a ```json
-    fence even when response_format={"type": "json_object"} is requested —
-    unlike the direct Anthropic API. Strip it before validation."""
-    text = content.strip()
-    if not text.startswith("```"):
-        return text
-    lines = text.split("\n")
-    lines = lines[1:]  # drop the opening ``` or ```json line
-    if lines and lines[-1].strip() == "```":
-        lines = lines[:-1]
-    return "\n".join(lines).strip()
+    fence even when response_format={"type": "json_object"} is requested — the
+    direct Anthropic API does not do this. Some responses ALSO append trailing
+    commentary after the closing fence despite "return ONLY a JSON object"
+    instructions (observed live: a qualification response that added a
+    "**Note on confidence:**" paragraph after valid, fenced JSON, which broke
+    strict parsing — the fix that motivated searching for the fence rather
+    than assuming the whole string is exactly its contents).
+
+    Extracts just the fenced block if one exists anywhere in the string
+    (before/after content is discarded); if there's no fence at all, assumes
+    the whole reply is already bare JSON and returns it unchanged."""
+    match = _FENCE_RE.search(content)
+    if match is None:
+        return content.strip()
+    return match.group(1).strip()
 
 
 # Task -> model tier. Cheapest capable model per task; edit here, measure with evals.
