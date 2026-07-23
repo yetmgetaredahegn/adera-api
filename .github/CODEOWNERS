@@ -1,4 +1,4 @@
-# The founder is the sole reviewer/approver for every path in this repo.
+# The tech lead is the sole reviewer/approver for every path in this repo.
 # Combined with branch protection ("Require review from Code Owners"), this means
-# no PR merges to main without the founder's approval. See docs/GO_LIVE.md (hub).
+# no PR merges to main without the tech lead's approval. See docs/GO_LIVE.md (hub).
 * @yetmgetaredahegn

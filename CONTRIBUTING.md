@@ -10,15 +10,15 @@ product-wide docs. Read `docs/team/ONBOARDING.md` first if you haven't.
    next), the relevant FRs in `docs/00_MASTER_PLAN.md`.
 2. **Propose** — for anything non-trivial, open a **proposal PR** first
    (`docs/proposals/`, use `TEMPLATE.md`). Cheap to change a plan, expensive to
-   change built code. The founder reviews the plan before you build.
+   change built code. The tech lead reviews the plan before you build.
 3. **Implement** — branch `feat/<area>-<short>` (or `fix/…`, `docs/…`). Follow the
    recipe in SKILLS.md if one exists. Keep the diff small and scoped to one
    problem.
 4. **Verify + PR** — `make check` green (format, lint, mypy, tests) **and** a
    behavior proof (run the thing; paste output) — see `.claude/skills/verify`.
    Open a PR with the template; **update `docs/PROGRESS.md` in the same PR**.
-5. **Founder reviews & merges** — you never merge your own PR. Only the founder
-   (Code Owner) approves and merges to `main`.
+5. **Tech lead reviews & merges** — you never merge your own PR. Only the tech
+   lead (Code Owner) approves and merges to `main`.
 
 ## Rules that will fail your PR if broken
 - `make check` must be green. CI runs it too; a red PR won't be reviewed.
@@ -27,7 +27,7 @@ product-wide docs. Read `docs/team/ONBOARDING.md` first if you haven't.
   (`make install-hooks`, run once). Describe an AI's help in the body, commit as
   yourself.
 - **PROGRESS.md updated** in the same PR as the change it describes.
-- Founder-review-mandatory areas (auth, billing, migrations that alter existing
+- Tech-lead-review-mandatory areas (auth, billing, migrations that alter existing
   tables, prompt versions, kernel budgets, KYB) — flag these loudly in the PR.
 
 ## First task (before any code)

@@ -21,8 +21,8 @@ and a vetted facilitator marketplace.
   `FR-x.y` (functional), `NFR-*` (non-functional), `ADR-nnn` (architecture decisions,
   expanded files in `docs/ADRs/`), `M1–M18` (modules). Cite these ids in code comments
   and reports — intent must survive you.
-- **Team:** solo founder (Yetmgeta, Django background) + AI agents. The founder is the
-  architect and final reviewer.
+- **Team:** 5 people across 3 repos (backend, web, mobile, security) + AI agents.
+  Yetmgeta is the tech lead — architect and sole reviewer/approver across all three.
 
 ## 2. Session start ritual (always)
 
@@ -34,7 +34,7 @@ and a vetted facilitator marketplace.
 2. Treat HANDOFF claims as *hints*: re-verify anything load-bearing with a command
    before building on it (`make check`, `psql \d <table>`, CLI runs).
 3. Restate your task in one sentence + the FR/NFR ids it serves + its Definition of
-   Done. **If no FR fits and it's not explicitly asked by the founder, stop and ask.**
+   Done. **If no FR fits and it's not explicitly asked by the tech lead, stop and ask.**
 
 ## 3. Context loading table (what to read per task — and what NOT to)
 
@@ -88,7 +88,7 @@ and a vetted facilitator marketplace.
     why ADERA runs on **5435/6380**. Do not "fix" the ports.
 14. **Escalate, don't implement silently:** auth, billing/payments/ledger, kernel
     budgets/permissions, migrations that alter existing tables, prompt version bumps,
-    KYB/vetting logic — founder-review-mandatory (master plan Appendix E). Anything
+    KYB/vetting logic — tech-lead-review-mandatory (master plan Appendix E). Anything
     contradicting the master plan → write an ADR proposal in `docs/ADRs/`
     (propose, don't implement — §12.3).
 15. **Personas may not be cited in product decisions** until cast with real,
@@ -203,7 +203,7 @@ Updated: <date> by <who/model>
 - Now: <task> (FR ids)
 - Next: <task>
 
-## Open founder decisions (do not decide these yourself)
+## Open tech-lead decisions (do not decide these yourself)
 - <decision> — context
 
 ## New traps discovered this session

@@ -11,6 +11,6 @@ Closes #
 - [ ] Conventional commit messages; **no AI `Co-Authored-By` trailer**
 - [ ] If the API contract changed: regenerated & committed (`contracts/`)
 - [ ] Docs updated if behavior/notes changed
-- [ ] I did **not** merge my own PR (founder approves & merges)
+- [ ] I did **not** merge my own PR (tech lead approves & merges)
 
 <!-- Quality gate: api → `make check` · web → `pnpm lint && pnpm build` · mobile → `flutter analyze && flutter test` -->

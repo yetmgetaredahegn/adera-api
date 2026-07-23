@@ -1,5 +1,12 @@
 # Handoff: ADERA — AI-Native Bridge to Ethiopian Tenders
 
+> **v2 update (2026-07-23):** a second design pass ("v2 Web + Mobile", 10 screens
+> pairing desktop-web with iOS layouts) has been exported as flat PNGs and
+> distributed directly into the client repos — `adera-web/docs/design/v2/` and
+> `adera-mobile/docs/design/v2/` — so each dev has it without needing access to
+> this repo. The `.dc.html` files here remain the editable source of truth; the
+> same do-not-build deltas below (escrow, above all) apply to the v2 export too.
+
 ## Overview
 ADERA (አደራ, "entrusted") matches diaspora/foreign/local businesses to Ethiopian public and donor tenders using AI extraction and matching, explains eligibility in plain language, and connects bidders with vetted local facilitators via a marketplace. This bundle is the full design package: design system, wireframes, user/data flow diagrams, hi-fi visual explorations, and a clickable prototype.
 

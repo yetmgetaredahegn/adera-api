@@ -12,4 +12,4 @@ labels: idea
 <!-- Tie it to a user, a phase, or a doc. -->
 
 <!-- For anything non-trivial, consider a proposal PR (docs/proposals/) instead — it
-     gives the founder a concrete plan to approve. -->
+     gives the tech lead a concrete plan to approve. -->
