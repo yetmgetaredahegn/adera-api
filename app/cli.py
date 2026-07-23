@@ -172,14 +172,18 @@ async def _embed() -> None:
 
 
 async def _demo() -> None:
-    """The Week-3 judgment sheet: every profile's top matches, scores visible.
+    """The judgment sheet: every profile's top matches, scores visible.
 
-    A human reads this and answers the go/no-go questions (plan, Week 3): are the
-    matches relevant? would a real bidder act on this? Explanations are absent by
-    honesty: prompt B3 needs an LLM key this environment doesn't have.
+    A human reads this and answers the go/no-go questions: are the matches
+    relevant? would a real bidder act on this? Explanations are generated when a
+    provider key is present (OPENROUTER_API_KEY or similar) — absent one, they
+    stay None rather than faked (AGENTS.md rule 11).
     """
+    from app.kernel.router import build_kernel
     from app.modules.matching.service import match_org
     from app.modules.profiles.service import list_profiles
+
+    kernel = build_kernel()
 
     async with async_session_factory() as session:
         profiles = await list_profiles(session)
@@ -192,7 +196,7 @@ async def _demo() -> None:
                 continue
             print(f"\n=== {org.name}  ({org.org_type.value}, {org.country}) ===")
             print(f"    sectors: {', '.join(profile.sectors)}")
-            ranked = await match_org(session, org.id, limit=8)
+            ranked = await match_org(session, org.id, limit=8, kernel=kernel)
             if not ranked:
                 print("    (no tenders above the similarity floor)")
             for r in ranked:
@@ -201,8 +205,10 @@ async def _demo() -> None:
                 )
                 flag = "NEW" if r.persisted else "seen"
                 print(f"    {r.score:.3f} [{flag}] [{deadline}] {r.tender.title[:64]}")
+                if r.explanation:
+                    print(f'        -> "{r.explanation}"')
         await session.commit()
-    print("\nJudge honestly (plan Week 3): relevant? actionable? would a bidder trust it?")
+    print("\nJudge honestly: relevant? actionable? would a bidder trust it?")
 
 
 def main() -> None:

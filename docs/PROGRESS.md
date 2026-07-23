@@ -5,7 +5,7 @@
 same PR as the change it describes.** Every `[x]` cites evidence — a commit, a
 test, or a command that proves it.*
 
-**Updated:** 2026-07-23 · **Phase:** 1 (ingestion spine) done → early Phase 2.
+**Updated:** 2026-07-23 (evening) · **Phase:** 1 (ingestion spine) done → early Phase 2, moving fast.
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ---
@@ -48,16 +48,31 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [x] Company profile model + embedding service — `feat(profiles)`
 - [x] Semantic matching (vector similarity + floor) — `feat(matching)`
 - [x] **Matching spike JUDGED GREEN** (3 profiles → correct, non-overlapping lists) — `make demo`
-- [ ] LLM re-rank + grounded "why this fits you" (B3) — Phase 2 — key path is
-  proven (see Documents & Extraction above); **no service function calls it
-  yet** — this is now an implementation task, not a key-blocked one
-- [ ] Qualification prefilter (drop awarded/noise before matching) — Phase 2, **next up**;
-  draft spec `docs/QUALIFICATION_PREFILTER.md`, owner Temesgen (first task)
+- [x] **LLM re-rank + grounded "why this fits you" (B3) — live, proven.**
+  `match_org()` now takes an optional `kernel`; `_explain()` in
+  `app/modules/matching/service.py` builds a grounded prompt from confirmed
+  profile facts + extracted tender fields, calls `kernel.complete(task="explain")`,
+  and persists `explanation`/`prompt_version` on new matches only (never
+  re-explains an existing match — budget discipline). `make demo` run live:
+  24/24 new matches got a grounded explanation, verified in Postgres
+  (`select count(explanation) from matches` = 24) and Redis
+  (`kernel:spend:2026-07-23` = $0.058586 for the run). Quality is real, not
+  cherry-picked — one explanation correctly told a software company a water-
+  supply tender was a poor fit rather than forcing a positive spin. A model
+  failure (bad JSON, rate limit, budget breaker) returns `None`, never a faked
+  explanation (AGENTS.md rule 11).
+- [~] Qualification prefilter (drop awarded/noise before matching) — Phase 2,
+  **next up**; open problem statement `docs/QUALIFICATION_PREFILTER.md`,
+  design owned by Temesgen (his first task) — deliberately not built ahead of
+  his research; he reworks/replaces whatever exists here once his proposal lands
 
 ## Public API — M9 · Phase 2
 - [x] `GET /api/v1/tenders` (keyset-paginated) + `GET /api/v1/tenders/{id}` — `feat(api)`; `tests/test_tenders_api.py`
 - [x] OpenAPI contract published + CI drift gate — `feat(contracts)`; `make openapi`
-- [ ] Auth (sessions/JWT) — Phase 2 — **founder-review-mandatory**; unblocks per-user endpoints for clients
+- [ ] Auth (sessions/JWT) — Phase 2 — **tech-lead-review-mandatory**; implementation
+  plan proposed (not built) in `docs/proposals/001-auth-implementation-plan.md` —
+  session cookie + CSRF for web, JWT for the bot, per the architecture already
+  decided in the master plan. Rule 14 forbids implementing this without review.
 - [ ] Per-org matches endpoint (needs auth + tenant isolation + two-org leak test) — Phase 2
 - [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key
 
@@ -72,12 +87,12 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ---
 
-## What's next (the founder's build queue)
-1. Qualification prefilter (improves what every client feed shows).
-2. Wire the `explain` (B3) service function — key path is proven, prompt exists,
-   only the caller is missing (mirrors `app/modules/extraction/service.py`).
+## What's next (the tech lead's build queue)
+1. Review `docs/proposals/001-auth-implementation-plan.md` — the actual next
+   unblock (per-org matches endpoint waits on it).
+2. Qualification prefilter — Temesgen's, in progress.
 3. Eval harness in CI.
-4. Auth design → per-user matches (founder-review-mandatory).
+4. Per-org matches endpoint, once auth lands.
 
 ## Blocked on the founder
 - ADR-027 resolution (security review of source-access legality; possibly a
