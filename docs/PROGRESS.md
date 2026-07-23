@@ -24,7 +24,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [x] Idempotent upsert on `(source, source_tender_id)` — `feat(ingestion)`; `tests/test_ingestion_idempotency.py`
 - [x] Orchestration task + run ledger (counts/cost/latency) — `feat(runledger)`
 - [x] **69 real Ethiopian tenders ingested, re-run duplicate-free** — `DEBUG=false uv run python -m app.cli ingest worldbank` (×2 → created=0)
-- [ ] e-GP source (the primary one) — Phase 1/2 — 🔑 needs founder's e-GP login + Playwright
+- [ ] e-GP source (the primary one) — Phase 1/2 — 🔒 blocked on `docs/ADRs/027-source-access-legality.md`
+  (Proposed): authenticated scraping may violate Proclamation 958/2016. Blocked
+  on security review + possibly an official PPA data-sharing agreement, **not**
+  on Playwright engineering time.
 - [ ] Revision detection + re-notify on deadline change — Phase 2 (FR-2.6)
 
 ## Documents & Extraction — M3/M4 · Phase 1
@@ -72,4 +75,6 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 4. Auth design → per-user matches (founder-review-mandatory).
 
 ## Blocked on the founder
-- e-GP login → unblocks the primary tender source.
+- ADR-027 resolution (security review of source-access legality; possibly a
+  PPA data-sharing conversation) → unblocks the primary tender source. Not the
+  same blocker as before — see `docs/SECURITY.md` and `docs/ADRs/027-*`.

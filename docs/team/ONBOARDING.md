@@ -42,7 +42,7 @@ digital-government consulting capabilities.        [match score 0.67]
 | Background workers (Celery + Redis) | ✅ proven end-to-end |
 | Semantic matching (BGE-M3 embeddings, local, $0/query) | ✅ **built & judged** — 3 test company profiles each got correct, non-overlapping tender lists |
 | "Why this fits you" explanations | 🔑 built, needs LLM API key — next up |
-| e-GP scraper (the primary source) | ⏳ registered, disabled — needs authenticated Playwright session |
+| e-GP scraper (the primary source) | 🔒 registered, disabled — blocked on `docs/ADRs/027-source-access-legality.md` (Proposed): authenticated scraping may be illegal under Proclamation 958/2016, not just unbuilt |
 | Qualification filter (drop already-awarded/noise) | ⏳ next build week |
 | Public API for clients | ⏳ landing now (`GET /api/v1/tenders`) — this is what web/mobile consume |
 | Web app · Mobile app · Auth · Billing | 🚧 that's where **you** come in |

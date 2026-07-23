@@ -114,7 +114,7 @@ and a vetted facilitator marketplace.
 | ADERA Postgres / Redis | `localhost:5435` / `localhost:6380` (compose project `adera`) |
 | Default ports 5432/6379 | OWNED by the `blih-*` prototype — hands off (rule 13) |
 | LLM API key | **NOT present.** Deterministic paths (WB ingestion, embeddings-local) must keep working without one. LLM paths are built-but-unexercised; say so. |
-| e-GP source | Registered but `enabled=false` — authenticated Angular SPA, needs founder's login + Playwright (later week) |
+| e-GP source | Registered but `enabled=false` — access basis unresolved, see ADR-027 (Proposed). **Not** an "add Playwright + credentials" task — never authenticate to scrape, full stop, until that ADR is resolved |
 | Bring stack up | `make up` then `make migrate` |
 | Run API / worker | `make api` (→ localhost:8000/docs) / `make worker` |
 | Full CI-equivalent check | `make check` (format, lint, mypy, unit tests) |

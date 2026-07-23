@@ -44,10 +44,14 @@ async def seed_sources(session: AsyncSession) -> None:
     """Idempotent seed of the Phase-1 registry. Safe to run repeatedly.
 
     - worldbank: enabled — public donor-portal JSON API, our live Phase-1 source.
-    - egp: registered but DISABLED — egp.gov.et is an authenticated Angular SPA; its
-      tender API needs a logged-in session + Playwright (html_dynamic), which is a
-      later week with the founder's credentials. Registering it now documents intent
-      and reserves the key.
+    - egp: registered but DISABLED — egp.gov.et is a JS-rendered Angular SPA with
+      no public robots.txt. Its data is reachable only via a *logged-in* session,
+      and ADR-027 (docs/ADRs/027-source-access-legality.md, Proposed) holds that
+      automating a credentialed session to extract data may exceed account
+      authorization under Ethiopia's Computer Crime Proclamation 958/2016 — so
+      this source stays disabled pending that ADR's resolution (security review
+      or an official data-sharing agreement with PPA), not pending Playwright
+      engineering time. Registering it now documents intent and reserves the key.
     """
     wanted = [
         {
@@ -65,7 +69,13 @@ async def seed_sources(session: AsyncSession) -> None:
             "name": "Ethiopia e-GP (egp.gov.et)",
             "type": SourceType.HTML_DYNAMIC,
             "base_url": "https://egp.gov.et/egp/",
-            "fetch_config": {"note": "authenticated Angular SPA; needs Playwright + login"},
+            "fetch_config": {
+                "note": (
+                    "JS-rendered, no robots.txt. Tender data needs a login session "
+                    "-- see ADR-027 (Proposed): access basis unresolved, not an "
+                    "engineering blocker."
+                )
+            },
             "cron": "0 * * * *",
             "tos_status": ToSStatus.UNREVIEWED,
             "enabled": False,
