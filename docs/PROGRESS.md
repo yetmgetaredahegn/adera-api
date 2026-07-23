@@ -51,7 +51,8 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [ ] LLM re-rank + grounded "why this fits you" (B3) — Phase 2 — key path is
   proven (see Documents & Extraction above); **no service function calls it
   yet** — this is now an implementation task, not a key-blocked one
-- [ ] Qualification prefilter (drop awarded/noise before matching) — Phase 2, **next up**
+- [ ] Qualification prefilter (drop awarded/noise before matching) — Phase 2, **next up**;
+  draft spec `docs/QUALIFICATION_PREFILTER.md`, owner Temesgen (first task)
 
 ## Public API — M9 · Phase 2
 - [x] `GET /api/v1/tenders` (keyset-paginated) + `GET /api/v1/tenders/{id}` — `feat(api)`; `tests/test_tenders_api.py`
@@ -64,6 +65,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [ ] NCB/ICB classifier + eligibility chips v1 — Phase 2 (M16-lite)
 - [ ] TZ-aware digests (email + Telegram) — Phase 2 (M8)
 - [ ] Eval harness in CI (gates all AI work after it) — Phase 2, high priority
+
+## Reference material / open decisions landed this session (2026-07-23)
+- [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
+- [~] `docs/QUALIFICATION_PREFILTER.md` — open problem statement; design owned by Temesgen (first task)
 
 ---
 
