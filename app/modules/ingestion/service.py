@@ -15,7 +15,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.ingestion.adapters.base import RawTender
-from app.modules.ingestion.models import Tender
+from app.modules.ingestion.models import BiddingTrack as BiddingTrack
+from app.modules.ingestion.models import Tender as Tender
 from app.modules.sources.models import Source
 
 # Fields an adapter is allowed to write onto a tender. Kept explicit so a re-fetch

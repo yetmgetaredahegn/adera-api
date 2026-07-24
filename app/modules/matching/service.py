@@ -23,9 +23,17 @@ from app.kernel.prompts import load_prompt
 from app.kernel.router import Kernel
 from app.modules.ingestion.models import Tender
 from app.modules.ingestion.service import rank_by_embedding
-from app.modules.matching.models import Match, MatchState
+from app.modules.matching.models import (
+    EligibilityVerdict as EligibilityVerdict,
+)
+from app.modules.matching.models import (
+    Match as Match,
+)
+from app.modules.matching.models import (
+    MatchState as MatchState,
+)
 from app.modules.matching.schemas import ExplanationOut
-from app.modules.profiles.models import CompanyProfile
+from app.modules.profiles.models import CompanyProfile as CompanyProfile
 from app.modules.profiles.service import get_profile
 from app.modules.qualification.service import get_qualified_tender_ids
 
