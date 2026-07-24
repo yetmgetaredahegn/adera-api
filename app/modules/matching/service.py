@@ -27,6 +27,7 @@ from app.modules.matching.models import Match, MatchState
 from app.modules.matching.schemas import ExplanationOut
 from app.modules.profiles.models import CompanyProfile
 from app.modules.profiles.service import get_profile
+from app.modules.qualification.service import get_qualified_tender_ids
 
 # Below this cosine similarity a "match" is noise; tune on the eval set later
 # (06 §6 — the floor is also most of NFR-LEGAL-1's honesty, applied to matching).
@@ -116,7 +117,11 @@ async def match_org(
     if profile is None or profile.profile_embedding is None:
         raise ValueError(f"org {org_id} has no embedded profile — build it first (FR-6.1)")
 
-    candidates = await rank_by_embedding(session, profile.profile_embedding, limit=limit)
+    allowed_ids = await get_qualified_tender_ids(session, profile.sectors)
+
+    candidates = await rank_by_embedding(
+        session, profile.profile_embedding, limit=limit, restrict_to_ids=allowed_ids
+    )
 
     existing_ids = set(
         (await session.execute(select(Match.tender_id).where(Match.org_id == org_id))).scalars()

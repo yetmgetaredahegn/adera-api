@@ -118,7 +118,10 @@ async def embed_pending(session: AsyncSession, batch_size: int = 32) -> int:
 
 
 async def rank_by_embedding(
-    session: AsyncSession, query_vector: list[float], limit: int = 10
+    session: AsyncSession,
+    query_vector: list[float],
+    limit: int = 10,
+    restrict_to_ids: list[uuid.UUID] | None = None,
 ) -> list[tuple[Tender, float]]:
     """Nearest tenders to a query vector, as (tender, similarity 0..1).
 
@@ -127,12 +130,11 @@ async def rank_by_embedding(
     build after bulk-load); at current volume a seq scan is fine.
     """
     distance = Tender.embedding.cosine_distance(query_vector)
-    rows = await session.execute(
-        select(Tender, distance.label("distance"))
-        .where(Tender.embedding.is_not(None))
-        .order_by(distance)
-        .limit(limit)
-    )
+    query = select(Tender, distance.label("distance")).where(Tender.embedding.is_not(None))
+    if restrict_to_ids is not None:
+        query = query.where(Tender.id.in_(restrict_to_ids))
+
+    rows = await session.execute(query.order_by(distance).limit(limit))
     return [(tender, 1.0 - float(dist)) for tender, dist in rows.all()]
 
 
