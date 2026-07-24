@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.core.db import Base
 
 # --- model imports: registers tables on Base.metadata -----------------------
+from app.modules.documents import models as documents_models  # noqa: F401
 from app.modules.eligibility import models as eligibility_models  # noqa: F401
 from app.modules.identity import models as identity_models  # noqa: F401
 from app.modules.ingestion import models as ingestion_models  # noqa: F401

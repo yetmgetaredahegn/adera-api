@@ -39,6 +39,7 @@ celery_app.conf.update(
     imports=(
         "app.modules.ingestion.tasks",
         "app.modules.notifications.tasks",
+        "app.modules.documents.tasks",
     ),
     beat_schedule={
         "send-digest-sweep-hourly": {
