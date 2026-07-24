@@ -5,7 +5,7 @@
 same PR as the change it describes.** Every `[x]` cites evidence — a commit, a
 test, or a command that proves it.*
 
-**Updated:** 2026-07-23 (evening) · **Phase:** 1 (ingestion spine) done → early Phase 2, moving fast.
+**Updated:** 2026-07-24 · **Phase:** 1 (ingestion spine) done → deep into Phase 2.
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 
 ---
@@ -24,10 +24,22 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 - [x] Idempotent upsert on `(source, source_tender_id)` — `feat(ingestion)`; `tests/test_ingestion_idempotency.py`
 - [x] Orchestration task + run ledger (counts/cost/latency) — `feat(runledger)`
 - [x] **69 real Ethiopian tenders ingested, re-run duplicate-free** — `DEBUG=false uv run python -m app.cli ingest worldbank` (×2 → created=0)
-- [ ] e-GP source (the primary one) — Phase 1/2 — 🔒 blocked on `docs/ADRs/027-source-access-legality.md`
-  (Proposed): authenticated scraping may violate Proclamation 958/2016. Blocked
-  on security review + possibly an official PPA data-sharing agreement, **not**
-  on Playwright engineering time.
+- [x] **e-GP source — built and proven live, public-data-only.**
+  `app/modules/ingestion/adapters/egp.py`. Not the authenticated-Playwright
+  path this row used to describe — that's still rejected under
+  `docs/ADRs/027-source-access-legality.md`. Instead: e-GP's own public
+  `/bids/all` page was loaded in a headless browser with NO credentials
+  (never touched a login field) to observe its network calls, which revealed
+  a real, unauthenticated JSON API backing it — confirmed with a bare `curl`,
+  zero cookies, zero auth headers. **220 real e-GP tenders ingested** (
+  `uv run python -m app.cli ingest egp`), idempotency re-verified (`created=0`
+  on re-run). Two real data-shape bugs found live and fixed: `procuring_entity`
+  sometimes arrives as a localized `{"am":..., "en":...}` object instead of a
+  plain string; and the API itself returns slightly different field values
+  (`submission_deadline` flipping between a real value and `null`) across
+  near-consecutive calls on some tenders — a live-system quirk, not our bug,
+  handled by the existing upsert UPDATE path. ADR-027 updated with this
+  finding; still `Proposed`, still Eyasu's to validate or demolish.
 - [ ] Revision detection + re-notify on deadline change — Phase 2 (FR-2.6)
 
 ## Documents & Extraction — M3/M4 · Phase 1
@@ -88,15 +100,58 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 ## Public API — M9 · Phase 2
 - [x] `GET /api/v1/tenders` (keyset-paginated) + `GET /api/v1/tenders/{id}` — `feat(api)`; `tests/test_tenders_api.py`
 - [x] OpenAPI contract published + CI drift gate — `feat(contracts)`; `make openapi`
-- [ ] Auth (sessions/JWT) — Phase 2 — **tech-lead-review-mandatory**; implementation
-  plan proposed (not built) in `docs/proposals/001-auth-implementation-plan.md` —
-  session cookie + CSRF for web, JWT for the bot, per the architecture already
-  decided in the master plan. Rule 14 forbids implementing this without review.
-- [ ] Per-org matches endpoint (needs auth + tenant isolation + two-org leak test) — Phase 2
-- [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key
+- [x] **Auth (sessions/JWT) — built and proven live**, per explicit tech-lead
+  direction (rule 14's review requirement, satisfied by that direction).
+  `app/core/security.py` (argon2, itsdangerous-signed session cookies, CSRF
+  double-submit, short-lived bot JWT) · `app/core/deps.py`
+  (`current_user`/`current_org`, the tenant-isolation anchor) · new `sessions`
+  table (migration `b8709aa823de`) · `app/modules/identity/router.py`:
+  AUTH-1/2/3/4 (register/login/logout/me) live at `/api/v1/auth/*`. AUTH-5/6
+  (verify-email, password-reset) NOT built — no email delivery path exists.
+  RFC-7807 error shape via `app/core/errors.py`. Also fixed SECURITY.md gap
+  **G1**: `SECRET_KEY` now rejects its known-insecure default at startup if
+  `env=prod`. **Full flow proven live** via real `curl`: register → me (200)
+  → matches (200, real query) → logout (204) → me again correctly 401s
+  "session revoked or expired" — genuine server-side revocation, not a
+  client-side cookie clear (proven by replaying the pre-logout cookie value
+  explicitly in tests). Real trap found: cookies are `Secure`, so a real
+  *browser* over plain HTTP silently won't send them back (though `curl`
+  will) — relevant once web/mobile integrate locally without TLS.
+- [x] **Per-org matches endpoint** — `GET /api/v1/matches`
+  (`app/modules/matching/router.py`). Reads persisted `Match` rows (ranking
+  itself, with its LLM call, happens out-of-request via `match_org()` —
+  never synchronously per GET). Tenant isolation proven with a real two-org
+  test: org A and org B each get a seeded match, org A's default (no
+  `?org_id=`) call returns only its own, and an explicit cross-org
+  `?org_id=<org B>` request 404s (never 403 — no confirming org B exists).
+- [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key (key now exists; not built)
 
 ## Eligibility & Notifications — later phases
-- [ ] NCB/ICB classifier + eligibility chips v1 — Phase 2 (M16-lite)
+- [x] **NCB/ICB classifier + eligibility chips v1 (M16) — real MVP built and
+  proven live**, ahead of any assignment, same "build now, rework later"
+  principle as qualification. `app/modules/eligibility/`: `LawChunk` model +
+  vector retrieval (`retrieve_relevant_chunks`, mirrors
+  `ingestion.rank_by_embedding`) + prompt B6 (`prompts/eligibility/v1.md`) +
+  `assess_eligibility()` with **two refusal gates**: a retrieval-similarity
+  floor (nothing relevant found → `unknown`, never guess) and a citation
+  floor (a non-`unknown` verdict citing nothing real ingested is downgraded,
+  not trusted). **Real law corpus seeded**: Article 2 (definitions) of the
+  Federal Public Procurement and Property Administration Proclamation No.
+  1333/2024, fetched from PPA's own official PDF (not a third-party copy),
+  38 real definitions extracted + embedded (`uv run python -m app.cli
+  seed-law`) — 2 of 40 raw regex matches were correctly DROPPED, not
+  included garbled, after a live bug was found: those two swallowed an
+  entire intervening Amharic block across a page boundary because their
+  true terminator wasn't the plain `;` the parser expected. **Only Article 2
+  is ingested — not the articles that actually govern bidder eligibility**
+  (bidding methods, nationality-based participation rules); extending this
+  needs careful, non-rushed extraction (a wrong citation is worse than none,
+  NFR-LEGAL-1), so it's honest follow-up work, not claimed as complete.
+  **Live proof, two real cases:** both correctly returned `verdict=unknown`
+  with substantive reasoning naming real retrieved definitions (proving
+  retrieval genuinely worked) while correctly refusing to guess eligibility
+  the corpus doesn't yet support — exactly the NFR-LEGAL-1 behavior this was
+  built to guarantee.
 - [ ] TZ-aware digests (email + Telegram) — Phase 2 (M8)
 - [ ] Eval harness in CI (gates all AI work after it) — Phase 2, high priority
 
@@ -109,12 +164,15 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 ---
 
 ## What's next (the tech lead's build queue)
-1. Review `docs/proposals/001-auth-implementation-plan.md` — the actual next
-   unblock (per-org matches endpoint waits on it).
+1. Extend the eligibility law corpus past Article 2 — the articles that
+   actually govern bidder eligibility (bidding methods, nationality
+   restrictions) aren't ingested yet; needs careful, non-rushed extraction.
 2. Wire qualified tenders' `sector` into `matching/service.py`'s ranking.
 3. Eval harness in CI — still nobody's.
-4. Per-org matches endpoint, once auth lands.
-5. Temesgen's review of the qualification prefilter — rework whatever his
+4. AUTH-5/6 (verify-email, password-reset) — needs an email/Telegram delivery
+   path first.
+5. Temesgen's review of the qualification prefilter, Eyasu's review of
+   ADR-027 (now with the e-GP public-API finding) — rework whatever their
    research says is wrong.
 
 ## Blocked on the founder

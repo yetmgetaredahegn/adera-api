@@ -5,7 +5,12 @@ output shape and the validator that rejects malformed responses before they
 reach the database.
 """
 
+import uuid
+
 from pydantic import BaseModel, Field
+
+from app.modules.ingestion.schemas import TenderOut
+from app.modules.matching.models import MatchState
 
 
 class ExplanationOut(BaseModel):
@@ -17,3 +22,14 @@ class ExplanationOut(BaseModel):
 
     explanation: str
     confidence: float = Field(ge=0.0, le=1.0, default=1.0)
+
+
+class MatchOut(BaseModel):
+    """Public shape for GET /api/v1/matches (org-scoped, FR-7.1)."""
+
+    id: uuid.UUID
+    tender_id: uuid.UUID
+    score: float
+    explanation: str | None
+    state: MatchState
+    tender: TenderOut

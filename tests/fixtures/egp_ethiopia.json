@@ -1,0 +1,480 @@
+{
+  "total": 220,
+  "items": [
+    {
+      "packageId": "b76a55a0-953b-4119-8ffd-dc514f5ae969",
+      "count": 1,
+      "result": [
+        {
+          "id": "ff8ca0ce-7318-488f-bb26-d1ba54b1480b",
+          "lotId": "853cde24-29d5-42cb-aefc-d6ae307bb125",
+          "lotInPackageId": "853cde24-29d5-42cb-aefc-d6ae307bb125",
+          "lotName": "Procurement of Uniforms",
+          "lotDescription": "Baby daycare materials  ",
+          "lotReferenceNo": "MIICSH-NCB-G-0001-2018-PUR",
+          "lotNo": "1",
+          "procurementReferenceNo": "MIICSH-NCB-G-0001-2018-PUR",
+          "procurementCategory": "Goods",
+          "packageId": "b76a55a0-953b-4119-8ffd-dc514f5ae969",
+          "packageInformation": {
+            "name": "Procurement of Uniforms",
+            "branch": {
+              "name": {
+                "am": "\u130d\u12e5 \u12f3\u12ed\u122c\u12ad\u1276\u122c\u1275",
+                "en": "Procurement Directorate"
+              },
+              "isBranch": false
+            },
+            "address": {
+              "town": "Addis Ababa",
+              "email": "jenberendalkachew@gmail.com",
+              "poBox": "433",
+              "street": "Around kebena",
+              "country": "Ethiopia",
+              "postCode": "-",
+              "telephone": {
+                "code": "+251",
+                "number": "902365951"
+              },
+              "roomNumber": "procurement office basement 012"
+            },
+            "award_type": "Item based",
+            "description": "Baby daycare materials  ",
+            "market_type": "National",
+            "bid_currency": null,
+            "reference_no": "MIICSH-NCB-G-0001-2018-PUR",
+            "invitation_date": "2026-07-23 08:30:00.000-07:00",
+            "procurement_type": "Shopping",
+            "procuring_entity": "Menelik II compressive Specialized Hospital",
+            "bid_security_form": [],
+            "procurement_method": "Open",
+            "bid_security_amount": 0,
+            "submission_deadline": "2026-07-24T23:30:00+03:00",
+            "clarification_deadline": "2026-07-25T07:00:00+03:00",
+            "quatation_request_language": "en"
+          },
+          "procurementClassification": [],
+          "spdId": "00000000-0000-0000-0000-000000000000",
+          "submissionDeadline": "2026-07-24T23:30:00+03:00",
+          "openingSchedule": null,
+          "sourceId": "0eb4f9c1-dfd4-4d38-9135-50dc152e3cef",
+          "sourceApplication": "Purchasing",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "Menelik II compressive Specialized Hospital",
+          "timestamp": "2026-07-23T15:07:39.623281+03:00",
+          "invitationDate": "2026-07-23T18:30:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "aa",
+          "originName": {
+            "am": null,
+            "en": "Addis Ababa Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    },
+    {
+      "packageId": "b8815674-2d61-4460-88e4-7404f5fd5f2f",
+      "count": 1,
+      "result": [
+        {
+          "id": "584b8973-9335-4f6f-9c11-e7ecaa97c5eb",
+          "lotId": "dc635978-dfd7-4e9d-8414-6685d3c771a7",
+          "lotInPackageId": "dc635978-dfd7-4e9d-8414-6685d3c771a7",
+          "lotName": "Procurement of Construction Materials",
+          "lotDescription": "Purchase Requisition new Kulfo Cumpus Constraction Matrial Corrugated Sheet",
+          "lotReferenceNo": "AmU-NCB-G-0812-2018-PUR",
+          "lotNo": "1",
+          "procurementReferenceNo": "AmU-NCB-G-0812-2018-PUR",
+          "procurementCategory": "Goods",
+          "packageId": "b8815674-2d61-4460-88e4-7404f5fd5f2f",
+          "packageInformation": {
+            "name": "Procurement of Construction Materials",
+            "branch": {
+              "name": {
+                "am": "Procurement Admin Director",
+                "en": "Procurement Admin Director"
+              },
+              "isBranch": false
+            },
+            "address": {
+              "town": "arba minch",
+              "email": "ppad@amu.edu.et",
+              "poBox": "21",
+              "street": "Arba minch university",
+              "country": "Ethiopia",
+              "postCode": "21",
+              "telephone": {
+                "code": "+251",
+                "number": "920567766"
+              },
+              "roomNumber": "\u1215-200 B \u2013 MC-4531"
+            },
+            "award_type": "Lot based",
+            "description": "Purchase Requisition new Kulfo Cumpus Constraction Matrial Corrugated Sheet",
+            "market_type": "National",
+            "bid_currency": null,
+            "reference_no": "AmU-NCB-G-0812-2018-PUR",
+            "invitation_date": "2026-07-23 08:30:00.000-07:00",
+            "procurement_type": "Shopping",
+            "procuring_entity": "Arbaminch University ",
+            "bid_security_form": [],
+            "procurement_method": "Open",
+            "bid_security_amount": 0,
+            "submission_deadline": "2026-07-24T18:30:00+03:00",
+            "clarification_deadline": "2026-07-22T10:00:00+03:00",
+            "quatation_request_language": "en"
+          },
+          "procurementClassification": [],
+          "spdId": "00000000-0000-0000-0000-000000000000",
+          "submissionDeadline": "2026-07-24T18:30:00+03:00",
+          "openingSchedule": null,
+          "sourceId": "bd2df5e0-6849-4ab1-960f-ee6488681452",
+          "sourceApplication": "Purchasing",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "Arbaminch University ",
+          "timestamp": "2026-07-23T15:21:03.813082+03:00",
+          "invitationDate": "2026-07-23T18:30:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "federal",
+          "originName": {
+            "am": null,
+            "en": "Federal Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    },
+    {
+      "packageId": "efdd388e-b790-435d-8a7e-3b7674a645b4",
+      "count": 1,
+      "result": [
+        {
+          "id": "8023a448-beea-42a8-a56a-c8af67e99e33",
+          "lotId": "72189aa5-669b-4adc-9747-1af9f546aa2d",
+          "lotInPackageId": "72189aa5-669b-4adc-9747-1af9f546aa2d",
+          "lotName": "Procurement of Construction Materials",
+          "lotDescription": "Purchase Requisition new Kulfo Campus Constraction Material Menteninace equipment Purchase",
+          "lotReferenceNo": "AmU-NCB-G-0820-2018-PUR",
+          "lotNo": "1",
+          "procurementReferenceNo": "AmU-NCB-G-0820-2018-PUR",
+          "procurementCategory": "Goods",
+          "packageId": "efdd388e-b790-435d-8a7e-3b7674a645b4",
+          "packageInformation": {
+            "name": "Procurement of Construction Materials",
+            "branch": {
+              "name": {
+                "am": "Procurement Admin Director",
+                "en": "Procurement Admin Director"
+              },
+              "isBranch": false
+            },
+            "address": {
+              "town": "arba minch",
+              "email": "ppad@amu.edu.et",
+              "poBox": "21",
+              "street": "Arba minch university",
+              "country": "Ethiopia",
+              "postCode": "21",
+              "telephone": {
+                "code": "+251",
+                "number": "920567766"
+              },
+              "roomNumber": "\u1215-200 B \u2013 MC-4531"
+            },
+            "award_type": "Lot based",
+            "description": "Purchase Requisition new Kulfo Campus Constraction Material Menteninace equipment Purchase",
+            "market_type": "National",
+            "bid_currency": null,
+            "reference_no": "AmU-NCB-G-0820-2018-PUR",
+            "invitation_date": "2026-07-23 08:30:00.000-07:00",
+            "procurement_type": "Shopping",
+            "procuring_entity": "Arbaminch University ",
+            "bid_security_form": [],
+            "procurement_method": "Open",
+            "bid_security_amount": 0,
+            "submission_deadline": "2026-07-27T18:30:00+03:00",
+            "clarification_deadline": "2026-07-23T10:00:00+03:00",
+            "quatation_request_language": "en"
+          },
+          "procurementClassification": [],
+          "spdId": "00000000-0000-0000-0000-000000000000",
+          "submissionDeadline": "2026-07-27T18:30:00+03:00",
+          "openingSchedule": null,
+          "sourceId": "57ebf0de-8772-405c-8b49-4977ebb39c58",
+          "sourceApplication": "Purchasing",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "Arbaminch University ",
+          "timestamp": "2026-07-23T15:39:15.635811+03:00",
+          "invitationDate": "2026-07-23T18:30:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "federal",
+          "originName": {
+            "am": null,
+            "en": "Federal Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    },
+    {
+      "packageId": "f36417a7-e760-4f86-b195-27623f788129",
+      "count": 1,
+      "result": [
+        {
+          "id": "7ceac24b-effb-49e4-a1df-e7f20c43a53d",
+          "lotId": "ceed7a0c-206b-438f-8f64-6e4c86f87347",
+          "lotInPackageId": "ceed7a0c-206b-438f-8f64-6e4c86f87347",
+          "lotName": "Procurement of Construction Materials",
+          "lotDescription": "Purchase Requisition new Kulfo Campus Mentenace Equipment Morale and Different Nails Purchase",
+          "lotReferenceNo": "AmU-NCB-G-0813-2018-PUR",
+          "lotNo": "1",
+          "procurementReferenceNo": "AmU-NCB-G-0813-2018-PUR",
+          "procurementCategory": "Goods",
+          "packageId": "f36417a7-e760-4f86-b195-27623f788129",
+          "packageInformation": {
+            "name": "Procurement of Construction Materials",
+            "branch": {
+              "name": {
+                "am": "Procurement Admin Director",
+                "en": "Procurement Admin Director"
+              },
+              "isBranch": false
+            },
+            "address": {
+              "town": "arba minch",
+              "email": "ppad@amu.edu.et",
+              "poBox": "21",
+              "street": "Arba minch university",
+              "country": "Ethiopia",
+              "postCode": "21",
+              "telephone": {
+                "code": "+251",
+                "number": "920567766"
+              },
+              "roomNumber": "\u1215-200 B \u2013 MC-4531"
+            },
+            "award_type": "Lot based",
+            "description": "Purchase Requisition new Kulfo Campus Mentenace Equipment Morale and Different Nails Purchase",
+            "market_type": "National",
+            "bid_currency": null,
+            "reference_no": "AmU-NCB-G-0813-2018-PUR",
+            "invitation_date": "2026-07-23 08:30:00.000-07:00",
+            "procurement_type": "Shopping",
+            "procuring_entity": "Arbaminch University ",
+            "bid_security_form": [],
+            "procurement_method": "Open",
+            "bid_security_amount": 0,
+            "submission_deadline": "2026-07-24T18:30:00+03:00",
+            "clarification_deadline": "2026-07-22T10:00:00+03:00",
+            "quatation_request_language": "en"
+          },
+          "procurementClassification": [],
+          "spdId": "00000000-0000-0000-0000-000000000000",
+          "submissionDeadline": "2026-07-24T18:30:00+03:00",
+          "openingSchedule": null,
+          "sourceId": "41adc589-fb05-4323-b6fe-6ceb1a092ddd",
+          "sourceApplication": "Purchasing",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "Arbaminch University ",
+          "timestamp": "2026-07-23T15:21:16.940065+03:00",
+          "invitationDate": "2026-07-23T18:30:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "federal",
+          "originName": {
+            "am": null,
+            "en": "Federal Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    },
+    {
+      "packageId": "9752cee9-7e82-48e3-9520-be064de3b0d5",
+      "count": 1,
+      "result": [
+        {
+          "id": "49138ef3-4d7e-4ff6-9246-cd4d13dc49c6",
+          "lotId": "01380636-5201-4e2a-a519-7fdf95f20466",
+          "lotInPackageId": "01380636-5201-4e2a-a519-7fdf95f20466",
+          "lotName": "Procurement of Uniforms",
+          "lotDescription": "Safety items",
+          "lotReferenceNo": "CMA-NCB-G-0002-2018-PUR",
+          "lotNo": "1",
+          "procurementReferenceNo": "CMA-NCB-G-0002-2018-PUR",
+          "procurementCategory": "Goods",
+          "packageId": "9752cee9-7e82-48e3-9520-be064de3b0d5",
+          "packageInformation": {
+            "name": "Procurement of Uniforms",
+            "branch": {
+              "name": {
+                "am": "\u12a0\u12f2\u1235 \u12a0\u1260\u1263 \u12a8\u1270\u121b \u12e8\u133d\u12f3\u1275 \u12a0\u1235\u1270\u12f3\u12f0\u122d \u12a4\u1300\u1295\u1232 ",
+                "en": "City Government of Addis Ababa Cleansing Management Agency  "
+              },
+              "isBranch": true
+            },
+            "address": {
+              "town": "Addis Ababa",
+              "email": "aregawiyemane082@gmail.com",
+              "poBox": "none",
+              "street": "Eribekentu",
+              "country": "Ethiopia",
+              "postCode": "none",
+              "telephone": {
+                "code": "+251",
+                "number": "112750002"
+              },
+              "roomNumber": "10 th floor / Room 01"
+            },
+            "award_type": "Item based",
+            "description": "Safety items",
+            "market_type": "National",
+            "bid_currency": null,
+            "reference_no": "CMA-NCB-G-0002-2018-PUR",
+            "invitation_date": "2026-07-23 16:40:00.000+03:00",
+            "procurement_type": "Shopping",
+            "procuring_entity": "City Government of Addis Ababa Cleansing Management Agency  ",
+            "bid_security_form": [],
+            "procurement_method": "Open",
+            "bid_security_amount": 0,
+            "submission_deadline": "2026-07-27T10:00:00+03:00",
+            "clarification_deadline": "2026-07-24T16:00:00+03:00",
+            "quatation_request_language": "en"
+          },
+          "procurementClassification": [],
+          "spdId": "00000000-0000-0000-0000-000000000000",
+          "submissionDeadline": "2026-07-27T10:00:00+03:00",
+          "openingSchedule": null,
+          "sourceId": "96524db6-21b3-4993-8a2d-459b535c98cd",
+          "sourceApplication": "Purchasing",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "City Government of Addis Ababa Cleansing Management Agency  ",
+          "timestamp": "2026-07-23T16:50:18.483946+03:00",
+          "invitationDate": "2026-07-23T16:40:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "aa",
+          "originName": {
+            "am": null,
+            "en": "Addis Ababa Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    },
+    {
+      "packageId": "1a9a2803-9930-4c2e-a14b-c507b4412731",
+      "count": 1,
+      "result": [
+        {
+          "id": "69777255-b9d3-45c8-b4be-d0d3c201ed18",
+          "lotId": "e4d27d18-c253-49cf-92cb-8cf64d0133de",
+          "lotInPackageId": "a4777d4d-41c6-4a45-99bb-b555832c6166",
+          "lotName": "Procurement of Machinery",
+          "lotDescription": "Procurement Of Well Electromechanical &Water supply System Work,",
+          "lotReferenceNo": "",
+          "lotNo": "1",
+          "procurementReferenceNo": "EPOS-NCB-W-0052-2018-BID-Open-Re-bid",
+          "procurementCategory": "Works",
+          "packageId": "1a9a2803-9930-4c2e-a14b-c507b4412731",
+          "packageInformation": {
+            "branch": {
+              "name": {
+                "am": "Procurement and Finance Department",
+                "en": "Procurement and Finance Department"
+              },
+              "isBranch": false
+            },
+            "address": {
+              "town": "ADDIS ABABA",
+              "email": "alyinmo@gmail.com",
+              "poBox": "-",
+              "street": "Birchiko condominium",
+              "country": "Ethiopia",
+              "postCode": "0/009",
+              "facsimile": "-",
+              "telephone": {
+                "code": "+251",
+                "number": "934996673"
+              },
+              "roomNumber": "31"
+            },
+            "marketType": "National",
+            "envelopType": "single envelop",
+            "packageName": "Procurement Of Well Electromechanical &Water supply System Work,",
+            "packageNumber": "EPOS-NCB-W-0052-2018-BID-Open-Re-bid",
+            "invitationDate": "2026-07-23T00:00:00+03:00",
+            "procurementType": "Bidding",
+            "procuringEntity": {
+              "am": "Ethiopia Prosthetic and Orthotic Service",
+              "en": "Ethiopia Prosthetic and Orthotic Service"
+            },
+            "procurementMethod": "Open",
+            "packageDescription": "Procurement Of Well Electromechanical &Water supply System Work,",
+            "procurementCategory": "Works",
+            "procurementLanguage": "en"
+          },
+          "procurementClassification": [
+            {
+              "key": "203101000",
+              "level": 1,
+              "order": "2",
+              "title": {
+                "am": "Thoroughfares",
+                "en": "Thoroughfares"
+              },
+              "checked": true,
+              "is_leaf": false,
+              "children": []
+            }
+          ],
+          "spdId": "92e22246-b624-4f95-b1bb-9db8b8f4f666",
+          "submissionDeadline": "2026-08-12T15:00:00+03:00",
+          "openingSchedule": "2026-08-12T15:30:00+03:00",
+          "sourceId": "7ecb4c56-05b1-4129-8dca-fb4895a63c0f",
+          "sourceApplication": "Tendering",
+          "method": "Open",
+          "language": "en",
+          "marketPlace": "National",
+          "procuringEntity": "Ethiopia Prosthetic and Orthotic Service",
+          "timestamp": "2026-07-23T11:44:35.153795+03:00",
+          "invitationDate": "2026-07-23T00:00:00+03:00",
+          "suppliers": null,
+          "isSubmittable": true,
+          "fiscalYearId": null,
+          "origin": "federal",
+          "originName": {
+            "am": null,
+            "en": "Federal Government",
+            "or": null,
+            "tg": null
+          }
+        }
+      ]
+    }
+  ]
+}
