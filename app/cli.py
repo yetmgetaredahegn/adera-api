@@ -6,6 +6,7 @@
     uv run python -m app.cli seed-profiles     # Week-3 spike: 3 demo company profiles
     uv run python -m app.cli embed             # embed tenders that lack vectors
     uv run python -m app.cli qualify           # rule + LLM qualify tenders that lack a verdict
+    uv run python -m app.cli seed-law          # ingest Article 2 (definitions) of Proc. 1333/2024
     uv run python -m app.cli demo              # match every profile + print judgment sheet
 
 This is the "admin dry-run" surface (FR-11.3) until the real admin UI exists.
@@ -200,6 +201,15 @@ async def _qualify() -> None:
         print(f"{status.value}: {counts.get(status.value, 0)}")
 
 
+async def _seed_law() -> None:
+    from app.kernel.embeddings import embed_texts
+    from app.modules.eligibility.ingest import seed_law_corpus
+
+    async with async_session_factory() as session:
+        n = await seed_law_corpus(session, embed_texts)
+    print(f"seeded {n} new law chunks (already-seeded article refs skipped — idempotent)")
+
+
 async def _demo() -> None:
     """The judgment sheet: every profile's top matches, scores visible.
 
@@ -237,7 +247,16 @@ async def _demo() -> None:
                 if r.explanation:
                     print(f'        -> "{r.explanation}"')
         await session.commit()
-    print("\nJudge honestly: relevant? actionable? would a bidder trust it?")
+
+
+async def _dry_run(source_key: str) -> None:
+    from app.modules.sources.service import dry_run_source
+
+    async with async_session_factory() as session:
+        raws = await dry_run_source(session, source_key)
+        print(f"[{source_key}] dry-run parsed {len(raws)} tenders (zero database writes):")
+        for r in raws[:10]:
+            print(f"  - {getattr(r, 'title', str(r))[:80]}")
 
 
 def main() -> None:
@@ -251,6 +270,8 @@ def main() -> None:
             asyncio.run(_seed())
         case "ingest":
             asyncio.run(_ingest(rest[0] if rest else "worldbank"))
+        case "dry-run":
+            asyncio.run(_dry_run(rest[0] if rest else "egp"))
         case "tenders":
             asyncio.run(_tenders())
         case "seed-profiles":
@@ -259,6 +280,8 @@ def main() -> None:
             asyncio.run(_embed())
         case "qualify":
             asyncio.run(_qualify())
+        case "seed-law":
+            asyncio.run(_seed_law())
         case "demo":
             asyncio.run(_demo())
         case _:
