@@ -12,6 +12,7 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.db import engine
+from app.core.errors import register_exception_handlers
 
 
 @asynccontextmanager
@@ -47,10 +48,18 @@ def create_app() -> FastAPI:
 
         return {"ok": all(checks.values()), "checks": checks}
 
+    register_exception_handlers(app)
+
     # Routers mounted here as modules land.
+    from app.modules.identity.router import router as auth_router
     from app.modules.ingestion.router import router as tenders_router
+    from app.modules.matching.router import router as matches_router
+    from app.modules.runledger.router import router as runledger_router
 
     app.include_router(tenders_router)
+    app.include_router(auth_router)
+    app.include_router(matches_router)
+    app.include_router(runledger_router)
     return app
 
 

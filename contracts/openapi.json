@@ -197,6 +197,180 @@
         "title": "RegisterIn",
         "type": "object"
       },
+      "RunLedgerOut": {
+        "description": "Single run ledger entry schema.",
+        "properties": {
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "error_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Detail"
+          },
+          "error_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Kind"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items_created": {
+            "title": "Items Created",
+            "type": "integer"
+          },
+          "items_seen": {
+            "title": "Items Seen",
+            "type": "integer"
+          },
+          "items_unchanged": {
+            "title": "Items Unchanged",
+            "type": "integer"
+          },
+          "items_updated": {
+            "title": "Items Updated",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "tokens_in": {
+            "title": "Tokens In",
+            "type": "integer"
+          },
+          "tokens_out": {
+            "title": "Tokens Out",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "ref",
+          "status",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "items_seen",
+          "items_created",
+          "items_updated",
+          "items_unchanged",
+          "tokens_in",
+          "tokens_out",
+          "cost_usd",
+          "error_kind",
+          "error_detail"
+        ],
+        "title": "RunLedgerOut",
+        "type": "object"
+      },
+      "RunStatus": {
+        "enum": [
+          "running",
+          "success",
+          "failed"
+        ],
+        "title": "RunStatus",
+        "type": "string"
+      },
+      "SpendSummaryOut": {
+        "description": "AI token spend & cost summary (FR-11.5, NFR-COST-1).",
+        "properties": {
+          "failed_runs": {
+            "title": "Failed Runs",
+            "type": "integer"
+          },
+          "successful_runs": {
+            "title": "Successful Runs",
+            "type": "integer"
+          },
+          "total_cost_usd": {
+            "title": "Total Cost Usd",
+            "type": "number"
+          },
+          "total_runs": {
+            "title": "Total Runs",
+            "type": "integer"
+          },
+          "total_tokens_in": {
+            "title": "Total Tokens In",
+            "type": "integer"
+          },
+          "total_tokens_out": {
+            "title": "Total Tokens Out",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_runs",
+          "successful_runs",
+          "failed_runs",
+          "total_tokens_in",
+          "total_tokens_out",
+          "total_cost_usd"
+        ],
+        "title": "SpendSummaryOut",
+        "type": "object"
+      },
       "TenderListOut": {
         "description": "Keyset-paginated page (05 \u00a712 \u2014 stable and O(1) at any depth, unlike OFFSET).\n\n`next_after` is an opaque cursor: pass it back as ?after= to get the next page;\nnull means last page.",
         "properties": {
@@ -514,6 +688,118 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/run-ledger": {
+      "get": {
+        "operationId": "list_runs_api_v1_admin_run_ledger_get",
+        "parameters": [
+          {
+            "description": "filter by task kind",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "filter by task kind",
+              "title": "Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RunLedgerOut"
+                  },
+                  "title": "Response List Runs Api V1 Admin Run Ledger Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Runs",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/run-ledger/spend": {
+      "get": {
+        "operationId": "get_spend_summary_api_v1_admin_run_ledger_spend_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 7,
+              "maximum": 90,
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpendSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Spend Summary",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_route_api_v1_auth_login_post",
