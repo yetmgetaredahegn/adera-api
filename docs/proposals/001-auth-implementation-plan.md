@@ -112,3 +112,7 @@ two-org leak test). Modified: `app/main.py` (mount the identity router),
   Prompt B mentions "review the auth design before it's built") happen against
   this proposal, or separately?** Recommend: against this one, so his review
   and this plan converge into one implementation rather than two competing ones.
+
+## Answers to the open questions
+- Session lifetime: keep access tokens short-lived (e.g., 5–20 minutes). Use refresh tokens stored in an HttpOnly cookie; if using cookies, include CSRF mitigations (e.g., SameSite + CSRF token).
+- Password reset delivery: use a transactional email provider (e.g., Resend) to send time-limited password reset links.
