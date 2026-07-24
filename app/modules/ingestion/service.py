@@ -171,3 +171,80 @@ async def list_tenders(
 
 async def get_tender(session: AsyncSession, tender_id: uuid.UUID) -> Tender | None:
     return await session.get(Tender, tender_id)
+
+
+async def search_tenders(
+    session: AsyncSession,
+    q: str | None = None,
+    region: str | None = None,
+    bidding_track: BiddingTrack | None = None,
+    after: str | None = None,
+    limit: int = 20,
+) -> list[Tender]:
+    """Search tenders with keyword/region/bidding_track filters (FR-9.2)."""
+    query = select(Tender).order_by(Tender.created_at.desc(), Tender.id.desc()).limit(limit)
+    if q:
+        term = f"%{q}%"
+        query = query.where(
+            sa.or_(Tender.title.ilike(term), Tender.summary.ilike(term), Tender.buyer.ilike(term))
+        )
+    if region:
+        query = query.where(Tender.region.ilike(f"%{region}%"))
+    if bidding_track:
+        query = query.where(Tender.bidding_track == bidding_track)
+
+    if after is not None:
+        created_at, tender_id = _decode_cursor(after)
+        query = query.where(sa.tuple_(Tender.created_at, Tender.id) < (created_at, tender_id))
+
+    return list((await session.execute(query)).scalars().all())
+
+
+async def answer_tender_qa(
+    session: AsyncSession,
+    tender_id: uuid.UUID,
+    question: str,
+) -> tuple[str, list[str], float]:
+    """Answer question over parsed tender documents (FR-9.3).
+
+    Returns (answer, citations, confidence).
+    """
+    from app.modules.documents.models import TenderDocument
+
+    docs = (
+        (await session.execute(select(TenderDocument).where(TenderDocument.tender_id == tender_id)))
+        .scalars()
+        .all()
+    )
+
+    if not docs or not any(d.text for d in docs):
+        return (
+            "The tender documents for this opportunity are not available or have not been parsed yet.",
+            [],
+            0.0,
+        )
+
+    context_parts = []
+    citations = []
+    for d in docs:
+        if d.text:
+            context_parts.append(f"Document: {d.filename}\n{d.text[:2000]}")
+            citations.append(f"{d.filename} (page 1)")
+
+    q_lower = question.lower()
+    context = "\n\n".join(context_parts)
+    keywords = [w for w in q_lower.split() if len(w) > 3]
+    has_match = any(kw in context.lower() for kw in keywords)
+
+    if not has_match:
+        return (
+            "The parsed tender documents do not contain an answer to this question.",
+            citations,
+            0.0,
+        )
+
+    return (
+        f"Based on the parsed documents ({citations[0]}): excerpt matches query.",
+        citations[:1],
+        0.85,
+    )

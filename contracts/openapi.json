@@ -390,6 +390,58 @@
         "title": "TenderOut",
         "type": "object"
       },
+      "TenderQAIn": {
+        "description": "Question over a tender's parsed documents (FR-9.3).",
+        "properties": {
+          "question": {
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "TenderQAIn",
+        "type": "object"
+      },
+      "TenderQAOut": {
+        "description": "Answer with citations or refusal (FR-9.3, prompt B4).",
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "tender_id": {
+            "format": "uuid",
+            "title": "Tender Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tender_id",
+          "question",
+          "answer",
+          "citations",
+          "confidence"
+        ],
+        "title": "TenderQAOut",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -812,6 +864,123 @@
         ]
       }
     },
+    "/api/v1/tenders/search": {
+      "get": {
+        "operationId": "search_tenders_api_v1_tenders_search_get",
+        "parameters": [
+          {
+            "description": "search query",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "search query",
+              "title": "Q"
+            }
+          },
+          {
+            "description": "filter by region",
+            "in": "query",
+            "name": "region",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "filter by region",
+              "title": "Region"
+            }
+          },
+          {
+            "description": "filter by bidding track",
+            "in": "query",
+            "name": "bidding_track",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BiddingTrack"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "filter by bidding track",
+              "title": "Bidding Track"
+            }
+          },
+          {
+            "description": "opaque cursor from next_after",
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "opaque cursor from next_after",
+              "title": "After"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenderListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Tenders",
+        "tags": [
+          "tenders"
+        ]
+      }
+    },
     "/api/v1/tenders/{tender_id}": {
       "get": {
         "operationId": "get_tender_api_v1_tenders__tender_id__get",
@@ -850,6 +1019,59 @@
           }
         },
         "summary": "Get Tender",
+        "tags": [
+          "tenders"
+        ]
+      }
+    },
+    "/api/v1/tenders/{tender_id}/qa": {
+      "post": {
+        "operationId": "tender_qa_api_v1_tenders__tender_id__qa_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tender_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tender Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenderQAIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenderQAOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Tender Qa",
         "tags": [
           "tenders"
         ]

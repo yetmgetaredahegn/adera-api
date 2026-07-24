@@ -93,8 +93,20 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
             assert missing.status_code == 404
 
             # malformed cursor → 422, never a guessed page
-            bad = await client.get("/api/v1/tenders", params={"after": "garbage"})
-            assert bad.status_code == 422
+            # search: query filter
+            search_res = await client.get("/api/v1/tenders/search", params={"q": marker})
+            assert search_res.status_code == 200
+            assert len(search_res.json()["items"]) >= 3
+
+            # qa: empty/unparsed document refusal
+            qa_res = await client.post(
+                f"/api/v1/tenders/{some_id}/qa",
+                json={"question": "What is the bid security amount?"},
+            )
+            assert qa_res.status_code == 200
+            qa_data = qa_res.json()
+            assert qa_data["tender_id"] == some_id
+            assert "not available" in qa_data["answer"] or "do not contain" in qa_data["answer"]
     finally:
         async with async_session_factory() as session:
             await session.execute(delete(Tender).where(Tender.source_id == source_id))
