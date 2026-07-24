@@ -113,8 +113,6 @@ two-org leak test). Modified: `app/main.py` (mount the identity router),
   this proposal, or separately?** Recommend: against this one, so his review
   and this plan converge into one implementation rather than two competing ones.
 
-  ## answers for above open question
-  - session lifetime shall be not more that 20 minute and not less that 5 minute since session datas move over the networks they need to be keep short lived. as result access token shall be short lived while refresh token shall be stored in http-only format. since there is xss(cross site scriptig)
-  - the password resent can be done using resend transactional email service providor.
-  - ??
-  - 
+## Answers to the open questions
+- Session lifetime: keep access tokens short-lived (e.g., 5–20 minutes). Use refresh tokens stored in an HttpOnly cookie; if using cookies, include CSRF mitigations (e.g., SameSite + CSRF token).
+- Password reset delivery: use a transactional email provider (e.g., Resend) to send time-limited password reset links.
