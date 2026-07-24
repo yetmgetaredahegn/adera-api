@@ -38,15 +38,15 @@ revision:  ## Autogenerate a migration: make revision m="add x"
 	uv run alembic revision --autogenerate -m "$(m)"
 
 fmt:  ## Format
-	uv run ruff format app tests
-	uv run ruff check --fix app tests
+	uv run ruff format app tests evals
+	uv run ruff check --fix app tests evals
 
 lint:  ## Lint (no fixes)
-	uv run ruff format --check app tests
-	uv run ruff check app tests
+	uv run ruff format --check app tests evals
+	uv run ruff check app tests evals
 
 type:  ## Type-check
-	uv run mypy app
+	uv run mypy app evals
 
 test-unit:  ## Pure-logic tests
 	uv run pytest tests -m "not integration"

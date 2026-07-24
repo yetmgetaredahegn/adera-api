@@ -21,6 +21,9 @@ dependencies = [
     "httpx>=0.28",
     "argon2-cffi>=23.1",
     "python-multipart>=0.0.20",
+    "itsdangerous>=2.2",   # signed session cookies (docs/05 §3 auth model)
+    "pyjwt>=2.10",         # short-lived bot service-account tokens (same model)
+    "email-validator>=2.2", # pydantic's EmailStr silently skips validation without this
 ]
 
 [project.optional-dependencies]
@@ -29,6 +32,7 @@ pipeline = [
     "selectolax>=0.3.27",
     "pypdfium2>=4.30",
     "boto3>=1.35",          # Cloudflare R2 (S3-compatible) via the storage adapter
+    "playwright>=1.48",     # HTML_DYNAMIC sources (05 §4) -- JS-rendered pages, never with credentials
 ]
 # Week 2-3: the AI Kernel
 ai = [
@@ -77,7 +81,7 @@ packages = ["app"]
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-src = ["app", "tests"]
+src = ["app", "tests", "evals"]
 
 [tool.ruff.lint]
 select = [
@@ -100,6 +104,8 @@ ignore = [
 "tests/**" = ["S101"]            # asserts are the point in tests
 "app/core/config.py" = ["S105"]  # field names that look like secrets
 "app/cli.py" = ["T201"]          # a CLI is exactly where print() belongs
+"evals/**" = ["T201"]            # eval harness CLI is where print() belongs
+"tests/test_config_secret_key_guard.py" = ["S106"]  # the known insecure default, tested by name
 
 # NFR-INTL-2: money is integer minor units; float arithmetic is banned in money paths.
 # Enforced here as a lint rule so the ban is mechanical, not cultural.
@@ -118,7 +124,7 @@ plugins = ["pydantic.mypy"]
 exclude = ["^migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "pgvector.*", "selectolax.*", "litellm.*", "sentence_transformers.*", "boto3.*"]
+module = ["celery.*", "pgvector.*", "selectolax.*", "litellm.*", "sentence_transformers.*", "boto3.*", "pypdfium2.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------
