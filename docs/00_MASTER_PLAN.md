@@ -1,11 +1,11 @@
 # ADERA (አደራ) — The AI-Native Bridge to Ethiopian Tenders
-## Master Plan v2.1 · Business + SRS + Architecture + Execution
+## Master Plan v2.2 · Business + SRS + Architecture + Execution
 
 | | |
 |---|---|
 | **Brand** | ADERA ("አደራ" — a sacred entrustment). Clearance = Gate G-NAME. Backups: AWAJ, ASHENEF |
-| **Version** | 2.1 — readability restructure · real-person persona rule · poster verification (KYB) · market-verified local pricing · regulatory-minimization doctrine |
-| **Date** | 2026-07-10 |
+| **Version** | 2.2 — **consumer audience narrowed to diaspora/foreign (ADR-029); local is supply-side only (facilitator/poster)** · **cross-source tender identity / dedupe (ADR-028)** · v2.1's readability restructure, real-person persona rule, poster verification (KYB), market-verified local pricing, and regulatory-minimization doctrine all carry forward |
+| **Date** | 2026-07-25 |
 | **Owner** | Yetmgeta (founder + Claude Code as second engineer) |
 | **Status** | Source of truth. Any change contradicting this file requires a new ADR (§12.3) |
 
@@ -49,10 +49,9 @@
 
 ## 1. Executive Summary
 
-**ADERA** is an AI-native tender-intelligence and execution bridge for Ethiopia, serving two demand engines on one platform:
+**ADERA** is an AI-native tender-intelligence and execution bridge for Ethiopia. **The consumer is diaspora and foreign companies only (ADR-029, v2.2)** — the three things nobody sells them together: (1) AI matching with plain-language "why this fits you," (2) an **Eligibility & Compliance Engine** answering *"can I bid on this, and what exactly do I need?"* with citations into Ethiopian procurement law, and (3) a **vetted marketplace of local facilitators** who execute the physical realities — document purchase, bid securities (CPOs), printing, sealed submission, follow-ups — with proof-of-submission artifacts a bidder in Seattle can trust.
 
-- **Engine A — Local (retained v1 wedge):** Ethiopian SMEs get personalized, explained tender matches instead of category dumps — priced inside the local market reality (§4).
-- **Engine B — Global (primary monetization):** the Ethiopian diaspora and foreign companies get the three things nobody sells them together: (1) AI matching with plain-language "why this fits you," (2) an **Eligibility & Compliance Engine** answering *"can I bid on this, and what exactly do I need?"* with citations into Ethiopian procurement law, and (3) a **vetted marketplace of local facilitators** who execute the physical realities — document purchase, bid securities (CPOs), printing, sealed submission, follow-ups — with proof-of-submission artifacts a bidder in Seattle can trust.
+**Ethiopian-owned local companies are supply side, not demand.** They never receive AI matching, eligibility verdicts, digests, or tender Q&A; they participate as **vetted facilitators** (executing physical steps for remote bidders) and **KYB-verified tender posters** (§10, M14/M17) — both Phase 3. This retires v2.1's "Engine A — Local" demand hypothesis; see ADR-029 for the decision, the capability matrix, and what it changes downstream (pricing §4.1, gates §19/ADR-023, personas §8).
 
 Organizations can also **post their own tenders** — but only verified, licensed businesses (§10, M17), because bidder safety is a feature, not a disclaimer.
 
@@ -71,17 +70,19 @@ Organizations can also **post their own tenders** — but only verified, license
 - Law: **Proclamation No. 1333/2024** (replaced 649/2009): local-preference margins, SOEs bound to competitive processes; NCB effectively favors domestic bidders (foreigners generally need a local JV/partner); ICB open to foreign firms with local agent, authenticated docs, EIC registration where applicable, bid security via a recognized local bank. *(Primary-source confirmation = Gate G-LAW.)*
 - Diaspora: est. 2.5–3M abroad; multi-billion-USD annual remittances (verify NBE figure); explicit policy push for participation. Permission to bid is not the blocker — information, compliance clarity, and physical execution are. **That blocker is the product.**
 
-### 2.2 Three-sided model
+### 2.2 Three-sided model (v2.2: local is supply-side only, ADR-029)
 ```
-BIDDERS (demand)                     FACILITATORS (supply)              POSTERS (supply)
-A1 Diaspora & foreign — PRIMARY $    Vetted agents, law firms,          KYB-verified businesses
-A2 Local SMEs — retained v1 wedge    consultants, couriers (list FREE)  posting their own tenders
-      │ USD/ETB subscriptions              │ 10% engagement fee               │ posting fee
+BIDDERS (demand — diaspora/foreign ONLY)   FACILITATORS (supply, local)         POSTERS (supply, local)
+A1 Diaspora & foreign — the only payer     Vetted agents, law firms,            KYB-verified businesses
+                                            consultants, couriers (list FREE)    posting their own tenders
+      │ USD subscriptions                        │ 10% engagement fee                 │ posting fee
       └────────────────────► ADERA PLATFORM ◄──────────────────────────────────┘
    Ingestion → Extraction → Qualification → Matching + Explanations
    Eligibility & Compliance Engine · Marketplace (discover→engage→proof→review)
    TZ-aware notifications · Q&A · Calendar · Portal · Posting & AI distribution
 ```
+Local Ethiopian companies appear ONLY on the right (facilitator/poster) — never as a bidder audience. A diaspora-owned company registered inside Ethiopia is still `org_type=diaspora` (FR-1.6: `org_type` is the org's relationship to Ethiopia, `country` is where it's registered) — it remains a full paying bidder, with domestic NCB standing besides.
+
 Cold start: tender supply = scraping (no chicken-and-egg); facilitator supply = founder-recruited; bidder demand = free tier + eligibility-SEO + diaspora channels; posters last, once eyeballs exist.
 
 ### 2.3 Competition (pricing now market-verified via research; hands-on teardown = Gate G-TEAR)
@@ -103,13 +104,10 @@ Cold start: tender supply = scraping (no chicken-and-egg); facilitator supply = 
 ## 4. Revenue Model & Pricing
 
 ### 4.1 Subscriptions (Stream 1 — launches first)
-Local tiers are **recalibrated to verified market prices** (2merkato ≈333–730/mo-equivalent; iChereta ≈327/mo; Chereta 200/mo): a no-brand entrant cannot open at 2–3× incumbents; ADERA prices at a modest AI premium instead.
+**v2.2 (ADR-029): Local Free/Pro/Business are RETIRED as consumer tiers** — local orgs are supply-side (facilitator/poster), never a bidder subscriber. Consumer billing is USD-only, which needs only one rail (materially de-risks ADR-016) — **this does NOT retire the ETB rail overall**: G-LIC is still required for facilitator payouts (M15) and ETB posting fees (M17), both untouched by this change.
 
 | Tier | Price | Includes |
 |---|---|---|
-| Local Free | ETB 0 | 24h-delayed digest, 1 sector, limited browse (lead magnet + Telegram loop) |
-| **Local Pro** | **ETB 449/mo** (or 1,199/quarter) | Instant alerts, AI matching + "why," 3 sectors, calendar sync, 20 Q&A/mo |
-| **Local Business** | **ETB 1,499/mo** | 5 seats, all sectors, 60 Q&A/mo, exports |
 | Global Free | $0 | Weekly digest, eligibility chips on 3 tenders/mo, browse |
 | **Global Pro** | **$79/mo** | Full matching + explanations, unlimited eligibility verdicts + checklists, 60 Q&A/mo, TZ-aware instant alerts, calendar |
 | **Global Business** | **$249/mo** | 5 seats, compliance-matrix extraction, priority facilitator matching, 200 Q&A/mo, API/export |
@@ -123,7 +121,7 @@ Global anchoring: consultants charge thousands; global suites $600–$1,850/mo; 
 - **Stream 5 [C, Phase 5]:** on-platform paid bid-document distribution for posters (market-verified pattern: ETB 300–500/doc) — requires payments maturity + licensing (§6).
 
 ### 4.3 Unit economics
-AI COGS <$0.03/tender (prefilter + cheap-tier LLM + local embeddings) → <$30/mo at MVP volume. Rails cost ~3–6%. Contribution: Global Pro ≈ $72+/mo; Local Pro ≈ ETB 420+/mo; a $150 print-and-submit engagement yields ≈$15 at near-zero marginal cost. **Break-even on lean infra = one Global Pro subscriber.**
+AI COGS <$0.03/tender (prefilter + cheap-tier LLM + local embeddings) → <$30/mo at MVP volume. Rails cost ~3–6%. Contribution: Global Pro ≈ $72+/mo; a $150 print-and-submit engagement yields ≈$15 at near-zero marginal cost. **Break-even on lean infra = one Global Pro subscriber** — unchanged by ADR-029; it never depended on Local Pro.
 
 ## 5. Go-to-Market
 1. **Eligibility-content SEO (sleeper weapon):** English pages answering exact high-intent queries — "Can a US company bid on Ethiopian government tenders?", "Diaspora guide to CPOs", "NCB vs ICB in Ethiopia" — cited from the law corpus, funneling to Global Free. Nobody owns these queries.
@@ -131,7 +129,7 @@ AI COGS <$0.03/tender (prefilter + cheap-tier LLM + local embeddings) → <$30/m
 3. **Foreign contractors:** trade.gov Ethiopia-guidance readers, AmCham/EU councils, donor-project contractor lists.
 4. **Facilitators:** founder personally vets 10–15 Addis law/consulting/logistics firms; they co-market because free qualified foreign demand flows to them.
 5. **Design partners:** 10 global + 10 local firms, 3 months free for weekly feedback; testimonials feed channels 1–3.
-6. **Telegram loop (A2):** free daily sector digest channel → bot onboarding.
+6. **Telegram loop (repurposed, ADR-029):** was framed as A2 local-bidder digest; A2 no longer exists as a demand hypothesis. Kept running as a cheap channel, **repurposed to measure facilitator/poster supply interest** (recruitment inquiries, "list my firm" clicks) — a real Phase-3 input. Not unilaterally decided here; flagged for founder confirmation (see ADR-023 consequences and ADR-029 §"Validation gates").
 
 ## 6. Regulatory Posture (Exposure-Minimization by Design)
 
@@ -164,7 +162,7 @@ AI COGS <$0.03/tender (prefilter + cheap-tier LLM + local embeddings) → <$30/m
 | **P2 — Foreign company BD manager** | Non-Ethiopian contractor/supplier pursuing ICB or donor-funded ET projects | Name ___ · Company ___ · Market ___ · Interview date ___ · Pains ___ · Quote ___ |
 | **P3 — Local facilitator** | Addis law-firm associate / procurement consultant / logistics operator with license, capacity, and appetite for foreign clients | Name ___ · Firm ___ · Services ___ · License verified ___ · LOI signed ___ |
 | **P4 — Tender poster** | Procurement officer at a licensed company/NGO that publishes tenders | Name ___ · Org ___ · Annual postings ___ · Current channel & cost ___ |
-| **P5 — Local SME bid manager (A2, retained v1 wedge)** | Ethiopian SME that bids regularly; currently on 2merkato/iChereta/Telegram channels | Name ___ · Company ___ · Sector ___ · Current spend ___ · Quote ___ |
+| ~~P5 — Local SME bid manager (A2)~~ | **Retired, ADR-029 (v2.2):** local companies are never a bidder persona — the demand-side A2 hypothesis this persona served is gone. P3/P4 are now the local-side personas. | — |
 | **P6 — Admin/Operator** | **Cast: Yetmgeta (founder)** — curation, vetting, pipeline health, spend, disputes | ✔ real |
 
 ## 9. Scope
@@ -179,7 +177,7 @@ Priorities: **[M]**ust (MVP), **[S]**hould (fast-follow), **[C]**ould (Phase 4+)
 FR-1.1 [M] Email/password + verification; sessions/JWT. FR-1.2 [M] Orgs, members, RBAC (owner/member/admin). FR-1.3 [M] Notification prefs (channels, instant/digest, quiet hours). FR-1.4 [S] Telegram deep-link account linking. FR-1.5 [C] Google OAuth. **FR-1.6 [M] `org_type ∈ {local, diaspora, foreign}` + country + timezone — drives eligibility logic, currency, channel defaults.**
 
 **M2 — Source Registry & Ingestion**
-FR-2.1 [M] Admin source registry (type html_static/html_dynamic/pdf/api, fetch config, cron, rate limit, ToS status, enabled). FR-2.2 [M] Scheduled runs → run ledger. FR-2.3 [M] Idempotent upsert on (source, source_tender_id); first/last_seen; raw payload stored. FR-2.4 [M] Failure alerting + backoff. FR-2.5 [M] robots.txt, identified UA, per-source rate limits, raw cache to R2. FR-2.6 [S] Revision detection → re-qualify + re-notify on deadline change. FR-2.7 [C] Source health scores.
+FR-2.1 [M] Admin source registry (type html_static/html_dynamic/pdf/api, fetch config, cron, rate limit, ToS status, enabled). FR-2.2 [M] Scheduled runs → run ledger. FR-2.3 [M] Idempotent upsert on (source, source_tender_id); first/last_seen; raw payload stored. FR-2.4 [M] Failure alerting + backoff. FR-2.5 [M] robots.txt, identified UA, per-source rate limits, raw cache to R2. FR-2.6 [S] Revision detection → re-qualify + re-notify on deadline change. FR-2.7 [C] Source health scores. **FR-2.8 [M] Cross-source tender identity (ADR-028): every tender belongs to a `tender_group` representing one real-world opportunity; two sources publishing the same tender collapse to one group (blocked on normalized buyer + closing_at within ±1 day, never on title similarity alone); a same-source re-advertisement with a different deadline is always a distinct group. Conflicting deadlines within the window flag the group (`has_conflict`), never silently pick one.**
 
 **M3 — Document Acquisition & Parsing**
 FR-3.1 [M] Fetch/store tender PDFs (size cap); text-layer extraction. FR-3.2 [S] OCR path (Tesseract eng+amh; PaddleOCR bake-off) with per-page confidence. FR-3.3 [S] Table extraction (Docling/Camelot); unparseable = flagged, never mangled. FR-3.4 [M] Every artifact records method, confidence, language, char count.
@@ -194,10 +192,10 @@ FR-5.1 [M] Zero-cost keyword/rule prefilter first. FR-5.2 [M] LLM qualification 
 FR-6.1 [M] Guided profile builder (paste description/site → LLM-drafted chips → confirm; median <3 min). FR-6.2 [M] Local BGE-M3 embeddings for profiles + tenders. FR-6.3 [S] Behavior signals (saves/dismisses) enrich ranking.
 
 **M7 — Matching**
-FR-7.1 [M] Vector similarity → candidate set → cheap-LLM re-rank/threshold → match records. FR-7.2 [M] Grounded one-paragraph fit explanation using only stated profile facts (eval-gated). FR-7.3 [M] Save/dismiss; dismissed never resurface; expired drop out. FR-7.4 [S] Per-user sensitivity. FR-7.5 [C] Learning-to-rank. **FR-7.6 [M] Eligibility pre-filter: tenders the org's type cannot bid (e.g., NCB without JV) are down-ranked and labeled — never silently hidden.**
+FR-7.1 [M] Vector similarity → candidate set → cheap-LLM re-rank/threshold → match records. FR-7.2 [M] Grounded one-paragraph fit explanation using only stated profile facts (eval-gated). FR-7.3 [M] Save/dismiss; dismissed never resurface; expired drop out. FR-7.4 [S] Per-user sensitivity. FR-7.5 [C] Learning-to-rank. **FR-7.6 [M] Eligibility pre-filter: tenders the org's type cannot bid (e.g., NCB without JV) are down-ranked and labeled — never silently hidden. FR-7.7 [M] Matching is diaspora/foreign-only (ADR-029): a `local`-type org raises `audience_restricted`, never a silently empty result. FR-7.8 [M] Matches are keyed on the tender's GROUP (ADR-028), not the raw row — a sibling tender from another source in an already-matched group is never matched (or explained) again.**
 
 **M8 — Notifications**
-FR-8.1 [M] Daily digest (email + Telegram) at user-local time. FR-8.2 [M] Instant alerts (paid) ≤15 min from qualifying match. FR-8.3 [M] Google Calendar deadline events (opt-in, idempotent). FR-8.4 [M] Channel-level idempotency (user, tender, channel, event-type). FR-8.5 [M] Admin daily ops summary. FR-8.6 [S] T-7/3/1 reminders on saved tenders. **FR-8.7 [M] All delivery timezone-aware; countdowns render user-local with EAT alongside. WhatsApp [S] behind ADR-021.**
+FR-8.1 [M] Daily digest (email + Telegram) at user-local time. FR-8.2 [M] Instant alerts (paid) ≤15 min from qualifying match. FR-8.3 [M] Google Calendar deadline events (opt-in, idempotent). FR-8.4 [M] Channel-level idempotency **keyed on (user, tender GROUP, channel, event-type) — ADR-028; a sibling tender in the same group never triggers a second send**. FR-8.5 [M] Admin daily ops summary. FR-8.6 [S] T-7/3/1 reminders on saved tenders. **FR-8.7 [M] All delivery timezone-aware; countdowns render user-local with EAT alongside. WhatsApp [S] behind ADR-021. FR-8.8 [M] Digests are diaspora/foreign-only (ADR-029): a local org is silently skipped in the sweep — an ordinary outcome for a bulk background job, not a client-facing error.**
 
 **M9 — Portal**
 FR-9.1 [M] Public SEO tender pages (facts + link-out; no full-text republication; schema.org). FR-9.2 [M] Authenticated ranked feed; filters; semantic + keyword search. FR-9.3 [M] Tender detail: fields with confidence dots, fit explanation, **eligibility chips**, actions, and RAG Q&A over that tender's docs (streamed, cited, quota'd, refuses when unanswerable). FR-9.4 [M] **English default (ADR-018)**, Amharic toggle, Afaan Oromo [S]; Ethiopic fonts. FR-9.5 [S] Saved searches; CSV export (Business). **FR-9.6 [M] Prices display in org currency with the other as hint.**
@@ -221,7 +219,7 @@ FR-14.1 [M] Free profiles: services (doc purchase, print/bind/submit, CPO facili
 FR-15.1 [M] Lifecycle `requested → quoted → accepted → in_progress → proof_submitted → completed | disputed | cancelled`; transitions timestamped, actor-attributed, notified. FR-15.2 [M] Payment-adapter with pluggable rails; **launch = subscriptions on USD rail + engagement fees invoiced; platform holds no client funds (ADR-020)**. FR-15.3 [S] Provider-held milestone payments where the rail supports it; release on proof acceptance. FR-15.4 [S] Double-entry ledger for any platform-mediated balances (ADR-017; NFR-MONEY-1/2). FR-15.5 [S] ETB payouts via Chapa/telebirr + statements (post G-LIC). FR-15.6 [M] Proof-of-submission artifact (stamped receipt photo/scan + metadata), immutable in R2; bidder accepts or disputes within X days; vision pre-screen [C]. FR-15.7 [M] Dispute flow: freeze → structured evidence → admin decision ≤7 days → documented outcome; refund per rail.
 
 **M16 — Eligibility & Compliance Engine (the differentiator)**
-FR-16.1 [M] Per-tender `bidding_track ∈ {NCB, ICB, donor, private, unknown}` + confidence + evidence snippet. FR-16.2 [M] Eligibility verdict chips per org_type with expandable cited reasoning into the versioned law corpus; `unknown` said plainly; every verdict carries disclaimer + facilitator-referral CTA (NFR-LEGAL-1). FR-16.3 [M] Requirement checklist per tender (documents, authentication, bid-security type/amount, EIC/agent/JV prerequisites, deadline chain) — editable, exportable, feeds M12. FR-16.4 [S] Compliance-matrix extraction (requirement↔response "shredding"), Business tier. FR-16.5 [M] Law-corpus management: versioned docs (Proclamation 1333/2024, directives, circulars) with effective dates, admin review on updates, eval-gated retrieval (Gate G-LAW).
+FR-16.1 [M] Per-tender `bidding_track ∈ {NCB, ICB, donor, private, unknown}` + confidence + evidence snippet. FR-16.2 [M] Eligibility verdict chips per org_type with expandable cited reasoning into the versioned law corpus; `unknown` said plainly; every verdict carries disclaimer + facilitator-referral CTA (NFR-LEGAL-1). FR-16.3 [M] Requirement checklist per tender (documents, authentication, bid-security type/amount, EIC/agent/JV prerequisites, deadline chain) — editable, exportable, feeds M12. FR-16.4 [S] Compliance-matrix extraction (requirement↔response "shredding"), Business tier. FR-16.5 [M] Law-corpus management: versioned docs (Proclamation 1333/2024, directives, circulars) with effective dates, admin review on updates, eval-gated retrieval (Gate G-LAW). **FR-16.6 [M] Eligibility is diaspora/foreign-only (ADR-029): a `local`-type org raises `audience_restricted` before any retrieval or LLM call, never a silent `unknown` (which would look like a corpus gap, not an audience gate).**
 
 **M17 — Tender Posting & Distribution (verified businesses only)**
 **FR-17.0 [M] Poster KYB before anything publishes:** valid trade license + commercial registration + TIN submitted → document review (automated checks [S], admin approval [M]) → "Verified Business" badge; evidence retained; annual re-verification; no KYB, no post (NFR-TRUST-2). FR-17.1 [M] Self-serve structured post + doc upload → moderation queue → published as `source='direct'` into the same pipeline (embedding, matching, notification). FR-17.2 [M] Distribution report to poster (fitting orgs notified — aggregate, privacy-safe; views; doc downloads). FR-17.3 [M] Free in beta; ~ETB 2,500+VAT after (config-driven); invoice/receipt. FR-17.4 [S] Featured placement, repost tooling. **FR-17.5 [M] Anti-scam moderation:** dedupe against scraped corpus, buyer-domain/contact plausibility checks, user report button, takedown SLA ≤24h, moderation log retained.
@@ -269,7 +267,7 @@ Budgeter/breaker · Trace store.
 ```
 
 ### 12.3 ADR Log (append-only; one-line index — full rationale lives in the ADR files under docs/ADRs/)
-001 Modular monolith + workers (not microservices) · 002 Python everywhere (not polyglot) · 003 FastAPI (not Django/Ninja/Nest for this system) · 004 REST + OpenAPI (not GraphQL) · 005 Celery + Beat + Redis · 006 Postgres + pgvector only (no dedicated vector DB yet) · 007 Playwright + httpx/selectolax (not Selenium/Puppeteer/Scrapy) · 008 Code-owned pipeline; n8n retired to shadow-run oracle (not n8n/Zapier/Make in product) · 009 Local BGE-M3 embeddings + LiteLLM completions · 010 Next.js SSR frontend (SEO pages are a growth channel) · 011 No WebSockets/live bidding absent evidence (sealed-bid reality) · 012 Docker Compose on one VPS; Kubernetes rejected at this scale · 013 R2 behind a storage adapter · 014 AI Kernel is a Phase-1 commitment (agents need config, not re-architecture) · 015 Agent autonomy advances only through evidence gates · **016 Payments rails:** Stripe-direct impossible from Ethiopia; MoR (Paddle/LemonSqueezy — payout verified at G-PAY) or intl-card PSP (Flutterwave/Chapa) for USD; **any live NBE-regulated local rail (BirrLink/Chapa/telebirr) requires merchant KYC (trade license + registration + TIN + corporate account) → Gate G-LIC**; Stripe Atlas ($500 Delaware LLC) reserved for the investor path · **017** Double-entry ledger, no float money math · **018** English-first i18n (Amharic toggle retained) · **019** Brand = ADERA, backups AWAJ/ASHENEF, Gate G-NAME · **020** Marketplace money sequencing: invoiced lead-gen → provider-held milestones → escrow only with counsel · **021** WhatsApp deferred behind Telegram/email metrics · **022 Regulatory-exposure minimization by design:** platform = software + intermediary; legal advice, fund custody, payment processing, and bid submission are pushed to licensed/human third parties; posters and facilitators are verified (KYB/vetting) so unlicensed actors never transact through ADERA; founder registers the business (eTrade) as the one honest prerequisite for local rails.
+001 Modular monolith + workers (not microservices) · 002 Python everywhere (not polyglot) · 003 FastAPI (not Django/Ninja/Nest for this system) · 004 REST + OpenAPI (not GraphQL) · 005 Celery + Beat + Redis · 006 Postgres + pgvector only (no dedicated vector DB yet) · 007 Playwright + httpx/selectolax (not Selenium/Puppeteer/Scrapy) · 008 Code-owned pipeline; n8n retired to shadow-run oracle (not n8n/Zapier/Make in product) · 009 Local BGE-M3 embeddings + LiteLLM completions · 010 Next.js SSR frontend (SEO pages are a growth channel) · 011 No WebSockets/live bidding absent evidence (sealed-bid reality) · 012 Docker Compose on one VPS; Kubernetes rejected at this scale · 013 R2 behind a storage adapter · 014 AI Kernel is a Phase-1 commitment (agents need config, not re-architecture) · 015 Agent autonomy advances only through evidence gates · **016 Payments rails:** Stripe-direct impossible from Ethiopia; MoR (Paddle/LemonSqueezy — payout verified at G-PAY) or intl-card PSP (Flutterwave/Chapa) for USD; **any live NBE-regulated local rail (BirrLink/Chapa/telebirr) requires merchant KYC (trade license + registration + TIN + corporate account) → Gate G-LIC**; Stripe Atlas ($500 Delaware LLC) reserved for the investor path · **017** Double-entry ledger, no float money math · **018** English-first i18n (Amharic toggle retained) · **019** Brand = ADERA, backups AWAJ/ASHENEF, Gate G-NAME · **020** Marketplace money sequencing: invoiced lead-gen → provider-held milestones → escrow only with counsel · **021** WhatsApp deferred behind Telegram/email metrics · **022 Regulatory-exposure minimization by design:** platform = software + intermediary; legal advice, fund custody, payment processing, and bid submission are pushed to licensed/human third parties; posters and facilitators are verified (KYB/vetting) so unlicensed actors never transact through ADERA; founder registers the business (eTrade) as the one honest prerequisite for local rails. *(023–027: validation-by-instrument, RAG strategy, polyrepo split, CI/CD posture, source-access legality — expanded files under `docs/ADRs/`, not yet backfilled into this index.)* · **028 Cross-source tender identity:** cluster tenders from different sources into a `tender_group` (blocked on normalized buyer + closing_at ±1 day, never title similarity alone); a same-source re-advertisement with a new deadline is always a distinct group; conflicting deadlines flag, never silently merge · **029 Consumer audience narrowing:** diaspora/foreign only as bidder consumer; local orgs are supply-side (facilitator/poster) only, gated on the existing `org_type` field — no new column, no new persona invented.
 
 ## 13. Technology Stack
 Carried from v1 in full: **Python 3.12 · FastAPI · Celery+Beat+Redis · Postgres 16+pgvector · SQLAlchemy 2/Alembic · Playwright + httpx/selectolax · pypdfium2/pdfplumber · Tesseract(eng+amh)/PaddleOCR bake-off · Docling(+Camelot) · BGE-M3 via sentence-transformers (local, 1024-dim) · LiteLLM · Pydantic structured outputs · Next.js 14 + TS + Tailwind + shadcn/ui + next-intl + TanStack Query + OpenAPI-generated client · Noto Sans Ethiopic · aiogram (Telegram) · Brevo/Resend · Google Calendar API · Caddy · Docker Compose on Hetzner (~€9/mo) · GitHub Actions → GHCR → SSH deploy · Cloudflare R2 · Sentry + Uptime Kuma + JSON logs · pytest/testcontainers/Playwright-e2e/k6 + the eval harness in CI.**
@@ -322,6 +320,12 @@ Break-even on lean burn = **one Global Pro subscriber** ($79 → ~$72 net). Ten 
 -- tender_documents, extractions(field confidences), qualifications, matches(unique(tender,org)),
 -- qa_messages, golden_labels, notifications_log(idempotency spine), calendar_events,
 -- subscriptions, run_ledger.  Indexes: HNSW on vectors, partial on is_open, GIN on raw_data.
+
+-- v2.2 (ADR-028): cross-source tender identity
+tender_groups(id pk, has_conflict bool default false, created_at, updated_at)
+-- tenders.group_id fk -> tender_groups.id, not null, indexed. Matching/notifications
+-- key on group_id, not tenders.id (FR-7.8, FR-8.4). has_conflict=true when member
+-- tenders disagree on closing_at -- the group is never notified while conflicted.
 
 -- v2.1 marketplace / compliance / money
 facilitators(id pk, org_id fk, headline, coverage text[], languages text[],

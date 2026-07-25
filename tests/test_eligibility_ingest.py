@@ -11,7 +11,11 @@ FIXTURE = Path(__file__).parent / "fixtures" / "proclamation_1333_2024_article2_
 
 
 def _flat_text() -> str:
-    return FIXTURE.read_text()
+    # Explicit encoding: the fixture is UTF-8 (it carries real Ge'ez-script
+    # text), and `Path.read_text()` with no encoding falls back to the
+    # platform's locale default -- cp1252 on Windows -- which raises
+    # UnicodeDecodeError on this file. Found running the suite on Windows.
+    return FIXTURE.read_text(encoding="utf-8")
 
 
 def test_parse_definitions_finds_thirty_eight() -> None:

@@ -40,3 +40,14 @@ class OrgOut(BaseModel):
 class MeOut(BaseModel):
     user: UserOut
     org: OrgOut
+
+
+class RegisterOut(BaseModel):
+    """AUTH-1 response. Carries `org` and `audience_note` (ADR-029) so a
+    `local`-type org learns immediately what it can and can't do here rather
+    than discovering an empty feed later — a silent gap is indistinguishable
+    from a bug (see `identity.service.require_bidder_audience`)."""
+
+    user: UserOut
+    org: OrgOut
+    audience_note: str | None = None

@@ -5,8 +5,14 @@
 same PR as the change it describes.** Every `[x]` cites evidence — a commit, a
 test, or a command that proves it.*
 
-**Updated:** 2026-07-24 · **Phase:** 1 (ingestion spine) done → deep into Phase 2.
+**Updated:** 2026-07-25 · **Phase:** 1 (ingestion spine) done → deep into Phase 2.
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
+
+**This update corrects the previous version of this file, which under-reported its
+own branch** — it still listed sector-wiring, the eval harness, and TZ-aware
+digests as not-started while all three were already built in earlier commits on
+the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
+(AGENTS.md rule 17) applies to this file matching reality, not just to new work.
 
 ---
 
@@ -93,9 +99,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
   Built ahead of Temesgen's research at the tech lead's explicit direction —
   `docs/QUALIFICATION_PREFILTER.md` documents exactly what exists and the
   open questions he still owns; not a design he must accept as-is.
-- [ ] Qualified tenders' `sector` isn't consumed downstream yet —
-  `matching/service.py` still has no sector pre-filter wired in. Real next
-  wiring task, not started.
+- [x] **Qualified tenders' `sector` IS wired into ranking** — `match_org()`
+  restricts candidates via `get_qualified_tender_ids(session, profile.sectors)`
+  before embedding rank (`app/modules/matching/service.py`,
+  `app/modules/qualification/service.py`). Previously listed as `[ ]` in this
+  file in error — it landed in an earlier commit on this chain.
 
 ## Public API — M9 · Phase 2
 - [x] `GET /api/v1/tenders` (keyset-paginated) + `GET /api/v1/tenders/{id}` — `feat(api)`; `tests/test_tenders_api.py`
@@ -152,8 +160,96 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
   retrieval genuinely worked) while correctly refusing to guess eligibility
   the corpus doesn't yet support — exactly the NFR-LEGAL-1 behavior this was
   built to guarantee.
-- [ ] TZ-aware digests (email + Telegram) — Phase 2 (M8)
-- [ ] Eval harness in CI (gates all AI work after it) — Phase 2, high priority
+- [x] **TZ-aware digest scheduling — built, not yet SENDING.** `app/modules/notifications/`:
+  `should_send_digest_now()` (zoneinfo, DST-correct), `record_notification()`
+  (insert-then-send idempotency), hourly Celery Beat sweep
+  (`notifications.send_digest_sweep`). **Honest gap: no email/Telegram sender
+  exists** — the scheduling and no-duplicates spine works; nothing is actually
+  delivered yet. Previously listed as `[ ]` in this file in error.
+- [x] **Eval harness — in CI, real but thin.** `evals/harness.py` + `evals/scorers.py`,
+  golden sets under `evals/golden/` (1–3 rows each), `make eval-smoke` wired into
+  `.github/workflows/ci.yml`. Ran clean this session (`uv run python -m
+  evals.harness --smoke` → extraction/qualification/explanation all PASS). The
+  gate exists; the golden sets are too small to have much teeth yet — growing
+  them (Appendix C: "grow from every admin correction and user error-report")
+  is real follow-up, not done. Previously listed as `[ ]` in this file in error.
+
+## ADR-028 / ADR-029 — audience narrowing + cross-source dedupe (2026-07-25)
+
+- [x] **ADR-029: consumer audience narrowed to diaspora/foreign.** Local orgs
+  are supply-side only (facilitator/poster, Phase 3); the gate gate is
+  `org_type == LOCAL` on the existing `org_type` field (`identity/service.py::
+  require_bidder_audience`) — no new column. Enforced as a service-layer guard,
+  not a query filter, so it can't be silently forgotten:
+  - `matching.service.match_org()` raises `AudienceRestricted`, proven live —
+    `make demo` prints `audience_restricted: local orgs don't receive AI
+    matching (ADR-029)` for the one local demo profile kept specifically to
+    prove the gate, while the other two (diaspora, foreign) still match normally.
+  - `GET /api/v1/matches` 403s `audience_restricted` for a local org even
+    without calling `match_org()` (it reads persisted rows directly) —
+    `tests/test_matching_audience_gate.py`.
+  - `eligibility.service.assess_eligibility()` raises before any retrieval or
+    LLM call — `tests/test_eligibility_service.py::test_audience_restricted_for_local_org`.
+  - `notifications.service.get_user_digest_items()` silently skips local orgs
+    (a bulk sweep, not a client-facing call) — `tests/test_notifications_audience_gate.py`.
+  - `POST /auth/register` response now carries `org` + `audience_note`
+    (non-null, states plainly what a local org can't do) — new `RegisterOut`
+    schema, contract regenerated. **Q&A (`POST /tenders/{id}/qa`) is NOT
+    gated** — it has no auth at all yet (public, unquota'd), a pre-existing
+    contract-shape gap; the audience gate will apply once auth lands there.
+  - Self-selection (a local company registering as `diaspora`) is an accepted
+    Phase-2 risk, not solved — recorded in the ADR, mitigated later by KYB.
+- [x] **ADR-028: cross-source tender identity.** New `tender_groups` table
+  (migration `a1c3e8f92b71`), `tenders.group_id` (NOT NULL, backfilled for
+  pre-existing rows in the same migration). `find_or_create_group()`
+  (`ingestion/service.py`) blocks on normalized buyer + `closing_at` within
+  ±1 day against tenders from OTHER sources — **never** on title similarity,
+  and never across a same-source re-advertisement with a different deadline
+  (the founder's binding constraint, protected by construction: different
+  deadlines fall outside the window, so they can never share a group).
+  Conflicting deadlines within the window flag `has_conflict`, never silently
+  pick one. Matching (`match_org`) and notifications
+  (`make_idempotency_key`/`record_notification`) now key on `group_id`, not
+  the raw tender row — a sibling tender from another source in an
+  already-matched/already-notified group is never matched or notified again.
+  **Proven live** against the real corpus: 60 World Bank + 266 e-GP tenders
+  ingested, `distinct_groups == total_tenders` before and after a second
+  idempotent ingest run (no drift). Honest gap: today's real corpus has zero
+  cross-source overlaps to demonstrate an actual multi-source group forming
+  (WB is 8/60 rows with any `closing_at` at all, mostly Contract Awards with
+  none — nothing to block on safely most of the time, which is the *correct*
+  fallback per ADR-028 step 1, not a bug) — the mechanism itself is proven
+  against controlled fixtures in `tests/test_tender_grouping.py` and
+  `tests/test_matching_group_dedup.py` (four and one test respectively,
+  covering: two sources collapse to one group; same-source re-advertisement
+  with a new deadline stays separate; a deadline conflict within the window
+  flags `has_conflict` rather than merging silently; nothing-to-block-on never
+  guesses a merge; two sibling tenders in one group produce exactly one
+  persisted `Match`). Steps 3–4 (embedding similarity, LLM tie-break for the
+  uncertain band) are explicitly deferred to a follow-up behind an eval set —
+  not built, not claimed as built.
+  Public contract: `TenderCard.also_listed_on[]` is a **planned, not-yet-built**
+  addition (`docs/11_API_REFERENCE.md` TEN-1) — `group_id` exists on the row,
+  nothing exposes it yet.
+- [x] **Branch hygiene, landing the `feat/backend-core` chain.** Removed
+  committed debris (`patch_ingestion.py`, `test_cookie*.py`) · fixed
+  `notifications/service.py`/`tasks.py` import order (ruff `I`) · settled the
+  rule-1 ruling (cross-module model-type imports go through the owning
+  module's `service.py` re-export idiom — `AGENTS.md` §4.1) and applied it to
+  `notifications`/`matching.router` · fixed a real pre-existing bug found
+  running the suite on Windows (`tests/test_eligibility_ingest.py` read its
+  UTF-8/Amharic fixture with no explicit encoding, failing under cp1252) ·
+  closed two test-cleanup gaps that silently leaked `Source`/`Tender` rows on
+  every green run (`test_matches_tenant_isolation.py` never deleted its
+  `Source`; this session's own new `test_notifications_audience_gate.py` had
+  the same gap on first draft, fixed before landing).
+- [x] **Full verification, this session:** `make check` (ruff format + lint +
+  mypy strict) green · migrations apply clean from scratch, including the new
+  `a1c3e8f92b71` · **110/110 tests pass** · live ingest proven on both real
+  sources (worldbank 60, egp 266; idempotent re-run `created=0`/`0`) ·
+  `make eval-smoke` green (extraction/qualification/explanation all PASS) ·
+  `make openapi` regenerated cleanly (the only diff is the deliberate
+  `RegisterOut` shape change).
 
 ## Reference material / open decisions landed this session (2026-07-23)
 - [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
@@ -167,15 +263,32 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · 🔑 blocked.
 1. Extend the eligibility law corpus past Article 2 — the articles that
    actually govern bidder eligibility (bidding methods, nationality
    restrictions) aren't ingested yet; needs careful, non-rushed extraction.
-2. Wire qualified tenders' `sector` into `matching/service.py`'s ranking.
-3. Eval harness in CI — still nobody's.
-4. AUTH-5/6 (verify-email, password-reset) — needs an email/Telegram delivery
-   path first.
-5. Temesgen's review of the qualification prefilter, Eyasu's review of
+2. AUTH-5/6 (verify-email, password-reset) — needs an email/Telegram delivery
+   path first. Same blocker means the digest scheduler has nothing to send
+   through yet either (item 3).
+3. A real notification sender (Brevo/Resend for email, aiogram for Telegram) —
+   the digest scheduling/idempotency spine is done and proven; nothing is
+   actually delivered.
+4. ADR-028 steps 3–4 (embedding-similarity + LLM tie-break for the uncertain
+   dedup band) behind a labeled eval set — deliberately deferred this session.
+5. `also_listed_on[]` on the public tender contract (TEN-1) — `group_id`
+   exists, nothing exposes it yet; needed before the web/mobile card can show
+   "also listed on e-GP, World Bank."
+6. Confirm or reject the Telegram-channel repurposing proposed in ADR-029
+   (local-bidder digest → facilitator/poster supply signal) — founder call,
+   not decided by this session.
+7. Temesgen's review of the qualification prefilter, Eyasu's review of
    ADR-027 (now with the e-GP public-API finding) — rework whatever their
    research says is wrong.
+8. Growing the eval golden sets past 1–3 rows each — the CI gate exists but
+   has little statistical teeth yet (Appendix C).
 
 ## Blocked on the founder
 - ADR-027 resolution (security review of source-access legality; possibly a
-  PPA data-sharing conversation) → unblocks the primary tender source. Not the
-  same blocker as before — see `docs/SECURITY.md` and `docs/ADRs/027-*`.
+  PPA data-sharing conversation) — the adapter itself is built and proven live
+  (220+ e-GP tenders, public-API-only, no-login-ever rule enforced by
+  construction); the review is about the ADR's `Proposed` status, not the code.
+- ADR-029's Telegram-repurposing question (item 6 above).
+- Whether `adera-mobile`'s offline/low-bandwidth investment still deserves the
+  same priority now that its bidder audience is diaspora-abroad, not local SMEs
+  on patchy Ethiopian data (see that repo's `docs/PROGRESS.md`).

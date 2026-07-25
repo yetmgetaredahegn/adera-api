@@ -11,12 +11,12 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, select
 
 
-def _register_payload(email: str) -> dict[str, str]:
+def _register_payload(email: str, org_type: str = "local") -> dict[str, str]:
     return {
         "email": email,
         "password": "correct horse battery staple",
         "org_name": f"Test Org {email}",
-        "org_type": "local",
+        "org_type": org_type,
         "country": "ET",
         "timezone": "Africa/Addis_Ababa",
     }
@@ -49,7 +49,7 @@ async def test_register_login_me_logout_flow() -> None:
         ) as client:
             r = await client.post("/api/v1/auth/register", json=_register_payload(email))
             assert r.status_code == 201, r.text
-            assert r.json()["email"] == email
+            assert r.json()["user"]["email"] == email
             assert "adera_session" in client.cookies
             assert "adera_csrf" in client.cookies
 
@@ -70,6 +70,43 @@ async def test_register_login_me_logout_flow() -> None:
             client.cookies.set("adera_session", session_cookie_before_logout)
             replay = await client.get("/api/v1/auth/me")
             assert replay.status_code == 401, replay.text
+    finally:
+        await _cleanup_by_email(email)
+
+
+@pytest.mark.integration
+async def test_register_local_org_gets_audience_note() -> None:
+    """ADR-029: a local org must be told plainly at registration what it can't
+    do here -- never left to discover a silently empty feed."""
+    email = f"test-{uuid.uuid4()}@example.com"
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="https://example.com"
+        ) as client:
+            r = await client.post(
+                "/api/v1/auth/register", json=_register_payload(email, org_type="local")
+            )
+            assert r.status_code == 201, r.text
+            body = r.json()
+            assert body["org"]["org_type"] == "local"
+            assert body["audience_note"] is not None
+            assert "facilitator" in body["audience_note"]
+    finally:
+        await _cleanup_by_email(email)
+
+
+@pytest.mark.integration
+async def test_register_diaspora_org_has_no_audience_note() -> None:
+    email = f"test-{uuid.uuid4()}@example.com"
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="https://example.com"
+        ) as client:
+            r = await client.post(
+                "/api/v1/auth/register", json=_register_payload(email, org_type="diaspora")
+            )
+            assert r.status_code == 201, r.text
+            assert r.json()["audience_note"] is None
     finally:
         await _cleanup_by_email(email)
 

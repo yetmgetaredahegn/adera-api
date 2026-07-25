@@ -6,12 +6,15 @@ from app.modules.eligibility.models import LawChunk
 from app.modules.eligibility.schemas import Citation, EligibilityOut
 from app.modules.eligibility.service import _unknown, assess_eligibility
 from app.modules.identity.models import Org, OrgType
+from app.modules.identity.service import AudienceRestricted
 from app.modules.ingestion.models import BiddingTrack, Tender
 from app.modules.matching.models import EligibilityVerdict
 
 
 def _org() -> Org:
-    return Org(name="Test Org", org_type=OrgType.LOCAL, country="ET")
+    # diaspora/foreign only (ADR-029) -- a LOCAL org never reaches this path;
+    # see test_audience_restricted_for_local_org below for that gate.
+    return Org(name="Test Org", org_type=OrgType.DIASPORA, country="US")
 
 
 def _tender() -> Tender:
@@ -44,6 +47,16 @@ def test_unknown_helper_shape() -> None:
     assert result.reasons == ["test reason"]
     assert result.citations == []
     assert result.confidence == 0.0
+
+
+@pytest.mark.asyncio
+async def test_audience_restricted_for_local_org() -> None:
+    """ADR-029: local orgs are supply-side only -- raises, never a silent
+    `unknown` verdict (which would look like a corpus gap, not an audience
+    gate)."""
+    local_org = Org(name="Local Org", org_type=OrgType.LOCAL, country="ET")
+    with pytest.raises(AudienceRestricted):
+        await assess_eligibility(session=None, org=local_org, tender=_tender(), kernel=None)  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio

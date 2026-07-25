@@ -24,7 +24,7 @@ from app.kernel.prompts import load_prompt
 from app.kernel.router import Kernel
 from app.modules.eligibility.models import LawChunk
 from app.modules.eligibility.schemas import EligibilityOut
-from app.modules.identity.service import Org
+from app.modules.identity.service import Org, require_bidder_audience
 from app.modules.ingestion.service import BiddingTrack, Tender
 from app.modules.matching.service import EligibilityVerdict
 
@@ -103,6 +103,12 @@ def _unknown(reason: str) -> EligibilityOut:
 async def assess_eligibility(
     session: AsyncSession, org: Org, tender: Tender, kernel: Kernel | None
 ) -> EligibilityOut:
+    """Raises `identity.service.AudienceRestricted` for a `local`-type org
+    (ADR-029) -- the router maps this to 403 `audience_restricted`, never a
+    silent `unknown` verdict, which would look like a corpus gap rather than
+    an audience gate."""
+    require_bidder_audience(org)
+
     if kernel is None:
         return _unknown("no kernel available for this assessment")
 

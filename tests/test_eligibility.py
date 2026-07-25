@@ -6,6 +6,7 @@ from app.modules.eligibility.service import (
     classify_bidding_track,
 )
 from app.modules.identity.models import Org, OrgType
+from app.modules.identity.service import AudienceRestricted
 from app.modules.ingestion.models import BiddingTrack, Tender
 from app.modules.matching.models import EligibilityVerdict
 
@@ -57,10 +58,23 @@ def test_classify_bidding_track_unknown() -> None:
 
 @pytest.mark.asyncio
 async def test_assess_eligibility_unknown_when_no_kernel() -> None:
-    org = Org(org_type=OrgType.LOCAL, country="ET", name="Test Org")
+    # diaspora/foreign only (ADR-029) -- a LOCAL org never reaches this path.
+    org = Org(org_type=OrgType.DIASPORA, country="US", name="Test Org")
     tender = Tender(title="Test Tender", bidding_track=BiddingTrack.NCB)
 
     res = await assess_eligibility(session=None, org=org, tender=tender, kernel=None)
     assert res.verdict == EligibilityVerdict.UNKNOWN
     assert res.confidence == 0.0
     assert "no kernel available" in res.reasons[0]
+
+
+@pytest.mark.asyncio
+async def test_assess_eligibility_audience_restricted_for_local() -> None:
+    """ADR-029: local orgs are supply-side only -- raises, never a silent
+    `unknown` verdict (which would look like a corpus gap, not an audience
+    gate)."""
+    org = Org(org_type=OrgType.LOCAL, country="ET", name="Test Org")
+    tender = Tender(title="Test Tender", bidding_track=BiddingTrack.NCB)
+
+    with pytest.raises(AudienceRestricted):
+        await assess_eligibility(session=None, org=org, tender=tender, kernel=None)

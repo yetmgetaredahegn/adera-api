@@ -7,7 +7,7 @@ import uuid
 
 import pytest
 from app.core.db import async_session_factory
-from app.modules.ingestion.models import BiddingTrack, Tender
+from app.modules.ingestion.models import BiddingTrack, Tender, TenderGroup
 from app.modules.qualification.models import Qualification, QualificationMethod
 from app.modules.qualification.service import qualify_tender
 from app.modules.sources.models import Source, SourceType, ToSStatus
@@ -27,6 +27,8 @@ async def test_qualify_tender_updates_in_place_on_rerun() -> None:
             enabled=False,
         )
         session.add(source)
+        group = TenderGroup()
+        session.add(group)
         await session.flush()
 
         tender = Tender(
@@ -37,6 +39,7 @@ async def test_qualify_tender_updates_in_place_on_rerun() -> None:
             region="Ethiopia",
             raw_data={"notice_type": "Contract Award"},
             bidding_track=BiddingTrack.ICB,
+            group_id=group.id,
         )
         session.add(tender)
         await session.flush()

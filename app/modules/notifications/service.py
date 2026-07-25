@@ -8,9 +8,9 @@ import uuid
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
-from app.modules.identity.models import OrgMember
-from app.modules.ingestion.models import Tender
-from app.modules.matching.models import Match, MatchState
+from app.modules.identity.service import OrgMember, OrgType, get_org
+from app.modules.ingestion.service import Tender
+from app.modules.matching.service import Match, MatchState
 from app.modules.notifications.models import (
     NotificationChannel,
     NotificationEventType,
@@ -41,25 +41,33 @@ def should_send_digest_now(
 
 def make_idempotency_key(
     user_id: uuid.UUID,
-    tender_id: uuid.UUID,
+    group_id: uuid.UUID,
     channel: NotificationChannel,
     event_type: NotificationEventType,
 ) -> str:
-    return f"{user_id}:{tender_id}:{channel.value}:{event_type.value}"
+    """Keyed on the tender's GROUP (ADR-028), not the tender row itself --
+    otherwise the same real-world opportunity notifying via a second source's
+    tender row (a different `tender_id`, same `group_id`) would defeat FR-8.4
+    entirely and re-notify a user about something they already saw."""
+    return f"{user_id}:{group_id}:{channel.value}:{event_type.value}"
 
 
 async def record_notification(
     session: AsyncSession,
     user_id: uuid.UUID,
     tender_id: uuid.UUID,
+    group_id: uuid.UUID,
     channel: NotificationChannel,
     event_type: NotificationEventType,
 ) -> bool:
-    """Insert-then-send check (FR-8.4).
+    """Insert-then-send check (FR-8.4, extended by ADR-028 to key on `group_id`).
 
-    Returns True if notification record was created (new), or False if it was already sent.
+    `tender_id` still names the specific row that was actually shown (FK +
+    display); `group_id` is what idempotency is computed from. Returns True if
+    a notification record was created (new), or False if it was already sent
+    for this group.
     """
-    key = make_idempotency_key(user_id, tender_id, channel, event_type)
+    key = make_idempotency_key(user_id, group_id, channel, event_type)
     existing = (
         await session.execute(select(NotificationLog).where(NotificationLog.idempotency_key == key))
     ).scalar_one_or_none()
@@ -85,7 +93,14 @@ async def record_notification(
 async def get_user_digest_items(
     session: AsyncSession, user_id: uuid.UUID, limit: int = 10
 ) -> list[DigestItemOut]:
-    """Fetch un-notified matches for the user's primary organization."""
+    """Fetch un-notified matches for the user's primary organization.
+
+    Local orgs are silently skipped here (ADR-029: supply-side only, never a
+    digest recipient) -- unlike the synchronous `matching`/`eligibility`
+    guards, this is a bulk background sweep over every user, so "not this
+    user" is an ordinary, expected outcome, not a client-facing error to
+    surface as 403.
+    """
     membership = (
         (await session.execute(select(OrgMember).where(OrgMember.user_id == user_id)))
         .scalars()
@@ -95,6 +110,10 @@ async def get_user_digest_items(
         return []
 
     org_id = membership.org_id
+    org = await get_org(session, org_id)
+    if org is None or org.org_type == OrgType.LOCAL:
+        return []
+
     matches = (
         (
             await session.execute(
@@ -124,6 +143,7 @@ async def get_user_digest_items(
             items.append(
                 DigestItemOut(
                     tender_id=t.id,
+                    group_id=t.group_id,
                     title=t.title,
                     buyer=t.buyer,
                     region=t.region,

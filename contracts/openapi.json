@@ -197,6 +197,34 @@
         "title": "RegisterIn",
         "type": "object"
       },
+      "RegisterOut": {
+        "description": "AUTH-1 response. Carries `org` and `audience_note` (ADR-029) so a\n`local`-type org learns immediately what it can and can't do here rather\nthan discovering an empty feed later \u2014 a silent gap is indistinguishable\nfrom a bug (see `identity.service.require_bidder_audience`).",
+        "properties": {
+          "audience_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience Note"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgOut"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          }
+        },
+        "required": [
+          "user",
+          "org"
+        ],
+        "title": "RegisterOut",
+        "type": "object"
+      },
       "RunLedgerOut": {
         "description": "Single run ledger entry schema.",
         "properties": {
@@ -982,7 +1010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserOut"
+                  "$ref": "#/components/schemas/RegisterOut"
                 }
               }
             },

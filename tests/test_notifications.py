@@ -33,7 +33,11 @@ def test_should_send_digest_now_diaspora_timezone() -> None:
 
 
 def test_idempotency_key_format() -> None:
+    # ADR-028: keyed on group_id, not tender_id -- so a sibling tender row
+    # from another source in the same group never defeats FR-8.4.
     u_id = uuid.uuid4()
-    t_id = uuid.uuid4()
-    key = make_idempotency_key(u_id, t_id, NotificationChannel.EMAIL, NotificationEventType.DIGEST)
-    assert key == f"{u_id}:{t_id}:email:digest"
+    group_id = uuid.uuid4()
+    key = make_idempotency_key(
+        u_id, group_id, NotificationChannel.EMAIL, NotificationEventType.DIGEST
+    )
+    assert key == f"{u_id}:{group_id}:email:digest"

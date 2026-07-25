@@ -56,6 +56,16 @@ Conventions used below: run everything from the repo root; `psql` means
 **Verify:** `make check` green; both ingest runs printed; `psql -c "SELECT items_created, items_unchanged FROM run_ledger ORDER BY started_at DESC LIMIT 2;"`.
 **DoD:** fixture test green · live run twice with zero duplicates · source row present, `enabled=false` · nothing outside `adapters/`, the registry, seed, and tests was touched.
 
+**ADR-028 note (cross-source identity):** a new adapter needs no extra code for
+grouping — `upsert_tender` calls `find_or_create_group` automatically for every
+new row, keyed on `buyer` + `closing_at` against tenders from OTHER sources. Make
+sure your adapter populates `buyer` and `closing_at` whenever the source actually
+states them (a null either field just means "can't group this one safely," which
+is the correct, honest fallback — never fabricate a buyer name or a deadline to
+get a match). If the source publishes a distinct reference/bid number, note it in
+the adapter's docstring even though nothing consumes it yet — exact-match grouping
+on a real reference number (ADR-028 step 1) is a documented follow-up, not built.
+
 ---
 
 ## R2 — Change the schema (add table / column)

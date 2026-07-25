@@ -17,7 +17,8 @@ and a vetted facilitator marketplace.
 - **Architecture:** Python 3.12 modular monolith. Three processes from one codebase —
   `api` (FastAPI) · `worker` (Celery, io/cpu queues) · `beat` (scheduler) — over ONE
   Postgres 16 (+pgvector) and ONE Redis. Frontend (Phase 2): Next.js 14.
-- **Source of truth:** `docs/00_MASTER_PLAN.md` (v2.1). Requirements are cited by id:
+- **Source of truth:** `docs/00_MASTER_PLAN.md` (v2.2 — consumer audience narrowed to
+  diaspora/foreign, ADR-029; cross-source tender identity, ADR-028). Requirements are cited by id:
   `FR-x.y` (functional), `NFR-*` (non-functional), `ADR-nnn` (architecture decisions,
   expanded files in `docs/ADRs/`), `M1–M18` (modules). Cite these ids in code comments
   and reports — intent must survive you.
@@ -55,6 +56,18 @@ and a vetted facilitator marketplace.
    `matching` may call `profiles.service.get_profile(...)`; it may NEVER import
    another module's `models.py`. *Why:* this is what keeps the monolith splittable
    (NFR-MAINT-1, ADR-001).
+   **The ruling on types (settled 2026-07-25):** a module that needs another
+   module's model *type* (for a type hint, an isinstance check, a query) imports it
+   from that module's `service.py`, never from its `models.py` — even though it's
+   "just a type," the import path is what NFR-MAINT-1 actually polices. The owning
+   module re-exports with the explicit `from .models import X as X` idiom (already
+   used by `ingestion/service.py::Tender`, `matching/service.py::Match`) so ruff's
+   F401 doesn't flag it as unused. **This is a repo-wide gap, not fully closed by
+   this ruling alone:** `extraction/service.py`, `qualification/service.py`, and
+   `profiles/models.py` still import another module's `models.py` directly, and
+   fixing those is a separate refactor (out of scope for whatever change discovers
+   this comment) — don't silently expand a small task into that refactor; flag it
+   instead.
 2. **All model I/O through `app/kernel/`** (`kernel.complete`, `kernel.embed`). NEVER
    import litellm/openai/anthropic SDKs in a module. NEVER hardcode a prompt — prompts
    live at `prompts/<task>/vN.md` and are versioned software (ADR-014, §14).
@@ -158,6 +171,18 @@ and a vetted facilitator marketplace.
   qualification call did this and silently turned 11/15 real verdicts into
   fake failures before the fix). If you touch this function, keep the
   "trailing commentary after fence" test case in `tests/test_kernel_router.py`.
+- **A migration's `down_revision` must point at a parent that is ALREADY COMMITTED
+  on the branch, not one still sitting uncommitted in a local DB.** Found live: a
+  chain of feature branches was generated against a local Postgres that already had
+  two later migrations (`sessions`, `law_chunks`) applied from uncommitted work, so
+  an earlier-committed migration (`notifications_log`) declared `down_revision` on a
+  revision id that didn't exist yet in any commit those branches actually contained.
+  `alembic upgrade head` on any of those branches alone fails with *Can't locate
+  revision*. Only the branch that finally includes the missing parents (or a squash
+  that reorders them first) is safe to test or merge in isolation. Before pushing a
+  branch with a new migration, run `uv run alembic upgrade head` **from a database
+  that only has that branch's own migrations applied** — not whatever the local dev
+  DB happens to already have.
 - **A JSONB column needs `none_as_null=True`** if a Python `None` should mean
   "genuinely absent" — without it, SQLAlchemy stores the JSON literal `null`
   (a non-NULL row), and any raw-SQL `IS NULL`/`count()` on that column silently
@@ -190,7 +215,7 @@ and stop for review instead of implementing.
 
 | File | What it is |
 |---|---|
-| `docs/00_MASTER_PLAN.md` | Source of truth: business + SRS + architecture + gates (v2.1) |
+| `docs/00_MASTER_PLAN.md` | Source of truth: business + SRS + architecture + gates (v2.2) |
 | `docs/00_INDEX.md` | Reading order for docs 01–11 |
 | `docs/ADRs/` | Expanded architecture decisions (001 monolith, 023 validation, …) |
 | `docs/agents/SKILLS.md` | Step-by-step recipes for the common tasks |

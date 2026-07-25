@@ -15,8 +15,8 @@ ADERA is multi-tenant (many orgs, one deployment). Three standard models:
 
 ## 3. Idempotency (why the pipeline can be re-run fearlessly)
 Definition for juniors: an operation is idempotent if running it twice produces the same state as once. Where ADERA needs it and the mechanism used:
-- **Ingestion:** `UPSERT ... ON CONFLICT (source, source_tender_id)` — re-scraping never duplicates (FR-2.3).
-- **Notifications:** unique index on `(user_id, tender_id, channel, event_type)`; insert-before-send; a crash after insert but before send is recovered by a sweep job, never by double-sending (FR-8.4).
+- **Ingestion:** `UPSERT ... ON CONFLICT (source, source_tender_id)` — re-scraping ONE source never duplicates (FR-2.3). This says nothing about two DIFFERENT sources publishing the same real-world tender — that's `tender_groups` (ADR-028, FR-2.8), a separate clustering layer above the per-source upsert.
+- **Notifications:** unique index on `(user_id, group_id, channel, event_type)` — keyed on the tender's GROUP, not the raw row (ADR-028), so a sibling tender from another source never defeats this; insert-before-send; a crash after insert but before send is recovered by a sweep job, never by double-sending (FR-8.4).
 - **Payment webhooks:** unique `provider_ref`; handler does `INSERT ... ON CONFLICT DO NOTHING` first and exits quietly on replay (NFR-MONEY-2). Providers *will* replay events; this is not theoretical.
 - **Client mutations (Phase 3+):** accept an `Idempotency-Key` header on POST /engagements; store key→response for 24h; identical key returns the stored response.
 Test pattern for all four: run the operation twice in a test; assert row counts and state are identical to once.
@@ -51,7 +51,7 @@ export default function () {
 Run: `k6 run -e BASE=https://staging.adera.bid -e SESSION="sid=..." evals/load/feed.js`. Read the output: `http_req_duration p(95)` is your NFR-PERF-1 number; a failing threshold exits non-zero (CI-able). Ritual: run against **staging** before each phase exit, after any index change, and never against prod during business hours. When p95 fails: reproduce the slow endpoint locally → `EXPLAIN ANALYZE` → fix → re-run k6 → record the before/after in the PR.
 
 ## 8. Usability bottlenecks (yes, they're architecture too)
-Slow first paint on 3G kills A2 adoption → SSR + <100 KB public pages is an architectural budget, enforced in CI by Lighthouse (07 §8). Timezone bugs destroy A1 trust faster than downtime → UTC-in-storage rule + the DST test matrix (NFR-INTL-1) are non-negotiable. Ethiopic mojibake anywhere = instant credibility loss → UTF-8 assertions live in the extraction tests, and a render screenshot test covers the UI (08 §6).
+Slow first paint still matters for a diaspora bidder on an international connection or a facilitator/poster on Ethiopian mobile data (ADR-029 retired A2 as a bidder audience, but local users remain the facilitator/poster surface) → SSR + <100 KB public pages is an architectural budget, enforced in CI by Lighthouse (07 §8). Timezone bugs destroy A1 trust faster than downtime → UTC-in-storage rule + the DST test matrix (NFR-INTL-1) are non-negotiable. Ethiopic mojibake anywhere = instant credibility loss → UTF-8 assertions live in the extraction tests, and a render screenshot test covers the UI (08 §6).
 
 ## Further reading & credible sources
 - **Martin Fowler — MonolithFirst & microservice prerequisites** — martinfowler.com/bliki/MonolithFirst.html (and /articles/microservice-trade-offs.html) — the reasoning behind ADR-001, from the source.

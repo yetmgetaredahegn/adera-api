@@ -85,15 +85,20 @@ DEMO_PROFILES: list[DemoProfile] = [
         regions=["remote", "Addis Ababa"],
     ),
     DemoProfile(
-        org_name="Nile Office & Medical Supplies PLC",
-        org_type=OrgType.LOCAL,
-        country="ET",
-        timezone="Africa/Addis_Ababa",
+        # ADR-029: local orgs are supply-side only (facilitator/poster), never
+        # an AI-matching consumer -- flipped from `LOCAL` to a real bidder
+        # audience (`FOREIGN`) so `demo` still exercises the product for all
+        # three profiles. `Habesha Build Contractors` above stays `LOCAL`
+        # specifically to prove the audience gate refuses it (see `_demo`).
+        org_name="Nile Office & Medical Supplies FZE",
+        org_type=OrgType.FOREIGN,
+        country="AE",
+        timezone="Asia/Dubai",
         source_text=(
-            "Import and supply company in Addis Ababa serving government and NGO "
-            "buyers: office equipment (printers, laptops, photocopiers), office "
+            "Dubai-based export supplier bidding into Ethiopian government and NGO "
+            "procurement: office equipment (printers, laptops, photocopiers), office "
             "furniture, and basic medical consumables. Framework-agreement experience "
-            "and after-sales service coverage."
+            "and after-sales service coverage across East Africa."
         ),
         sectors=["goods supply", "ICT equipment", "medical supplies"],
         capabilities=[
@@ -219,6 +224,7 @@ async def _demo() -> None:
     stay None rather than faked (AGENTS.md rule 11).
     """
     from app.kernel.router import build_kernel
+    from app.modules.identity.service import AudienceRestricted
     from app.modules.matching.service import match_org
     from app.modules.profiles.service import list_profiles
 
@@ -235,7 +241,14 @@ async def _demo() -> None:
                 continue
             print(f"\n=== {org.name}  ({org.org_type.value}, {org.country}) ===")
             print(f"    sectors: {', '.join(profile.sectors)}")
-            ranked = await match_org(session, org.id, limit=8, kernel=kernel)
+            try:
+                ranked = await match_org(session, org.id, limit=8, kernel=kernel)
+            except AudienceRestricted:
+                # ADR-029: local orgs are supply-side only. Printed, not
+                # silently skipped -- the demo's whole point is to make this
+                # gate visible, not to hide it.
+                print("    audience_restricted: local orgs don't receive AI matching (ADR-029)")
+                continue
             if not ranked:
                 print("    (no tenders above the similarity floor)")
             for r in ranked:

@@ -21,8 +21,26 @@ from app.core.security import (
     sign_session_id,
 )
 from app.modules.identity import service
-from app.modules.identity.models import Org, OrgMember, Session, User
-from app.modules.identity.schemas import LoginIn, MeOut, OrgOut, RegisterIn, UserOut
+from app.modules.identity.models import Org, OrgMember, OrgType, Session, User
+from app.modules.identity.schemas import (
+    LoginIn,
+    MeOut,
+    OrgOut,
+    RegisterIn,
+    RegisterOut,
+    UserOut,
+)
+
+# ADR-029: local orgs are supply-side only (facilitator/poster, Phase 3) --
+# stated plainly at registration, never discovered later as a silently empty
+# feed (identity.service.require_bidder_audience is the enforcement point;
+# this is the honest heads-up).
+_LOCAL_AUDIENCE_NOTE = (
+    "Local companies don't receive AI matching, eligibility verdicts, digests, "
+    "or tender Q&A on ADERA today -- those are for diaspora and foreign "
+    "bidders. You can register and browse public tenders now, and apply as a "
+    "vetted facilitator or verified tender poster once that opens (Phase 3)."
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -50,17 +68,21 @@ def _set_auth_cookies(response: Response, session_id: uuid.UUID) -> None:
     )
 
 
-@router.post("/register", status_code=201, response_model=UserOut)
+@router.post("/register", status_code=201, response_model=RegisterOut)
 async def register_route(
     data: RegisterIn, response: Response, db: AsyncSession = Depends(get_session)
-) -> UserOut:
+) -> RegisterOut:
     try:
-        user, _org = await service.register(db, data)
+        user, org = await service.register(db, data)
     except ValueError as exc:
         raise APIError(409, "conflict", str(exc)) from exc
     session_row = await service.create_session_row(db, user.id)
     _set_auth_cookies(response, session_row.id)
-    return UserOut.model_validate(user)
+    return RegisterOut(
+        user=UserOut.model_validate(user),
+        org=OrgOut.model_validate(org),
+        audience_note=_LOCAL_AUDIENCE_NOTE if org.org_type == OrgType.LOCAL else None,
+    )
 
 
 @router.post("/login", response_model=UserOut)

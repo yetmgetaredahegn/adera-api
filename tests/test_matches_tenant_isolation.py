@@ -7,7 +7,7 @@ import pytest
 from app.core.db import async_session_factory
 from app.main import app
 from app.modules.identity.models import Org, OrgMember, Session, User
-from app.modules.ingestion.models import BiddingTrack, Tender
+from app.modules.ingestion.models import BiddingTrack, Tender, TenderGroup
 from app.modules.matching.models import Match, MatchState
 from app.modules.sources.models import Source, SourceType, ToSStatus
 from httpx import ASGITransport, AsyncClient
@@ -15,21 +15,29 @@ from sqlalchemy import delete, select
 
 
 async def _register(client: AsyncClient, email: str) -> None:
+    # diaspora/foreign only (ADR-029): matches is a bidder-only endpoint, and
+    # this test's actual concern (tenant isolation) is orthogonal to the
+    # audience gate -- a `local` org here would 403 before isolation is even
+    # exercised. See test_matching_audience_gate.py for the gate itself.
     r = await client.post(
         "/api/v1/auth/register",
         json={
             "email": email,
             "password": "correct horse battery staple",
             "org_name": f"Org {email}",
-            "org_type": "local",
-            "country": "ET",
-            "timezone": "Africa/Addis_Ababa",
+            "org_type": "diaspora",
+            "country": "US",
+            "timezone": "America/Los_Angeles",
         },
     )
     assert r.status_code == 201, r.text
 
 
 async def _seed_match_for_org(org_id: uuid.UUID, title: str) -> uuid.UUID:
+    """Returns the SOURCE id (not the tender id) so the test's cleanup can
+    remove Source/TenderGroup/Tender -- previously only Match/Org/User/Session
+    were cleaned up, silently leaking a Source+TenderGroup+Tender row on every
+    green run."""
     async with async_session_factory() as session:
         source = Source(
             key=f"test-{uuid.uuid4()}",
@@ -40,6 +48,8 @@ async def _seed_match_for_org(org_id: uuid.UUID, title: str) -> uuid.UUID:
             enabled=False,
         )
         session.add(source)
+        group = TenderGroup()
+        session.add(group)
         await session.flush()
 
         tender = Tender(
@@ -49,19 +59,25 @@ async def _seed_match_for_org(org_id: uuid.UUID, title: str) -> uuid.UUID:
             title=title,
             region="Ethiopia",
             bidding_track=BiddingTrack.UNKNOWN,
+            group_id=group.id,
         )
         session.add(tender)
         await session.flush()
 
         session.add(Match(tender_id=tender.id, org_id=org_id, score=0.9, state=MatchState.NEW))
         await session.commit()
-        return tender.id
+        return source.id
 
 
-async def _cleanup(email: str) -> None:
+async def _cleanup(email: str, source_ids: list[uuid.UUID] | None = None) -> None:
     async with async_session_factory() as session:
+        if source_ids:
+            await session.execute(delete(Tender).where(Tender.source_id.in_(source_ids)))
+            await session.execute(delete(Source).where(Source.id.in_(source_ids)))
+
         user = (await session.execute(select(User).where(User.email == email))).scalar_one_or_none()
         if user is None:
+            await session.commit()
             return
         memberships = (
             (await session.execute(select(OrgMember).where(OrgMember.user_id == user.id)))
@@ -81,6 +97,8 @@ async def _cleanup(email: str) -> None:
 async def test_org_a_never_sees_org_b_matches() -> None:
     email_a = f"test-a-{uuid.uuid4()}@example.com"
     email_b = f"test-b-{uuid.uuid4()}@example.com"
+    source_ids_a: list[uuid.UUID] = []
+    source_ids_b: list[uuid.UUID] = []
     try:
         async with (
             AsyncClient(
@@ -99,8 +117,8 @@ async def test_org_a_never_sees_org_b_matches() -> None:
             org_b_id = uuid.UUID(me_b["org"]["id"])
             assert org_a_id != org_b_id
 
-            await _seed_match_for_org(org_a_id, "Org A's tender")
-            await _seed_match_for_org(org_b_id, "Org B's tender")
+            source_ids_a.append(await _seed_match_for_org(org_a_id, "Org A's tender"))
+            source_ids_b.append(await _seed_match_for_org(org_b_id, "Org B's tender"))
 
             # 1. Default (no ?org_id=) scoping: A sees only A's own match.
             resp_a = await client_a.get("/api/v1/matches")
@@ -118,5 +136,5 @@ async def test_org_a_never_sees_org_b_matches() -> None:
             leak_attempt = await client_a.get(f"/api/v1/matches?org_id={org_b_id}")
             assert leak_attempt.status_code == 404, leak_attempt.text
     finally:
-        await _cleanup(email_a)
-        await _cleanup(email_b)
+        await _cleanup(email_a, source_ids_a)
+        await _cleanup(email_b, source_ids_b)

@@ -8,6 +8,10 @@ from pydantic import BaseModel
 
 class DigestItemOut(BaseModel):
     tender_id: uuid.UUID
+    # ADR-028: the tender's opportunity group -- notification idempotency
+    # keys on this, not `tender_id`, so a sibling tender from another source
+    # in the same group never triggers a second send for the same opportunity.
+    group_id: uuid.UUID
     title: str
     buyer: str | None
     region: str | None

@@ -3,7 +3,7 @@
 import asyncio
 
 from app.core.db import async_session_factory
-from app.modules.identity.models import User
+from app.modules.identity.service import User
 from app.modules.notifications.models import NotificationChannel, NotificationEventType
 from app.modules.notifications.service import (
     get_user_digest_items,
@@ -32,6 +32,7 @@ def send_digest_sweep() -> int:
                             session,
                             user.id,
                             item.tender_id,
+                            item.group_id,
                             NotificationChannel.EMAIL,
                             NotificationEventType.DIGEST,
                         )

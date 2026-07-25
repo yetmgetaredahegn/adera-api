@@ -11,7 +11,7 @@ import httpx
 import pytest
 from app.core.db import async_session_factory
 from app.main import create_app
-from app.modules.ingestion.models import Tender
+from app.modules.ingestion.models import Tender, TenderGroup
 from app.modules.sources.models import Source, SourceType, ToSStatus
 from sqlalchemy import delete
 
@@ -54,6 +54,9 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
         session.add(source)
         await session.flush()
         for i in range(3):
+            group = TenderGroup()
+            session.add(group)
+            await session.flush()
             session.add(
                 Tender(
                     source_id=source.id,
@@ -61,6 +64,7 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
                     url="https://example.test/t",
                     title=f"{marker} tender {i}",
                     raw_data={},
+                    group_id=group.id,
                 )
             )
         await session.commit()

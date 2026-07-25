@@ -43,6 +43,27 @@ class BiddingTrack(enum.StrEnum):
     UNKNOWN = "unknown"
 
 
+class TenderGroup(UUIDPk, Timestamps, Base):
+    """ADR-028 — one row per real-world opportunity. Every `Tender` (one row
+    per SOURCE) points at a group; a single-source tender is a group of one,
+    so there is no special case. Matching, notifications, and the feed key on
+    the group, never on a raw source row, so the same opportunity published
+    on e-GP and a donor portal collapses to one card instead of two.
+
+    Grouping is additive and reversible by design: no source row is ever
+    deleted or rewritten to "become" another (FR-2.3's audit trail is
+    untouched) — only this table's existence changes what a *query* treats
+    as one opportunity.
+    """
+
+    __tablename__ = "tender_groups"
+
+    # Set when member tenders disagree on `closing_at` (ADR-028 §3). FR-4.4
+    # extends here: a group with an unresolved conflict is never notified,
+    # exactly as a low-confidence closing_at is never notified today.
+    has_conflict: Mapped[bool] = mapped_column(default=False)
+
+
 class Tender(UUIDPk, Timestamps, Base):
     __tablename__ = "tenders"
     __table_args__ = (
@@ -65,6 +86,14 @@ class Tender(UUIDPk, Timestamps, Base):
     )
     source_tender_id: Mapped[str] = mapped_column(String(255))
     url: Mapped[str] = mapped_column(Text)
+
+    # ADR-028: every tender belongs to exactly one group (a group of one for a
+    # single-source tender). Nullable only so the backfill migration can create
+    # groups for pre-existing rows before making this NOT NULL; `upsert_tender`
+    # always assigns one for a newly created row (app/modules/ingestion/service.py).
+    group_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tender_groups.id", ondelete="RESTRICT"), index=True
+    )
 
     # --- extracted fields (FR-4.1) -----------------------------------------
     title: Mapped[str] = mapped_column(Text)
