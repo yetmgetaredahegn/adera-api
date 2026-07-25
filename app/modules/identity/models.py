@@ -2,8 +2,9 @@
 
 import enum
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -64,3 +65,18 @@ class OrgMember(UUIDPk, Timestamps, Base):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
     role: Mapped[OrgRole] = mapped_column(pg_enum(OrgRole, "org_role"))
+
+
+class Session(UUIDPk, Timestamps, Base):
+    """A server-side row per logged-in session (AUTH-1/2/3). The cookie holds
+    only this row's signed `id` (app/core/security.py) — the DB row is what
+    makes AUTH-3 (logout) a REAL revocation rather than a client-side no-op
+    that a replayed cookie would still pass."""
+
+    __tablename__ = "sessions"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)

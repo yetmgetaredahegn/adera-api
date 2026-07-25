@@ -21,12 +21,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.kernel.prompts import load_prompt
 from app.kernel.router import Kernel
-from app.modules.ingestion.models import Tender
-from app.modules.ingestion.service import rank_by_embedding
-from app.modules.matching.models import Match, MatchState
+from app.modules.identity.service import get_org, require_bidder_audience
+from app.modules.ingestion.service import Tender, rank_by_embedding
+from app.modules.matching.models import (
+    EligibilityVerdict as EligibilityVerdict,
+)
+from app.modules.matching.models import (
+    Match as Match,
+)
+from app.modules.matching.models import (
+    MatchState as MatchState,
+)
 from app.modules.matching.schemas import ExplanationOut
-from app.modules.profiles.models import CompanyProfile
+from app.modules.profiles.models import CompanyProfile as CompanyProfile
 from app.modules.profiles.service import get_profile
+from app.modules.qualification.service import get_qualified_tender_ids
 
 # Below this cosine similarity a "match" is noise; tune on the eval set later
 # (06 §6 — the floor is also most of NFR-LEGAL-1's honesty, applied to matching).
@@ -105,28 +114,54 @@ async def match_org(
     limit: int = 10,
     kernel: Kernel | None = None,
 ) -> list[RankedMatch]:
-    """Rank tenders for one org and persist new matches. Idempotent per (tender, org).
+    """Rank tenders for one org and persist new matches. Idempotent per (org, GROUP)
+    (ADR-028) — not per (org, tender): a sibling tender from another source in an
+    already-matched group is never matched again, so the same real-world
+    opportunity surfacing via a second source doesn't spend a second explanation
+    or show as a second "new" card.
 
     `kernel` is optional (mirrors extraction.service.extract): when absent, or for
     matches that already existed, no explanation is generated — never faked, per
     AGENTS.md rule 11. When present, only NEWLY persisted matches are explained,
     so re-ranking an org never re-spends budget on matches it already showed them.
+
+    Raises `identity.service.AudienceRestricted` for a `local`-type org (ADR-029)
+    — never a silently empty list, which would be indistinguishable from "no
+    matches today" and hide that the feature was never meant for this org.
     """
+    org = await get_org(session, org_id)
+    if org is None:
+        raise ValueError(f"org {org_id} does not exist")
+    require_bidder_audience(org)
+
     profile = await get_profile(session, org_id)
     if profile is None or profile.profile_embedding is None:
         raise ValueError(f"org {org_id} has no embedded profile — build it first (FR-6.1)")
 
-    candidates = await rank_by_embedding(session, profile.profile_embedding, limit=limit)
+    allowed_ids = await get_qualified_tender_ids(session, profile.sectors)
 
-    existing_ids = set(
-        (await session.execute(select(Match.tender_id).where(Match.org_id == org_id))).scalars()
+    candidates = await rank_by_embedding(
+        session, profile.profile_embedding, limit=limit, restrict_to_ids=allowed_ids
+    )
+
+    # ADR-028: keyed on the tender's GROUP, not its own id -- a Match for any
+    # tender in a group counts as "already matched" for every sibling tender
+    # in that group, regardless of which source's row was matched first.
+    existing_group_ids = set(
+        (
+            await session.execute(
+                select(Tender.group_id)
+                .join(Match, Match.tender_id == Tender.id)
+                .where(Match.org_id == org_id)
+            )
+        ).scalars()
     )
 
     out: list[RankedMatch] = []
     for tender, score in candidates:
         if score < SIMILARITY_FLOOR:
             continue
-        is_new = tender.id not in existing_ids
+        is_new = tender.group_id not in existing_group_ids
         explanation: str | None = None
         if is_new:
             if kernel is not None:
@@ -141,6 +176,10 @@ async def match_org(
                     prompt_version=PROMPT_VERSION if explanation is not None else None,
                 )
             )
+            # Mark the group covered immediately -- two sibling tenders from
+            # the same group both ranking above the floor in ONE call must
+            # still produce only one Match, not two.
+            existing_group_ids.add(tender.group_id)
         out.append(
             RankedMatch(tender=tender, score=score, persisted=is_new, explanation=explanation)
         )

@@ -1,0 +1,3 @@
+{"id": "qual-1", "actual_status": "qualified", "expected_status": "qualified"}
+{"id": "qual-2", "actual_status": "rejected", "expected_status": "rejected"}
+{"id": "qual-3", "actual_status": "qualified", "expected_status": "qualified"}

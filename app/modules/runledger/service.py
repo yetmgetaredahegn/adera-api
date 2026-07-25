@@ -16,11 +16,13 @@ Usage:
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
+from sqlalchemy import Integer, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.runledger.models import RunLedger, RunStatus
+from app.modules.runledger.models import RunLedger as RunLedger
+from app.modules.runledger.models import RunStatus as RunStatus
 
 
 @dataclass
@@ -101,3 +103,41 @@ def _finalize(
     if exc is not None:
         row.error_kind = type(exc).__name__
         row.error_detail = str(exc)[:2000]
+
+
+async def list_runs(
+    session: AsyncSession, limit: int = 50, kind: str | None = None
+) -> list[RunLedger]:
+    """Fetch recent run ledger entries (FR-11.1)."""
+    query = select(RunLedger).order_by(RunLedger.started_at.desc()).limit(limit)
+    if kind:
+        query = query.where(RunLedger.kind == kind)
+    return list((await session.execute(query)).scalars().all())
+
+
+async def get_summary_stats(session: AsyncSession, days: int = 7) -> dict[str, object]:
+    """Aggregate token spend, cost, and run stats over recent period (FR-11.5, NFR-COST-1)."""
+    cutoff = datetime.now(UTC) - timedelta(days=days)
+
+    query = select(
+        func.count(RunLedger.id).label("total_runs"),
+        func.coalesce(func.sum(func.cast(RunLedger.status == RunStatus.SUCCESS, Integer)), 0).label(
+            "successful_runs"
+        ),
+        func.coalesce(func.sum(func.cast(RunLedger.status == RunStatus.FAILED, Integer)), 0).label(
+            "failed_runs"
+        ),
+        func.coalesce(func.sum(RunLedger.tokens_in), 0).label("total_tokens_in"),
+        func.coalesce(func.sum(RunLedger.tokens_out), 0).label("total_tokens_out"),
+        func.coalesce(func.sum(RunLedger.cost_usd), 0.0).label("total_cost_usd"),
+    ).where(RunLedger.started_at >= cutoff)
+
+    row = (await session.execute(query)).one()
+    return {
+        "total_runs": row.total_runs,
+        "successful_runs": row.successful_runs,
+        "failed_runs": row.failed_runs,
+        "total_tokens_in": row.total_tokens_in,
+        "total_tokens_out": row.total_tokens_out,
+        "total_cost_usd": float(row.total_cost_usd),
+    }

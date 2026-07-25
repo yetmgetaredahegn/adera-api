@@ -99,13 +99,26 @@ expose a genuinely public, unauthenticated listing worth adapting to (open
 question — see below).
 
 **Open questions for the security engineer / founder to close:**
-- Does e-GP expose *any* tender data without login? (Public pages needing a
-  headless browser to render are still fair game under this ADR — only
-  credentialed automation is excluded.)
+- ~~Does e-GP expose *any* tender data without login?~~ **Answered, 2026-07-24
+  (Temesgen/Eyasu should still verify independently):** Yes. Loading the
+  public `/bids/all` page in a headless browser with NO credentials — never
+  touching a login field — renders 299 real active tenders and reveals the
+  real REST call behind it:
+  `GET https://egp.gov.et/po-gw/cms-v2/api/sourcing/get-grouped-sourcing`.
+  That endpoint was then confirmed with a bare `curl`: zero cookies, zero
+  auth headers, HTTP 200, real structured JSON (220 tenders at the time). It
+  is what backs e-GP's own public "Total Active Tenders" dashboard shown to
+  every anonymous visitor — public by the site's own design, not a leak found
+  by probing. This is now source `egp` in `app/modules/ingestion/adapters/egp.py`,
+  built and proven live under this ADR's "public API" tier (the lowest-risk
+  category, §Decision item 2) — enabled per explicit founder direction not
+  to wait for this ADR's formal acceptance. **The adapter contains a hard
+  rule it must never gain a login step**; disable it, don't "upgrade" it, if
+  that ever seems necessary.
 - What does "in excess of authorization" mean in Ethiopian enforcement practice,
-  concretely, for a case like this? (Prompt A's research question.)
+  concretely, for a case like this? (Prompt A's research question — still open.)
 - Is a federal procurement platform the kind of system where enforcement is
-  more or less likely than for a private site? (Also Prompt A.)
+  more or less likely than for a private site? (Also Prompt A — still open.)
 
 ## Reversal condition
 

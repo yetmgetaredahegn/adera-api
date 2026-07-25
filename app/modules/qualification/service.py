@@ -16,6 +16,7 @@ idempotent per tender (updates in place on re-run) so FR-5.3 has somewhere to
 call into later without a schema change.
 """
 
+import uuid
 from datetime import UTC, datetime
 
 from pydantic import ValidationError
@@ -155,3 +156,15 @@ async def qualify_tender(
 
     await session.flush()
     return qualification
+
+
+async def get_qualified_tender_ids(
+    session: AsyncSession, sectors: list[str] | None = None
+) -> list[uuid.UUID]:
+    """Return IDs of all QUALIFIED tenders, optionally filtered by sector."""
+    query = select(Qualification.tender_id).where(
+        Qualification.status == QualificationStatus.QUALIFIED
+    )
+    if sectors:
+        query = query.where(Qualification.sector.in_(sectors))
+    return list((await session.execute(query)).scalars().all())

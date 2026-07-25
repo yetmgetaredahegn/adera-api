@@ -1,0 +1,21 @@
+# Production Caddyfile for ADERA (docs/09 §3, §5)
+# Automatic Let's Encrypt TLS + reverse proxy to API backend
+
+{$DOMAIN:localhost} {
+    encode gzip zstd
+
+    # Healthcheck probe endpoint
+    handle /healthz {
+        reverse_proxy api:8000
+    }
+
+    # API endpoints
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+
+    # Default fallback
+    handle {
+        reverse_proxy api:8000
+    }
+}

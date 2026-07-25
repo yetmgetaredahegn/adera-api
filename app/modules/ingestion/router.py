@@ -16,7 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.modules.ingestion import service
-from app.modules.ingestion.schemas import TenderListOut, TenderOut
+from app.modules.ingestion.models import BiddingTrack
+from app.modules.ingestion.schemas import (
+    TenderListOut,
+    TenderOut,
+    TenderQAIn,
+    TenderQAOut,
+)
 
 router = APIRouter(prefix="/api/v1/tenders", tags=["tenders"])
 
@@ -40,6 +46,29 @@ async def list_tenders(
     )
 
 
+@router.get("/search", response_model=TenderListOut)
+async def search_tenders(
+    q: str | None = Query(default=None, description="search query"),
+    region: str | None = Query(default=None, description="filter by region"),
+    bidding_track: BiddingTrack | None = Query(default=None, description="filter by bidding track"),
+    after: str | None = Query(default=None, description="opaque cursor from next_after"),
+    limit: int = Query(default=20, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+) -> TenderListOut:
+    try:
+        tenders = await service.search_tenders(
+            session, q=q, region=region, bidding_track=bidding_track, after=after, limit=limit
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="invalid `after` cursor") from exc
+
+    next_after = service.encode_cursor(tenders[-1]) if len(tenders) == limit else None
+    return TenderListOut(
+        items=[TenderOut.model_validate(t) for t in tenders],
+        next_after=next_after,
+    )
+
+
 @router.get("/{tender_id}", response_model=TenderOut)
 async def get_tender(
     tender_id: uuid.UUID,
@@ -49,3 +78,25 @@ async def get_tender(
     if tender is None:
         raise HTTPException(status_code=404, detail="tender not found")
     return TenderOut.model_validate(tender)
+
+
+@router.post("/{tender_id}/qa", response_model=TenderQAOut)
+async def tender_qa(
+    tender_id: uuid.UUID,
+    body: TenderQAIn,
+    session: AsyncSession = Depends(get_session),
+) -> TenderQAOut:
+    tender = await service.get_tender(session, tender_id)
+    if tender is None:
+        raise HTTPException(status_code=404, detail="tender not found")
+
+    answer, citations, confidence = await service.answer_tender_qa(
+        session, tender_id, body.question
+    )
+    return TenderQAOut(
+        tender_id=tender_id,
+        question=body.question,
+        answer=answer,
+        citations=citations,
+        confidence=confidence,
+    )

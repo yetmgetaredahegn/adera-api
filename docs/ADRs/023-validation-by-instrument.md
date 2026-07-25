@@ -34,7 +34,7 @@ Validation stops being a *phase that blocks building* and becomes **a set of alw
 
 **New G0 (evaluated ~Week 6–8, on data, while the spine is already built):**
 - **G0-a — Global intent:** ≥300 organic sessions/mo to eligibility guides **AND** ≥25 waitlist signups **AND** ≥5 clicks on a $79 CTA. *(Falsifies the Engine-B thesis on behaviour.)*
-- **G0-b — Local intent:** ≥150 Telegram digest subscribers with ≥40% week-4 retention. *(Falsifies the Engine-A wedge.)*
+- **G0-b — Local intent — SUPERSEDED (ADR-029, 2026-07-25):** was ≥150 Telegram digest subscribers with ≥40% week-4 retention, falsifying the Engine-A local-bidder wedge. ADR-029 retires Engine A as a demand hypothesis entirely, so this gate no longer measures anything live. The channel is proposed to be repurposed to measure facilitator/poster SUPPLY interest instead (recruitment inquiries, "list my firm" clicks) — not unilaterally decided; flagged for founder confirmation.
 - **G0-c — Willingness to pay:** first paying subscriber by Week 9 (unchanged from Phase 2 DoD — this is now the real WTP gate, and it is made of money, not opinion).
 
 **If G0-a and G0-b both fail:** the spine still has value (see below) — reposition the *demand side*, not the codebase.

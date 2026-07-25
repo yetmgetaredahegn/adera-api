@@ -8,8 +8,10 @@ ability to see the whole configuration surface in one place.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn
+from pydantic import Field, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_INSECURE_SECRET_KEY = "dev-only-insecure-change-me"
 
 
 class Settings(BaseSettings):
@@ -27,7 +29,19 @@ class Settings(BaseSettings):
     )
     redis_url: RedisDsn = Field(default=RedisDsn("redis://localhost:6379/0"))
 
-    secret_key: str = "dev-only-insecure-change-me"
+    secret_key: str = _INSECURE_SECRET_KEY
+
+    @model_validator(mode="after")
+    def _reject_insecure_secret_in_prod(self) -> "Settings":
+        # SECURITY.md gap G1: this key signs session cookies (app/core/security.py)
+        # -- shipping the known default in prod means anyone can forge a session.
+        if self.env == "prod" and self.secret_key == _INSECURE_SECRET_KEY:
+            raise ValueError(
+                "SECRET_KEY is still the insecure default in a prod environment. "
+                'Set a real SECRET_KEY (python -c "import secrets; '
+                'print(secrets.token_urlsafe(48))") before deploying.'
+            )
+        return self
 
     # AI Kernel (ADR-014). NFR-COST-1: a hard daily cap with a breaker, not a hope.
     kernel_daily_budget_usd: float = 5.0

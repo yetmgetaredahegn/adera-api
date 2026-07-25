@@ -52,3 +52,19 @@ class TenderListOut(BaseModel):
 
     items: list[TenderOut]
     next_after: str | None
+
+
+class TenderQAIn(BaseModel):
+    """Question over a tender's parsed documents (FR-9.3)."""
+
+    question: str
+
+
+class TenderQAOut(BaseModel):
+    """Answer with citations or refusal (FR-9.3, prompt B4)."""
+
+    tender_id: uuid.UUID
+    question: str
+    answer: str
+    citations: list[str]
+    confidence: float

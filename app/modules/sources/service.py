@@ -6,11 +6,20 @@ the registry: which sites we look at, on what schedule, and whether they're enab
 
 from datetime import UTC, datetime
 
+import httpx
 from croniter import croniter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.sources.models import Source, SourceType, ToSStatus
+from app.modules.sources.models import (
+    Source as Source,
+)
+from app.modules.sources.models import (
+    SourceType as SourceType,
+)
+from app.modules.sources.models import (
+    ToSStatus as ToSStatus,
+)
 
 
 async def get_by_key(session: AsyncSession, key: str) -> Source | None:
@@ -44,14 +53,19 @@ async def seed_sources(session: AsyncSession) -> None:
     """Idempotent seed of the Phase-1 registry. Safe to run repeatedly.
 
     - worldbank: enabled — public donor-portal JSON API, our live Phase-1 source.
-    - egp: registered but DISABLED — egp.gov.et is a JS-rendered Angular SPA with
-      no public robots.txt. Its data is reachable only via a *logged-in* session,
-      and ADR-027 (docs/ADRs/027-source-access-legality.md, Proposed) holds that
-      automating a credentialed session to extract data may exceed account
-      authorization under Ethiopia's Computer Crime Proclamation 958/2016 — so
-      this source stays disabled pending that ADR's resolution (security review
-      or an official data-sharing agreement with PPA), not pending Playwright
-      engineering time. Registering it now documents intent and reserves the key.
+    - egp: enabled — egp.gov.et's own public tender-listing API, same risk tier
+      as worldbank under ADR-027 (docs/ADRs/027-source-access-legality.md,
+      Proposed): a public, unauthenticated JSON endpoint, never a credentialed
+      session. Discovered by loading the public `/bids/all` page in a headless
+      browser with NO credentials and reading its network calls (never touched
+      a login field); the endpoint was then confirmed with a bare `curl` --
+      zero cookies, zero auth headers, real data (220 tenders at discovery).
+      It backs e-GP's own public "Total Active Tenders" dashboard shown to
+      every anonymous visitor. `app/modules/ingestion/adapters/egp.py` carries
+      the full detail and the hard rule: this adapter must NEVER gain a login
+      step. ADR-027 is still Proposed -- this is built ahead of Eyasu's formal
+      review per explicit founder direction, same as the qualification
+      prefilter; his review lands on this real implementation, not a stub.
     """
     wanted = [
         {
@@ -66,19 +80,13 @@ async def seed_sources(session: AsyncSession) -> None:
         },
         {
             "key": "egp",
-            "name": "Ethiopia e-GP (egp.gov.et)",
-            "type": SourceType.HTML_DYNAMIC,
-            "base_url": "https://egp.gov.et/egp/",
-            "fetch_config": {
-                "note": (
-                    "JS-rendered, no robots.txt. Tender data needs a login session "
-                    "-- see ADR-027 (Proposed): access basis unresolved, not an "
-                    "engineering blocker."
-                )
-            },
+            "name": "Ethiopia e-GP (egp.gov.et) — public listing API",
+            "type": SourceType.API,
+            "base_url": "https://egp.gov.et/po-gw/cms-v2/api/sourcing/get-grouped-sourcing",
+            "fetch_config": {"page_size": 50, "max_pages": 10},
             "cron": "0 * * * *",
-            "tos_status": ToSStatus.UNREVIEWED,
-            "enabled": False,
+            "tos_status": ToSStatus.ALLOWED,  # public, unauthenticated -- see docstring
+            "enabled": True,
         },
     ]
     for spec in wanted:
@@ -86,3 +94,21 @@ async def seed_sources(session: AsyncSession) -> None:
         if existing is None:
             session.add(Source(**spec))
     await session.commit()
+
+
+async def dry_run_source(session: AsyncSession, source_key: str) -> list[object]:
+    """Admin dry-run operation (FR-11.3 / 05 §4).
+
+    Executes a source's adapter, fetches raw payloads, and parses them without
+    writing anything to the tenders or matches database tables.
+    """
+    from app.modules.ingestion.adapters import get_adapter
+
+    source = await get_by_key(session, source_key)
+    if source is None:
+        raise KeyError(f"unknown source '{source_key}' — seed it first")
+
+    adapter = get_adapter(source_key)
+    async with httpx.AsyncClient() as client:
+        raws = await adapter.fetch(client, source)
+        return list(raws)

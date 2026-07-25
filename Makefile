@@ -38,15 +38,15 @@ revision:  ## Autogenerate a migration: make revision m="add x"
 	uv run alembic revision --autogenerate -m "$(m)"
 
 fmt:  ## Format
-	uv run ruff format app tests
-	uv run ruff check --fix app tests
+	uv run ruff format app tests evals
+	uv run ruff check --fix app tests evals
 
 lint:  ## Lint (no fixes)
-	uv run ruff format --check app tests
-	uv run ruff check app tests
+	uv run ruff format --check app tests evals
+	uv run ruff check app tests evals
 
 type:  ## Type-check
-	uv run mypy app
+	uv run mypy app evals
 
 test-unit:  ## Pure-logic tests
 	uv run pytest tests -m "not integration"
@@ -57,6 +57,12 @@ test-int:  ## DB-backed tests (testcontainers; needs Docker)
 test: test-unit  ## Alias for the fast suite
 
 check: lint type test-unit  ## What CI runs
+
+eval-smoke:  ## Run 20-sample AI quality smoke eval (06 §9 & Appendix C)
+	uv run python -m evals.harness --smoke
+
+eval:  ## Run full AI quality evaluation suite
+	uv run python -m evals.harness
 
 demo:  ## Week 3 spike: seed demo profiles, embed tenders, match, print the judgment sheet
 	DEBUG=false uv run python -m app.cli seed-profiles

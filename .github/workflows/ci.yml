@@ -50,11 +50,11 @@ jobs:
 
       - name: Lint
         run: |
-          uv run ruff format --check app tests
-          uv run ruff check app tests
+          uv run ruff format --check app tests evals
+          uv run ruff check app tests evals
 
       - name: Type-check
-        run: uv run mypy app
+        run: uv run mypy app evals
 
       - name: Migrations apply from scratch
         # Catches the failure mode where models drift from migrations: the schema
@@ -71,6 +71,5 @@ jobs:
           make openapi
           git diff --exit-code contracts/
 
-      # Week 2+: the eval harness gates everything after it (06 §9).
-      # - name: AI evals (smoke)
-      #   run: make eval-smoke
+      - name: AI evals (smoke)
+        run: make eval-smoke

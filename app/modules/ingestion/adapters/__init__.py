@@ -5,10 +5,12 @@ its adapter here; that is the only wiring step.
 """
 
 from app.modules.ingestion.adapters.base import Adapter
+from app.modules.ingestion.adapters.egp import EGPAdapter
 from app.modules.ingestion.adapters.worldbank import WorldBankAdapter
 
 ADAPTERS: dict[str, Adapter] = {
     WorldBankAdapter.key: WorldBankAdapter(),
+    EGPAdapter.key: EGPAdapter(),
 }
 
 

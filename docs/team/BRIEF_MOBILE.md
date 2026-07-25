@@ -4,10 +4,16 @@
 
 ## Your mission
 
-The Flutter app is how a **local Ethiopian SME** lives with ADERA daily: check
-matches over coffee, open a tender, decide bid/skip in under a minute — often on
-mid-range Android over patchy data. Design for that reality: fast cold start,
-small payloads, graceful offline (cache last feed).
+**Audience correction (ADR-029, v2.2):** local Ethiopian SMEs are supply-side
+(facilitator/poster) only, never a bidder — this brief previously said the app
+is how a local SME lives with ADERA daily; that premise is retired. The mobile
+bidder audience is a **diaspora bidder abroad**: check matches over coffee in
+Seattle or Dubai, open a tender, decide bid/skip in under a minute. Whether the
+aggressive offline/low-bandwidth posture below still deserves the same priority
+for that audience is an open question for the founder, not decided here —
+diaspora users are more likely on decent connections than the original A2
+premise assumed, but design for the low end anyway until that's confirmed:
+fast cold start, small payloads, graceful offline (cache last feed).
 
 ## The screens you own (hackathon scope, in order)
 

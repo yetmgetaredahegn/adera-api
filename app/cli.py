@@ -6,6 +6,7 @@
     uv run python -m app.cli seed-profiles     # Week-3 spike: 3 demo company profiles
     uv run python -m app.cli embed             # embed tenders that lack vectors
     uv run python -m app.cli qualify           # rule + LLM qualify tenders that lack a verdict
+    uv run python -m app.cli seed-law          # ingest Article 2 (definitions) of Proc. 1333/2024
     uv run python -m app.cli demo              # match every profile + print judgment sheet
 
 This is the "admin dry-run" surface (FR-11.3) until the real admin UI exists.
@@ -84,15 +85,20 @@ DEMO_PROFILES: list[DemoProfile] = [
         regions=["remote", "Addis Ababa"],
     ),
     DemoProfile(
-        org_name="Nile Office & Medical Supplies PLC",
-        org_type=OrgType.LOCAL,
-        country="ET",
-        timezone="Africa/Addis_Ababa",
+        # ADR-029: local orgs are supply-side only (facilitator/poster), never
+        # an AI-matching consumer -- flipped from `LOCAL` to a real bidder
+        # audience (`FOREIGN`) so `demo` still exercises the product for all
+        # three profiles. `Habesha Build Contractors` above stays `LOCAL`
+        # specifically to prove the audience gate refuses it (see `_demo`).
+        org_name="Nile Office & Medical Supplies FZE",
+        org_type=OrgType.FOREIGN,
+        country="AE",
+        timezone="Asia/Dubai",
         source_text=(
-            "Import and supply company in Addis Ababa serving government and NGO "
-            "buyers: office equipment (printers, laptops, photocopiers), office "
+            "Dubai-based export supplier bidding into Ethiopian government and NGO "
+            "procurement: office equipment (printers, laptops, photocopiers), office "
             "furniture, and basic medical consumables. Framework-agreement experience "
-            "and after-sales service coverage."
+            "and after-sales service coverage across East Africa."
         ),
         sectors=["goods supply", "ICT equipment", "medical supplies"],
         capabilities=[
@@ -200,6 +206,15 @@ async def _qualify() -> None:
         print(f"{status.value}: {counts.get(status.value, 0)}")
 
 
+async def _seed_law() -> None:
+    from app.kernel.embeddings import embed_texts
+    from app.modules.eligibility.ingest import seed_law_corpus
+
+    async with async_session_factory() as session:
+        n = await seed_law_corpus(session, embed_texts)
+    print(f"seeded {n} new law chunks (already-seeded article refs skipped — idempotent)")
+
+
 async def _demo() -> None:
     """The judgment sheet: every profile's top matches, scores visible.
 
@@ -209,6 +224,7 @@ async def _demo() -> None:
     stay None rather than faked (AGENTS.md rule 11).
     """
     from app.kernel.router import build_kernel
+    from app.modules.identity.service import AudienceRestricted
     from app.modules.matching.service import match_org
     from app.modules.profiles.service import list_profiles
 
@@ -225,7 +241,14 @@ async def _demo() -> None:
                 continue
             print(f"\n=== {org.name}  ({org.org_type.value}, {org.country}) ===")
             print(f"    sectors: {', '.join(profile.sectors)}")
-            ranked = await match_org(session, org.id, limit=8, kernel=kernel)
+            try:
+                ranked = await match_org(session, org.id, limit=8, kernel=kernel)
+            except AudienceRestricted:
+                # ADR-029: local orgs are supply-side only. Printed, not
+                # silently skipped -- the demo's whole point is to make this
+                # gate visible, not to hide it.
+                print("    audience_restricted: local orgs don't receive AI matching (ADR-029)")
+                continue
             if not ranked:
                 print("    (no tenders above the similarity floor)")
             for r in ranked:
@@ -237,7 +260,16 @@ async def _demo() -> None:
                 if r.explanation:
                     print(f'        -> "{r.explanation}"')
         await session.commit()
-    print("\nJudge honestly: relevant? actionable? would a bidder trust it?")
+
+
+async def _dry_run(source_key: str) -> None:
+    from app.modules.sources.service import dry_run_source
+
+    async with async_session_factory() as session:
+        raws = await dry_run_source(session, source_key)
+        print(f"[{source_key}] dry-run parsed {len(raws)} tenders (zero database writes):")
+        for r in raws[:10]:
+            print(f"  - {getattr(r, 'title', str(r))[:80]}")
 
 
 def main() -> None:
@@ -251,6 +283,8 @@ def main() -> None:
             asyncio.run(_seed())
         case "ingest":
             asyncio.run(_ingest(rest[0] if rest else "worldbank"))
+        case "dry-run":
+            asyncio.run(_dry_run(rest[0] if rest else "egp"))
         case "tenders":
             asyncio.run(_tenders())
         case "seed-profiles":
@@ -259,6 +293,8 @@ def main() -> None:
             asyncio.run(_embed())
         case "qualify":
             asyncio.run(_qualify())
+        case "seed-law":
+            asyncio.run(_seed_law())
         case "demo":
             asyncio.run(_demo())
         case _:

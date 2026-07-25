@@ -4,7 +4,7 @@
 ## 0. Conventions (apply to every endpoint)
 - **Base path** `/api/v1` (webhooks live at `/webhooks/*`, health at `/healthz`). Versioning by path; v1 is additive-only after Phase 3.
 - **Auth levels:** `public` · `user` (valid session cookie) · `org` (user + active org context; the `current_org` dependency — 04 §2) · `fac` (org that is an active facilitator) · `admin`. Unsafe methods (POST/PUT/PATCH/DELETE) from the browser also require `X-CSRF-Token` → missing/bad = **403** `csrf_failed`.
-- **Errors:** RFC 7807 problem+json everywhere: `{"type":"…/errors/<code>","title","status","detail","instance"}`. Catalog: **401** `unauthenticated` · **403** `forbidden` / `csrf_failed` / `kyb_required` / `not_a_party` · **404** `not_found` (also used instead of 403 to avoid leaking existence across orgs) · **409** `conflict` (duplicate email, illegal state transition, expired match) · **402** `quota_exceeded` (pragmatic use of Payment Required; body includes `upgrade_hint`) · **422** `validation_error` (FastAPI/Pydantic, field-level detail) · **429** `rate_limited` (Retry-After header) · **500** `internal` (opaque; Sentry id in `instance`).
+- **Errors:** RFC 7807 problem+json everywhere: `{"type":"…/errors/<code>","title","status","detail","instance"}`. Catalog: **401** `unauthenticated` · **403** `forbidden` / `csrf_failed` / `kyb_required` / `not_a_party` / **`audience_restricted`** (ADR-029: a `local`-type org calling a bidder-only feature — matching, eligibility, digests, Q&A; never a silent empty result) · **404** `not_found` (also used instead of 403 to avoid leaking existence across orgs) · **409** `conflict` (duplicate email, illegal state transition, expired match) · **402** `quota_exceeded` (pragmatic use of Payment Required; body includes `upgrade_hint`) · **422** `validation_error` (FastAPI/Pydantic, field-level detail) · **429** `rate_limited` (Retry-After header) · **500** `internal` (opaque; Sentry id in `instance`).
 - **Pagination:** `?limit=20&cursor=<opaque>` → `{"items":[…],"next_cursor":"…"|null}`. Cursors are keyset-based (04 §12), never offsets.
 - **Idempotency:** endpoints marked ⟲ accept an `Idempotency-Key` header; same key within 24h returns the stored first response (same status), never a duplicate side effect.
 - **Money** in bodies: `{"amount_minor":150000,"currency":"ETB"}`. **Times:** ISO-8601 UTC in; rendering localizes (NFR-INTL-1).
@@ -12,7 +12,7 @@
 ## 1. Auth & account (Phase 1)
 | ID | Endpoint | Auth | Request (key fields) | Success | Errors |
 |---|---|---|---|---|---|
-| AUTH-1 | POST /auth/register | public | email, password, org_name, org_type(local\|diaspora\|foreign), country, tz | **201** {user_id, org_id} + session cookie | 409 email exists · 422 |
+| AUTH-1 | POST /auth/register | public | email, password, org_name, org_type(local\|diaspora\|foreign), country, tz | **201** {user, org, audience_note} + session cookie — `audience_note` is non-null and states plainly what a `local` org can't do here yet (ADR-029) | 409 email exists · 422 |
 | AUTH-2 | POST /auth/login | public | email, password | **200** {user} + cookie | 401 |
 | AUTH-3 | POST /auth/logout | user | – | **204** | – |
 | AUTH-4 | GET /auth/me | user | – | **200** {user, org, plan, quotas} | 401 |
@@ -22,7 +22,7 @@
 ## 2. Tenders & public pages (Phase 2)
 | ID | Endpoint | Auth | Request | Success | Errors |
 |---|---|---|---|---|---|
-| TEN-1 | GET /tenders | org | limit,cursor; filters: q(semantic),sector,track,urgency,closing_before/after,eligible_only:bool | **200** page of TenderCard objects (id,title,buyer,closing_at,urgency,fit{score,line},eligibility_chip) | 401 |
+| TEN-1 | GET /tenders | org | limit,cursor; filters: q(semantic),sector,track,urgency,closing_before/after,eligible_only:bool | **200** page of TenderCard objects (id,title,buyer,closing_at,urgency,fit{score,line},eligibility_chip). **Planned addition, not yet built (ADR-028):** `also_listed_on[]` — other sources carrying this tender's opportunity group, empty for a single-source group. `group_id` already exists on the `tenders` row backing this; the field just isn't exposed on the contract yet. | 401 |
 | TEN-2 | GET /tenders/{id} | org | – | **200** full detail: extraction fields+confidences, qualification, eligibility verdict(for org_type), my_match(state), documents[] | 404 |
 | TEN-3 | GET /public/tenders/{slug} | public | – | **200** SEO payload (facts, buyer, deadline, source link) — never full doc text | 404 |
 | TEN-4 | GET /public/sitemap | public | cursor | **200** {items:[{slug,lastmod}],next_cursor} | – |
@@ -33,7 +33,7 @@
 | PRO-1 | POST /org/profile/draft | org | {text} or {url} | **200** draft chips {sectors[],capabilities[],certifications[],regions[],size} | 429 (rate-limited, no quota) |
 | PRO-2 | PUT /org/profile | org | confirmed chip sets + description | **200** profile; enqueues re-embed | 422 |
 | PRO-3 | GET /org/profile | org | – | **200** | 404 not created |
-| MAT-1 | GET /matches | org | state=new\|saved, limit,cursor | **200** ranked matches (tender summary + score + explanation) | – |
+| MAT-1 | GET /matches | org | state=new\|saved, limit,cursor | **200** ranked matches (tender summary + score + explanation) — one per opportunity GROUP, never per source row (ADR-028) | **403 `audience_restricted`** (local org, ADR-029) |
 | MAT-2 | POST /matches/{id}/save | org | – | **200** {state:"saved"} | 404 · 409 expired |
 | MAT-3 | POST /matches/{id}/dismiss | org | – | **200** {state:"dismissed"} (never resurfaces, FR-7.3) | 404 |
 

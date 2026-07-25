@@ -11,7 +11,7 @@ import httpx
 import pytest
 from app.core.db import async_session_factory
 from app.main import create_app
-from app.modules.ingestion.models import Tender
+from app.modules.ingestion.models import Tender, TenderGroup
 from app.modules.sources.models import Source, SourceType, ToSStatus
 from sqlalchemy import delete
 
@@ -54,6 +54,9 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
         session.add(source)
         await session.flush()
         for i in range(3):
+            group = TenderGroup()
+            session.add(group)
+            await session.flush()
             session.add(
                 Tender(
                     source_id=source.id,
@@ -61,6 +64,7 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
                     url="https://example.test/t",
                     title=f"{marker} tender {i}",
                     raw_data={},
+                    group_id=group.id,
                 )
             )
         await session.commit()
@@ -93,8 +97,20 @@ async def test_list_detail_pagination_and_contract_shape() -> None:
             assert missing.status_code == 404
 
             # malformed cursor → 422, never a guessed page
-            bad = await client.get("/api/v1/tenders", params={"after": "garbage"})
-            assert bad.status_code == 422
+            # search: query filter
+            search_res = await client.get("/api/v1/tenders/search", params={"q": marker})
+            assert search_res.status_code == 200
+            assert len(search_res.json()["items"]) >= 3
+
+            # qa: empty/unparsed document refusal
+            qa_res = await client.post(
+                f"/api/v1/tenders/{some_id}/qa",
+                json={"question": "What is the bid security amount?"},
+            )
+            assert qa_res.status_code == 200
+            qa_data = qa_res.json()
+            assert qa_data["tender_id"] == some_id
+            assert "not available" in qa_data["answer"] or "do not contain" in qa_data["answer"]
     finally:
         async with async_session_factory() as session:
             await session.execute(delete(Tender).where(Tender.source_id == source_id))

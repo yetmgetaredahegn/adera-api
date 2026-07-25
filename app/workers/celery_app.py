@@ -36,6 +36,15 @@ celery_app.conf.update(
     # tasks it imports. Forgetting this line is invisible at dispatch time
     # (.delay() happily queues the message) and fails only in the worker with
     # NotRegistered. Found the hard way; see AGENTS.md §6.
-    imports=("app.modules.ingestion.tasks",),
-    beat_schedule={},
+    imports=(
+        "app.modules.ingestion.tasks",
+        "app.modules.notifications.tasks",
+        "app.modules.documents.tasks",
+    ),
+    beat_schedule={
+        "send-digest-sweep-hourly": {
+            "task": "notifications.send_digest_sweep",
+            "schedule": 3600.0,  # Run hourly sweep
+        },
+    },
 )
