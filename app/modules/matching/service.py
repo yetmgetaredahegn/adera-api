@@ -108,6 +108,34 @@ async def _explain(kernel: Kernel, profile: CompanyProfile, tender: Tender) -> s
     return result.explanation
 
 
+async def set_match_state(
+    session: AsyncSession,
+    org_id: uuid.UUID,
+    match_id: uuid.UUID,
+    state: MatchState,
+) -> Match | None:
+    """MAT-2/MAT-3 — save or dismiss one match. Returns None if this org has no
+    such match.
+
+    `org_id` is in the WHERE clause rather than checked after the fetch: a match
+    belonging to another org must be indistinguishable from one that does not
+    exist (AGENTS.md rule 9 + docs/11 §0's "404, never 403, across orgs"), and a
+    post-fetch check is one early `return` away from leaking.
+
+    Dismissal is deliberately a state change, not a delete: FR-7.3 promises a
+    dismissed match never resurfaces, and only a remembered row can keep that
+    promise the next time ranking runs.
+    """
+    match = (
+        await session.execute(select(Match).where(Match.id == match_id, Match.org_id == org_id))
+    ).scalar_one_or_none()
+    if match is None:
+        return None
+    match.state = state
+    await session.flush()
+    return match
+
+
 async def match_org(
     session: AsyncSession,
     org_id: uuid.UUID,

@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.db import engine
-from app.core.errors import register_exception_handlers
+from app.core.errors import ProblemDocumentedFastAPI, register_exception_handlers
 from app.core.ratelimit import RateLimitMiddleware
 
 
@@ -25,7 +25,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(
+    # Subclassed only to publish the shared `ProblemDetail` schema in the
+    # contract (app/core/errors.py) — clients cannot generate a type for an
+    # error shape the document never declares.
+    app = ProblemDocumentedFastAPI(
         title="ADERA API",
         version="0.1.0",
         debug=settings.debug,

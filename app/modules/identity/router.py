@@ -5,24 +5,32 @@ open questions rather than guessing one here."""
 
 import uuid
 
-from fastapi import APIRouter, Cookie, Depends, Header, Response
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db import get_session
-from app.core.deps import current_session, current_user
-from app.core.errors import APIError
+from app.core.deps import current_org, current_session, current_user, require_csrf
+from app.core.errors import (
+    CONFLICT,
+    CSRF_FAILED,
+    FORBIDDEN,
+    NOT_FOUND,
+    ORG_ID_REQUIRED,
+    RATE_LIMITED,
+    UNAUTHENTICATED,
+    APIError,
+    problems,
+)
 from app.core.security import (
     CSRF_COOKIE_NAME,
     SESSION_COOKIE_NAME,
     SESSION_MAX_AGE_SECONDS,
-    csrf_tokens_match,
     generate_csrf_token,
     sign_session_id,
 )
 from app.modules.identity import service
-from app.modules.identity.models import Org, OrgMember, OrgType, Session, User
+from app.modules.identity.models import Org, OrgType, Session, User
 from app.modules.identity.schemas import (
     LoginIn,
     MeOut,
@@ -73,14 +81,19 @@ def _set_auth_cookies(response: Response, session_id: uuid.UUID) -> None:
     )
 
 
-@router.post("/register", status_code=201, response_model=RegisterOut)
+@router.post(
+    "/register",
+    status_code=201,
+    response_model=RegisterOut,
+    responses=problems(CONFLICT, RATE_LIMITED),
+)
 async def register_route(
     data: RegisterIn, response: Response, db: AsyncSession = Depends(get_session)
 ) -> RegisterOut:
     try:
         user, org = await service.register(db, data)
     except ValueError as exc:
-        raise APIError(409, "conflict", str(exc)) from exc
+        raise APIError(409, CONFLICT.code, str(exc)) from exc
     session_row = await service.create_session_row(db, user.id)
     _set_auth_cookies(response, session_row.id)
     return RegisterOut(
@@ -90,45 +103,43 @@ async def register_route(
     )
 
 
-@router.post("/login", response_model=UserOut)
+@router.post("/login", response_model=UserOut, responses=problems(UNAUTHENTICATED, RATE_LIMITED))
 async def login_route(
     data: LoginIn, response: Response, db: AsyncSession = Depends(get_session)
 ) -> UserOut:
     user = await service.authenticate(db, data.email, data.password)
     if user is None:
-        raise APIError(401, "unauthenticated", "invalid email or password")
+        raise APIError(401, UNAUTHENTICATED.code, "invalid email or password")
     session_row = await service.create_session_row(db, user.id)
     _set_auth_cookies(response, session_row.id)
     return UserOut.model_validate(user)
 
 
-@router.post("/logout", status_code=204)
+@router.post(
+    "/logout",
+    status_code=204,
+    responses=problems(UNAUTHENTICATED, CSRF_FAILED, RATE_LIMITED),
+)
 async def logout_route(
     response: Response,
     session_row: Session = Depends(current_session),
-    x_csrf_token: str | None = Header(default=None),
-    adera_csrf: str | None = Cookie(default=None, alias=CSRF_COOKIE_NAME),
+    _: None = Depends(require_csrf),
     db: AsyncSession = Depends(get_session),
 ) -> None:
-    if not csrf_tokens_match(adera_csrf, x_csrf_token):
-        raise APIError(403, "csrf_failed", "missing or mismatched CSRF token")
     await service.revoke_session_row(db, session_row.id)
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")
     response.delete_cookie(CSRF_COOKIE_NAME, path="/")
 
 
-@router.get("/me", response_model=MeOut)
-async def me_route(
-    user: User = Depends(current_user), db: AsyncSession = Depends(get_session)
-) -> MeOut:
-    membership = (
-        (await db.execute(select(OrgMember).where(OrgMember.user_id == user.id))).scalars().first()
-    )
-    if membership is None:
-        raise APIError(403, "forbidden", "user belongs to no organization")
-    org = await db.get(Org, membership.org_id)
-    if org is None:
-        # A membership row pointing at a missing org is a data-integrity bug,
-        # not a client error -- surfaced as 500 rather than silently 403ing.
-        raise APIError(500, "internal", "organization membership is inconsistent")
+@router.get(
+    "/me",
+    response_model=MeOut,
+    responses=problems(UNAUTHENTICATED, FORBIDDEN, ORG_ID_REQUIRED, NOT_FOUND, RATE_LIMITED),
+)
+async def me_route(user: User = Depends(current_user), org: Org = Depends(current_org)) -> MeOut:
+    """Session restore. Resolves the org through `current_org`, the same
+    dependency every org-scoped route uses, so `/me` and (say) `/matches` can
+    never disagree about which org the caller is acting as. It previously took
+    the FIRST membership row, which for a multi-org user silently named an org
+    that `/matches` would then refuse to serve without `?org_id=`."""
     return MeOut(user=UserOut.model_validate(user), org=OrgOut.model_validate(org))

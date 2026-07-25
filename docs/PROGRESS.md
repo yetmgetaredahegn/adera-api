@@ -370,6 +370,85 @@ touched. Every claim below is a command that was run, per rule 11.*
   an autouse fixture (one shared client identity would otherwise make an
   unrelated test flake into a 429) and re-enabled deliberately in its own tests.
 
+## Phase 2 (partial) — mobile contract alignment + MAT-2/3 (2026-07-25)
+
+*Driven by `adera-mobile`'s backend-needs review. Its top three asks turned out
+to be: one thing already done (the merge — auth/matches/search/Q&A have been on
+`main` since `3ba327c`; the mobile repo's contract copy was simply three paths
+stale), one thing that is ops rather than code (run the pipeline, see below),
+and one real code gap — the contract does not admit that errors exist.*
+
+- [x] **"RFC 7807 everywhere" was not true, on exactly the endpoints mobile
+  calls most.** `GET /tenders/{id}` raised FastAPI's `HTTPException`, so a
+  missing tender returned `{"detail":"tender not found"}` as
+  `application/json` — a second error shape for clients to special-case, on the
+  public read path. Now three handlers cover every route out of the app
+  (`app/core/errors.py`): `APIError`, Starlette's `HTTPException` (also covers
+  unrouted paths and wrong methods), and `RequestValidationError`. A 422 keeps
+  its per-field detail as an RFC 7807 **extension member** (`errors`) rather
+  than losing it to consistency. **Proven live:** `GET
+  /api/v1/tenders/<unknown-uuid>` → `404 application/problem+json`
+  `…/errors/not_found`; `GET /api/v1/tenders?limit=999` → `422
+  application/problem+json` with `detail:"query.limit: Input should be less
+  than or equal to 100"` and the full `errors` array.
+- [x] **Errors are now declared in the contract, not just emitted.** A client
+  generated from `contracts/openapi.json` could not model a single failure:
+  `/matches` documented only 200 and 422, so ADR-029's `403
+  audience_restricted` — a *named product state* in the mobile design — was
+  invisible to codegen. New `problems()` helper + a `Problem` catalog mirroring
+  docs/11 §0; `ProblemDocumentedFastAPI` publishes the shared `ProblemDetail`
+  and `ValidationProblem` components and rewrites FastAPI's auto-generated 422s
+  (which advertised `application/json` + `HTTPValidationError`, a shape this API
+  no longer returns; both dead models are now dropped from the document so
+  clients don't generate classes for them). `tests/test_problem_contract.py`
+  pins document and wire together.
+- [x] **MAT-2 / MAT-3 (save + dismiss) built** — the mobile Saved tab was
+  client-local memory, which cannot keep FR-7.3's promise across devices.
+  `POST /matches/{id}/save` and `/dismiss`, org-scoped, audience-gated, CSRF-
+  required, returning the updated `MatchOut` (a superset of docs/11's
+  `{state:…}`, so the card redraws without a refetch). Dismissal is a state
+  change, never a delete: only a remembered row keeps a dismissed match from
+  being re-ranked later. `GET /matches` gained the documented `state=new|saved`
+  filter — and `MatchStateFilter` deliberately has no `dismissed` member, so no
+  listing this endpoint offers can resurface one. **Proven live** end-to-end
+  over HTTP with a real cookie jar (`scripts/proof_mobile_alignment.sh`): save
+  → 200 `state:"saved"` → visible under `?state=saved`; dismiss → 200 → empty
+  under all three listings while the row remains `dismissed` in Postgres;
+  `?state=dismissed` → 422.
+- [x] **`require_csrf` is a dependency now** (`app/core/deps.py`), not logic
+  copy-pasted inside logout. Same reasoning as `current_org` for tenancy: the
+  next unsafe endpoint should have to *remove* protection to be unprotected.
+  Logout was refactored onto it; behavior unchanged, pinned by the existing
+  auth-flow tests plus a new "write without CSRF is refused" case.
+- [x] **`GET /auth/me` and `GET /matches` can no longer disagree about which
+  org you are.** `/me` took the *first* membership row while every org-scoped
+  route resolves through `current_org`; for a multi-org user `/me` named an org
+  that `/matches` would then refuse to serve without `?org_id=`. `/me` now uses
+  `current_org` too. **Tech-lead-review-mandatory (rule 14): this is an auth
+  surface behavior change** — multi-org users now get `400 org_id_required`
+  from `/me` instead of a silently arbitrary org. Single-org accounts (all of
+  them today) are unaffected.
+- [x] **`MatchOut.eligibility` is exposed** (FR-16.2). It is `unknown` on every
+  row and will stay that way until M16 has a pipeline stage — which is exactly
+  why it should be on the wire: mobile renders one of four chips, and an
+  omitted field forces the client to hardcode a verdict it cannot justify.
+- [x] **Verification:** `make check` green (ruff, mypy strict 78 files) ·
+  **144/144 tests pass (111 unit + 33 integration)**, up from 126 — 13 new
+  across `tests/test_problem_contract.py` (8, all pure-logic) and
+  `tests/test_matches_save_dismiss.py` (5 integration: save round-trip,
+  FR-7.3 never-resurfaces, CSRF refusal, cross-org 404 leak check, local-org
+  403). Contract regenerated: 12 → 14 paths.
+- [ ] **Not done, and it is the bigger mobile blocker:** the pipeline behind
+  these endpoints has still never run past ingest (`parsed_docs=0 ·
+  classified_track=0 · embedded=0 · qualified=0`, HANDOFF.md). Mobile can now
+  wire auth, tenders, matches, save, and dismiss against a contract that tells
+  the truth — but every AI-derived field it renders will be `unknown`, null, or
+  an empty list until Phase 2's chain runs. `classify_bidding_track()` is
+  deterministic and needs no API key; applying it would turn 323 tenders'
+  `bidding_track` from `unknown` into real values, but storing FR-16.1's
+  confidence + evidence alongside needs a migration on an existing table, which
+  is founder-review-mandatory (R2 step 5) — so it was not done here.
+
 ## Reference material / open decisions landed this session (2026-07-23)
 - [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
 - [x] `docs/QUALIFICATION_PREFILTER.md` — now documents a real, working
@@ -379,6 +458,12 @@ touched. Every claim below is a command that was run, per rule 11.*
 ---
 
 ## What's next (the tech lead's build queue)
+0. **Run the pipeline** (Phase 2's chain: ingest → parse → classify → embed →
+   qualify → match). Everything mobile needs now exists as an endpoint; what it
+   lacks is populated data. Cheapest first step with real user-visible payoff:
+   `classify_bidding_track()` over the existing 323 tenders — deterministic, no
+   API key — but decide first whether to add FR-16.1's confidence/evidence
+   columns (migration on an existing table = your call, R2 step 5).
 1. Extend the eligibility law corpus past Article 2 — the articles that
    actually govern bidder eligibility (bidding methods, nationality
    restrictions) aren't ingested yet; needs careful, non-rushed extraction.

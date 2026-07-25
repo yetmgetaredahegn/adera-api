@@ -13,18 +13,16 @@
         "title": "BiddingTrack",
         "type": "string"
       },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "title": "Detail",
-            "type": "array"
-          }
-        },
-        "title": "HTTPValidationError",
-        "type": "object"
+      "EligibilityVerdict": {
+        "description": "FR-16.2 / FR-7.6 \u2014 the chip on every card.\n\n`UNKNOWN` must be said plainly and must route to a facilitator, never guessed\n(NFR-LEGAL-1). Ineligible tenders are down-ranked and LABELED, never silently\nhidden \u2014 a bidder who can't see why is a bidder who doesn't trust us.",
+        "enum": [
+          "eligible",
+          "conditional",
+          "ineligible",
+          "unknown"
+        ],
+        "title": "EligibilityVerdict",
+        "type": "string"
       },
       "LoginIn": {
         "properties": {
@@ -48,6 +46,9 @@
       "MatchOut": {
         "description": "Public shape for GET /api/v1/matches (org-scoped, FR-7.1).",
         "properties": {
+          "eligibility": {
+            "$ref": "#/components/schemas/EligibilityVerdict"
+          },
           "explanation": {
             "anyOf": [
               {
@@ -86,6 +87,7 @@
           "score",
           "explanation",
           "state",
+          "eligibility",
           "tender"
         ],
         "title": "MatchOut",
@@ -98,6 +100,15 @@
           "dismissed"
         ],
         "title": "MatchState",
+        "type": "string"
+      },
+      "MatchStateFilter": {
+        "description": "What a client may ASK `GET /matches` for (docs/11 MAT-1).\n\n`dismissed` is deliberately absent rather than merely unsupported: FR-7.3\nmakes dismissal terminal for the feed, so an endpoint that could list\ndismissed matches would be the first step toward resurfacing them.",
+        "enum": [
+          "new",
+          "saved"
+        ],
+        "title": "MatchStateFilter",
         "type": "string"
       },
       "MeOut": {
@@ -158,6 +169,40 @@
         ],
         "title": "OrgType",
         "type": "string"
+      },
+      "ProblemDetail": {
+        "description": "RFC 7807 problem+json. Every error from this API has this shape. Branch on `type` (a stable URL ending in the error code), never on `title` or on the prose in `detail`.",
+        "properties": {
+          "detail": {
+            "description": "What went wrong this time. Prose; may change.",
+            "type": "string"
+          },
+          "instance": {
+            "description": "Request path the failure applies to.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Repeats the HTTP status code.",
+            "type": "integer"
+          },
+          "title": {
+            "description": "Human-readable summary of the code.",
+            "type": "string"
+          },
+          "type": {
+            "description": "`https://adera.bid/errors/<code>` \u2014 the stable, matchable identity.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance"
+        ],
+        "title": "ProblemDetail",
+        "type": "object"
       },
       "RegisterIn": {
         "properties": {
@@ -668,44 +713,45 @@
         "title": "UserOut",
         "type": "object"
       },
-      "ValidationError": {
+      "ValidationProblem": {
+        "description": "A ProblemDetail with per-field validation detail attached.",
         "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
+          "detail": {
+            "description": "What went wrong this time. Prose; may change.",
+            "type": "string"
           },
-          "input": {
-            "title": "Input"
-          },
-          "loc": {
+          "errors": {
+            "description": "Pydantic's per-field errors: `loc`, `msg`, `type`.",
             "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
+              "type": "object"
             },
-            "title": "Location",
             "type": "array"
           },
-          "msg": {
-            "title": "Message",
+          "instance": {
+            "description": "Request path the failure applies to.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Repeats the HTTP status code.",
+            "type": "integer"
+          },
+          "title": {
+            "description": "Human-readable summary of the code.",
             "type": "string"
           },
           "type": {
-            "title": "Error Type",
+            "description": "`https://adera.bid/errors/<code>` \u2014 the stable, matchable identity.",
             "type": "string"
           }
         },
         "required": [
-          "loc",
-          "msg",
-          "type"
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance"
         ],
-        "title": "ValidationError",
+        "title": "ValidationProblem",
         "type": "object"
       }
     }
@@ -784,13 +830,13 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
           }
         },
         "summary": "List Runs",
@@ -845,13 +891,13 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
           }
         },
         "summary": "Get Spend Summary",
@@ -884,15 +930,35 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "401": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Login Route",
@@ -923,22 +989,6 @@
           },
           {
             "in": "cookie",
-            "name": "adera_csrf",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Adera Csrf"
-            }
-          },
-          {
-            "in": "cookie",
             "name": "adera_session",
             "required": false,
             "schema": {
@@ -952,21 +1002,67 @@
               ],
               "title": "Adera Session"
             }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_csrf",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Csrf"
+            }
           }
         ],
         "responses": {
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "401": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`csrf_failed` \u2014 missing or mismatched X-CSRF-Token on an unsafe method"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Logout Route",
@@ -977,8 +1073,26 @@
     },
     "/api/v1/auth/me": {
       "get": {
+        "description": "Session restore. Resolves the org through `current_org`, the same\ndependency every org-scoped route uses, so `/me` and (say) `/matches` can\nnever disagree about which org the caller is acting as. It previously took\nthe FIRST membership row, which for a multi-org user silently named an org\nthat `/matches` would then refuse to serve without `?org_id=`.",
         "operationId": "me_route_api_v1_auth_me_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
           {
             "in": "cookie",
             "name": "adera_session",
@@ -1007,15 +1121,65 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "400": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`org_id_required` \u2014 the user belongs to several orgs; repeat the call with ?org_id="
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`forbidden` \u2014 authenticated, but not permitted (e.g. no organization)"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Me Route",
@@ -1048,15 +1212,35 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "409": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`conflict` \u2014 duplicate email, or an illegal state transition"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Register Route",
@@ -1069,6 +1253,24 @@
       "get": {
         "operationId": "list_matches_api_v1_matches_get",
         "parameters": [
+          {
+            "description": "filter to one state; omit for everything not dismissed",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MatchStateFilter"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "filter to one state; omit for everything not dismissed",
+              "title": "State"
+            }
+          },
           {
             "in": "query",
             "name": "limit",
@@ -1130,18 +1332,386 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "400": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`org_id_required` \u2014 the user belongs to several orgs; repeat the call with ?org_id="
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`forbidden` \u2014 authenticated, but not permitted (e.g. no organization)\n\n`audience_restricted` \u2014 org_type=local is supply-side only (ADR-029); bidder features are for diaspora/foreign orgs. Render a named blocked state, never an empty list"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "List Matches",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{match_id}/dismiss": {
+      "post": {
+        "description": "MAT-3. FR-7.3 makes this permanent: the row stays (so ranking still\nknows this group was judged) but never appears in a feed again. Trust in\nthe feed is built on exactly this \u2014 a dismissal that comes back is a\nproduct that nags.",
+        "operationId": "dismiss_match_api_v1_matches__match_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "match_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Match Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Session"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_csrf",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Csrf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`org_id_required` \u2014 the user belongs to several orgs; repeat the call with ?org_id="
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`forbidden` \u2014 authenticated, but not permitted (e.g. no organization)\n\n`csrf_failed` \u2014 missing or mismatched X-CSRF-Token on an unsafe method\n\n`audience_restricted` \u2014 org_type=local is supply-side only (ADR-029); bidder features are for diaspora/foreign orgs. Render a named blocked state, never an empty list"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
+          }
+        },
+        "summary": "Dismiss Match",
+        "tags": [
+          "matches"
+        ]
+      }
+    },
+    "/api/v1/matches/{match_id}/save": {
+      "post": {
+        "description": "MAT-2. Server-side so a save follows the user to their next device \u2014 a\nclient-local heart is a promise the product cannot keep. docs/11 specifies\n`200 {state:\"saved\"}`; the full row is a superset of that, and saves the\nclient a refetch to redraw the card.",
+        "operationId": "save_match_api_v1_matches__match_id__save_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "match_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Match Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Session"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_csrf",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Csrf"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`org_id_required` \u2014 the user belongs to several orgs; repeat the call with ?org_id="
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`unauthenticated` \u2014 no session cookie, or it is expired or revoked"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`forbidden` \u2014 authenticated, but not permitted (e.g. no organization)\n\n`csrf_failed` \u2014 missing or mismatched X-CSRF-Token on an unsafe method\n\n`audience_restricted` \u2014 org_type=local is supply-side only (ADR-029); bidder features are for diaspora/foreign orgs. Render a named blocked state, never an empty list"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
+          }
+        },
+        "summary": "Save Match",
         "tags": [
           "matches"
         ]
@@ -1195,13 +1765,23 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "List Tenders",
@@ -1312,13 +1892,23 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Search Tenders",
@@ -1353,15 +1943,35 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "404": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Get Tender",
@@ -1406,15 +2016,35 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "404": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ProblemDetail"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "`not_found` \u2014 no such resource \u2014 also returned instead of 403 across orgs, deliberately"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            },
+            "description": "`validation_error` \u2014 the request did not match the schema; see the `errors` member"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description": "`rate_limited` \u2014 too many requests in one minute; honour the Retry-After header"
           }
         },
         "summary": "Tender Qa",

@@ -11,10 +11,11 @@ so only the contract's explicit fields ever leave the process.
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
+from app.core.errors import NOT_FOUND, RATE_LIMITED, VALIDATION_ERROR, APIError, problems
 from app.modules.ingestion import service
 from app.modules.ingestion.models import BiddingTrack
 from app.modules.ingestion.schemas import (
@@ -26,8 +27,12 @@ from app.modules.ingestion.schemas import (
 
 router = APIRouter(prefix="/api/v1/tenders", tags=["tenders"])
 
+# A cursor this API did not issue is a client bug, reported like any other
+# schema failure — 422 is already documented app-wide (app/core/errors.py).
+_BAD_CURSOR_DETAIL = "`after` is not a cursor this API issued; restart from page one"
 
-@router.get("", response_model=TenderListOut)
+
+@router.get("", response_model=TenderListOut, responses=problems(RATE_LIMITED))
 async def list_tenders(
     after: str | None = Query(default=None, description="opaque cursor from next_after"),
     limit: int = Query(default=20, ge=1, le=100),
@@ -36,7 +41,7 @@ async def list_tenders(
     try:
         tenders = await service.list_tenders(session, after=after, limit=limit)
     except ValueError as exc:  # malformed cursor — client bug, say so plainly
-        raise HTTPException(status_code=422, detail="invalid `after` cursor") from exc
+        raise APIError(422, VALIDATION_ERROR.code, _BAD_CURSOR_DETAIL) from exc
 
     # next_after only when the page is full; a short page is the last page.
     next_after = service.encode_cursor(tenders[-1]) if len(tenders) == limit else None
@@ -46,7 +51,7 @@ async def list_tenders(
     )
 
 
-@router.get("/search", response_model=TenderListOut)
+@router.get("/search", response_model=TenderListOut, responses=problems(RATE_LIMITED))
 async def search_tenders(
     q: str | None = Query(default=None, description="search query"),
     region: str | None = Query(default=None, description="filter by region"),
@@ -60,7 +65,7 @@ async def search_tenders(
             session, q=q, region=region, bidding_track=bidding_track, after=after, limit=limit
         )
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail="invalid `after` cursor") from exc
+        raise APIError(422, VALIDATION_ERROR.code, _BAD_CURSOR_DETAIL) from exc
 
     next_after = service.encode_cursor(tenders[-1]) if len(tenders) == limit else None
     return TenderListOut(
@@ -69,18 +74,20 @@ async def search_tenders(
     )
 
 
-@router.get("/{tender_id}", response_model=TenderOut)
+@router.get("/{tender_id}", response_model=TenderOut, responses=problems(NOT_FOUND, RATE_LIMITED))
 async def get_tender(
     tender_id: uuid.UUID,
     session: AsyncSession = Depends(get_session),
 ) -> TenderOut:
     tender = await service.get_tender(session, tender_id)
     if tender is None:
-        raise HTTPException(status_code=404, detail="tender not found")
+        raise APIError(404, NOT_FOUND.code, "tender not found")
     return TenderOut.model_validate(tender)
 
 
-@router.post("/{tender_id}/qa", response_model=TenderQAOut)
+@router.post(
+    "/{tender_id}/qa", response_model=TenderQAOut, responses=problems(NOT_FOUND, RATE_LIMITED)
+)
 async def tender_qa(
     tender_id: uuid.UUID,
     body: TenderQAIn,
@@ -88,7 +95,7 @@ async def tender_qa(
 ) -> TenderQAOut:
     tender = await service.get_tender(session, tender_id)
     if tender is None:
-        raise HTTPException(status_code=404, detail="tender not found")
+        raise APIError(404, NOT_FOUND.code, "tender not found")
 
     answer, citations, confidence = await service.answer_tender_qa(
         session, tender_id, body.question
