@@ -8,11 +8,13 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.db import engine
 from app.core.errors import register_exception_handlers
+from app.core.ratelimit import RateLimitMiddleware
 
 
 @asynccontextmanager
@@ -49,6 +51,22 @@ def create_app() -> FastAPI:
         return {"ok": all(checks.values()), "checks": checks}
 
     register_exception_handlers(app)
+
+    # Middleware. Order matters: Starlette runs them outermost-first, so the rate
+    # limiter is added FIRST (making it outermost) and rejects a flood before CORS
+    # or any router work happens.
+    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        # Cookie auth (05 §3) means credentialed cross-origin requests, which the
+        # CORS spec forbids combining with a "*" origin -- hence the explicit list.
+        allow_credentials=True,
+        allow_methods=["*"],
+        # X-CSRF-Token is the double-submit header; without it every unsafe request
+        # from the browser client would be blocked by preflight, not by CSRF.
+        allow_headers=["Content-Type", "X-CSRF-Token"],
+    )
 
     # Routers mounted here as modules land.
     from app.modules.identity.router import router as auth_router

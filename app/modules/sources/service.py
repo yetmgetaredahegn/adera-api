@@ -6,7 +6,6 @@ the registry: which sites we look at, on what schedule, and whether they're enab
 
 from datetime import UTC, datetime
 
-import httpx
 from croniter import croniter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -103,12 +102,15 @@ async def dry_run_source(session: AsyncSession, source_key: str) -> list[object]
     writing anything to the tenders or matches database tables.
     """
     from app.modules.ingestion.adapters import get_adapter
+    from app.modules.ingestion.service import build_polite_client
 
     source = await get_by_key(session, source_key)
     if source is None:
         raise KeyError(f"unknown source '{source_key}' — seed it first")
 
     adapter = get_adapter(source_key)
-    async with httpx.AsyncClient() as client:
+    # A dry run is still a real fetch against a real site, so it obeys robots.txt
+    # and the source's rate limit exactly like a live run does (FR-2.5).
+    async with build_polite_client(source) as client:
         raws = await adapter.fetch(client, source)
         return list(raws)

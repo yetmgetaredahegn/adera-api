@@ -11,9 +11,10 @@ honest (no test-only NullPool special-casing in app code) while giving each loop
 its own connections.
 """
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator
 
 import pytest
+from app.core.config import settings
 from app.core.db import engine
 
 
@@ -21,3 +22,15 @@ from app.core.db import engine
 async def _dispose_engine_between_tests() -> AsyncIterator[None]:
     yield
     await engine.dispose()
+
+
+@pytest.fixture(autouse=True)
+def _disable_rate_limiting() -> Iterator[None]:
+    """The suite shares one client identity ("testclient"), so a global limiter
+    would count every test's requests into the same bucket and eventually turn an
+    unrelated assertion into a flaky 429. The limiter's own behavior is asserted
+    explicitly in tests/test_ratelimit.py, which re-enables it deliberately."""
+    original = settings.rate_limit_enabled
+    settings.rate_limit_enabled = False
+    yield
+    settings.rate_limit_enabled = original

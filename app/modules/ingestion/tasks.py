@@ -8,10 +8,9 @@ is always a row — success or crash (FR-11.1).
 
 from dataclasses import dataclass
 
-import httpx
-
 from app.core.db import async_session_factory
 from app.modules.ingestion.adapters import get_adapter
+from app.modules.ingestion.politeness import build_polite_client
 from app.modules.ingestion.service import UpsertResult, upsert_tender
 from app.modules.runledger.service import run
 from app.modules.sources.service import get_by_key
@@ -36,7 +35,9 @@ async def run_source(source_key: str) -> IngestReport:
         adapter = get_adapter(source_key)
 
         async with run(session, kind="fetch_source", ref=source_key) as ledger:
-            async with httpx.AsyncClient() as client:
+            # FR-2.5: robots.txt + this source's rate_limit_per_min are enforced by
+            # the client's transport, so no adapter can opt out by forgetting to.
+            async with build_polite_client(source) as client:
                 raws = await adapter.fetch(client, source)
 
             for raw in raws:

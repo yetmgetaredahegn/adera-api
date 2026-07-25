@@ -297,6 +297,79 @@ touched. Every claim below is a command that was run, per rule 11.*
   depends on litellm reading that env var itself — so the one value the kernel
   needs is the one value not flowing through `Settings` (rule 7).
 
+## Phase 1 — security & edge gaps closed (2026-07-25)
+
+- [x] **The admin API was unauthenticated. It no longer is.** `/api/v1/admin/run-ledger`
+  and `/spend` (ADM-2, ADM-5) had **no auth dependency at all** — anyone with the
+  URL read the run ledger and the AI spend figures. New `current_admin`
+  (`app/core/deps.py`) finally reads `users.is_staff`, a column that had existed
+  since the core schema with nothing consuming it. Declared as a **router-level**
+  dependency, not per-route, so a future ADM-* endpoint added to that file cannot
+  ship unguarded by forgetting an argument. **Proven live by curl, all three
+  outcomes:** unauthenticated → `401 unauthenticated`; registered non-staff user →
+  `403 forbidden` "staff privileges required"; then `UPDATE users SET is_staff=true`
+  and **the same unchanged session cookie** → `200` with 4 real ledger rows and a
+  real spend summary. That last step is the point: the 200 can only come from
+  `is_staff` being re-read per request, not from anything cached in the cookie.
+  Contract regenerated — the only diff is the two admin endpoints now declaring
+  the session cookie parameter.
+- [x] **Middleware `app/main.py` documented but never installed now exists.**
+  - **CORS** with an explicit origin list from `settings.cors_origins`
+    (comma-separated env var accepted). Wildcard is impossible here by spec:
+    cookie auth means credentialed requests. `X-CSRF-Token` is in
+    `allow_headers`, without which every unsafe browser request would fail at
+    preflight rather than at the CSRF check. **Proven live:** preflight from
+    `http://localhost:3000` returns `access-control-allow-credentials: true`
+    and echoes the origin.
+  - **Rate limiting** (`app/core/ratelimit.py`): Redis fixed-window counter,
+    added first so it is outermost and rejects a flood before any router work.
+    Returns the doc-11 shape — **429 + `application/problem+json` +
+    `Retry-After`**. **Fails OPEN** on a Redis error: a limiter outage must not
+    escalate into an API outage. `/healthz` and the docs are exempt so an uptime
+    probe can't be throttled into a false alarm. **Proven live** with
+    `RATE_LIMIT_PER_MIN=5`: requests 1-5 → 200, 6 and 7 → 429 with
+    `retry-after: 7` and the correct RFC-7807 body; `/healthz` still 200 after.
+  - `X-Forwarded-For` is only trusted when `TRUST_PROXY_HEADERS=true`, because
+    trusting it unconditionally lets any client forge a fresh identity per
+    request and walk around the limiter one header at a time.
+- [x] **FR-2.5 is enforced instead of merely documented: robots.txt + per-source
+  rate limits.** `sources.rate_limit_per_min` was a decorative column that
+  nothing read. New `app/modules/ingestion/politeness.py` implements it as an
+  **httpx transport** (`build_polite_client`), not a helper each adapter must
+  remember to call — politeness an adapter can forget is politeness the project
+  doesn't have. Every adapter is now gated with **zero changes inside
+  `adapters/`**, including e-GP's paginated calls, and the same client backs
+  `dry_run_source` (a dry run is still a real fetch). robots.txt is fetched once
+  per host; **absent/unreadable robots.txt means allowed** — that is what the
+  standard says, not a fail-open shortcut — while an explicit `Disallow` raises
+  `RobotsDisallowed` so it lands in the run ledger rather than looking like a
+  source with no new notices. The gate enforces even *spacing*, not a burst
+  bucket: 20/min as a burst of 20 hits a source exactly as hard as no limit at
+  all for that first second. **Proven live on real traffic:** e-GP's 6 paginated
+  requests went from ~2.6s to **19.3s** — precisely the 3s spacing 20/min
+  implies — and ingest remained correct and idempotent
+  (`worldbank created=0/unchanged=60`, `egp created=0/unchanged=255`).
+  *Ingestion is deliberately slower now; that is the FR-2.5 trade, not a regression.*
+- [x] **The `Secure`-cookie trap that silently breaks browsers is fixed.**
+  `_set_auth_cookies` hardcoded `secure=True`, so a real browser on
+  `http://localhost` **never sends the session back** — while `curl` and httpx
+  ignore the flag entirely, which is exactly why the auth flow could be proven
+  live and still be unusable for the web/mobile developers. Now driven by
+  `settings.cookie_secure`, which defaults to False **only** for `ENV=local` and
+  stays True everywhere else, overridable via `COOKIE_SECURE`. Verified in the
+  live curl cookie jar (`secure` column = `FALSE` under env=local) and pinned by
+  `tests/test_cookie_secure_policy.py` — a policy test, because no HTTP client we
+  verify with can observe the failure it prevents.
+- [x] **Verification:** `make check` green (ruff format 108 files, ruff, mypy
+  strict on 78 source files) · **126/126 tests pass (98 unit + 28 integration)**,
+  up from 110 — 16 new: `tests/test_politeness.py` (7), `tests/test_ratelimit.py`
+  (6), `tests/test_cookie_secure_policy.py` (3) — plus
+  `test_runledger.py::test_runledger_admin_api_requires_staff`, which **replaces
+  a test that had been asserting `200` for an unauthenticated admin call**, i.e.
+  the suite was pinning the hole open. The rate limiter is disabled suite-wide by
+  an autouse fixture (one shared client identity would otherwise make an
+  unrelated test flake into a 429) and re-enabled deliberately in its own tests.
+
 ## Reference material / open decisions landed this session (2026-07-23)
 - [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
 - [x] `docs/QUALIFICATION_PREFILTER.md` — now documents a real, working

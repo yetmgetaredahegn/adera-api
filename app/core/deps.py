@@ -48,6 +48,21 @@ async def current_user(
     return user
 
 
+async def current_admin(user: User = Depends(current_user)) -> User:
+    """The `admin` auth level (docs/11 §0) for every /admin surface (M11).
+
+    `users.is_staff` has existed since the core schema and nothing read it, so
+    the run-ledger and AI-spend endpoints (ADM-2, ADM-5) were reachable by
+    anyone with the URL -- unauthenticated. 403 rather than 404 here: unlike a
+    cross-org resource, an admin endpoint's existence is public knowledge (it is
+    in the published contract), so hiding it buys nothing and a clear `forbidden`
+    is easier to debug.
+    """
+    if not user.is_staff:
+        raise APIError(403, "forbidden", "staff privileges required")
+    return user
+
+
 async def current_org(
     org_id: uuid.UUID | None = Query(default=None),
     user: User = Depends(current_user),

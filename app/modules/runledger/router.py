@@ -4,10 +4,18 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
+from app.core.deps import current_admin
 from app.modules.runledger import service
 from app.modules.runledger.schemas import RunLedgerOut, SpendSummaryOut
 
-router = APIRouter(prefix="/api/v1/admin/run-ledger", tags=["admin"])
+# Every route here is admin-only (docs/11 §0). Declared on the router rather than
+# per-route so a future ADM-* endpoint added to this file cannot be shipped
+# unguarded by forgetting a decorator argument.
+router = APIRouter(
+    prefix="/api/v1/admin/run-ledger",
+    tags=["admin"],
+    dependencies=[Depends(current_admin)],
+)
 
 
 @router.get("", response_model=list[RunLedgerOut])

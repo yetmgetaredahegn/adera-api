@@ -9,6 +9,7 @@ from fastapi import APIRouter, Cookie, Depends, Header, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.db import get_session
 from app.core.deps import current_session, current_user
 from app.core.errors import APIError
@@ -46,12 +47,16 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 def _set_auth_cookies(response: Response, session_id: uuid.UUID) -> None:
+    # `secure` comes from settings, not a hardcoded True: a Secure cookie is never
+    # returned by a browser over plain HTTP, so hardcoding it made the whole auth
+    # flow silently unusable for web/mobile on http://localhost while curl (which
+    # ignores the flag) still passed. Defaults to True everywhere except env=local.
     response.set_cookie(
         SESSION_COOKIE_NAME,
         sign_session_id(session_id),
         max_age=SESSION_MAX_AGE_SECONDS,
         httponly=True,
-        secure=True,
+        secure=settings.cookie_secure,
         samesite="lax",
         path="/",
     )
@@ -62,7 +67,7 @@ def _set_auth_cookies(response: Response, session_id: uuid.UUID) -> None:
         # NOT httponly: the client's JS must be able to read this to echo it
         # back in X-CSRF-Token — that round-trip IS the double-submit check.
         httponly=False,
-        secure=True,
+        secure=settings.cookie_secure,
         samesite="lax",
         path="/",
     )

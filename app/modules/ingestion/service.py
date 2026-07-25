@@ -25,6 +25,10 @@ from app.modules.ingestion.adapters.base import RawTender
 from app.modules.ingestion.models import BiddingTrack as BiddingTrack
 from app.modules.ingestion.models import Tender as Tender
 from app.modules.ingestion.models import TenderGroup as TenderGroup
+
+# Re-exported so other modules get the FR-2.5-compliant client through this
+# module's service door (AGENTS.md rule 1) instead of reaching into politeness.py.
+from app.modules.ingestion.politeness import build_polite_client as build_polite_client
 from app.modules.sources.models import Source
 
 # ADR-028 step 2: how close two `closing_at` values must be to even be

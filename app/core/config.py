@@ -8,7 +8,7 @@ ability to see the whole configuration surface in one place.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn, model_validator
+from pydantic import Field, PostgresDsn, RedisDsn, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _INSECURE_SECRET_KEY = "dev-only-insecure-change-me"
@@ -42,6 +42,42 @@ class Settings(BaseSettings):
                 'print(secrets.token_urlsafe(48))") before deploying.'
             )
         return self
+
+    # Session cookies (05 §3). A `Secure` cookie is NEVER sent back by a real
+    # browser over plain HTTP -- curl ignores the flag, which is why the auth
+    # flow could be "proven" while a browser on http://localhost silently got
+    # no session at all. Defaults to False only for env=local so web/mobile can
+    # integrate without TLS; every other environment keeps it on. Set
+    # COOKIE_SECURE explicitly to override either way.
+    cookie_secure: bool = True
+
+    @model_validator(mode="after")
+    def _relax_cookie_secure_for_local(self) -> "Settings":
+        if "cookie_secure" not in self.model_fields_set and self.env == "local":
+            self.cookie_secure = False
+        return self
+
+    # CORS: the browser clients (adera-web, Phase 2) are a different origin from
+    # the API, and cookie auth means credentialed requests -- which forbids the
+    # "*" wildcard, so origins must be listed explicitly. PROD MUST OVERRIDE.
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _split_csv_origins(cls, value: object) -> object:
+        # Accept "a,b" as well as JSON '["a","b"]' -- a comma-separated env var is
+        # what a deploy pipeline actually writes.
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    # HTTP rate limiting (docs/11 §0: 429 `rate_limited` + Retry-After).
+    rate_limit_enabled: bool = True
+    rate_limit_per_min: int = 300
+    # Only trust X-Forwarded-For when a reverse proxy (Caddy, infra/) actually
+    # sets it. Trusting it unconditionally lets any client forge its own IP and
+    # walk around the limiter one fake header at a time.
+    trust_proxy_headers: bool = False
 
     # AI Kernel (ADR-014). NFR-COST-1: a hard daily cap with a breaker, not a hope.
     kernel_daily_budget_usd: float = 5.0
