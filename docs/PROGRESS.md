@@ -166,13 +166,21 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   (`notifications.send_digest_sweep`). **Honest gap: no email/Telegram sender
   exists** — the scheduling and no-duplicates spine works; nothing is actually
   delivered yet. Previously listed as `[ ]` in this file in error.
-- [x] **Eval harness — in CI, real but thin.** `evals/harness.py` + `evals/scorers.py`,
-  golden sets under `evals/golden/` (1–3 rows each), `make eval-smoke` wired into
-  `.github/workflows/ci.yml`. Ran clean this session (`uv run python -m
-  evals.harness --smoke` → extraction/qualification/explanation all PASS). The
-  gate exists; the golden sets are too small to have much teeth yet — growing
-  them (Appendix C: "grow from every admin correction and user error-report")
-  is real follow-up, not done. Previously listed as `[ ]` in this file in error.
+- [~] **Eval harness — exists, but the gate is DECORATIVE and cannot fail.**
+  `evals/harness.py` + `evals/scorers.py`, golden sets under `evals/golden/`
+  (1–3 rows each), `make eval-smoke` wired into `.github/workflows/ci.yml`.
+  **This row previously claimed "real but thin" — that was too generous, and the
+  2026-07-25 baseline disproved it.** The harness scores a **pre-recorded
+  `actual` field stored inside the golden JSONL** against `expected` in the same
+  row, and in every row of `evals/golden/*.jsonl` the two are byte-identical, so
+  the score is pinned at 1.0 by construction. **It never calls a model** —
+  `make eval-smoke` finishes in 381 ms with no network, which is also how CI
+  passes this step while running `uv sync --frozen` *without* the `ai` extra
+  (litellm is never imported). And `harness.py::main()` **never exits non-zero
+  on FAIL**, so even a genuine failure would not break CI. Consequence: no claim
+  about model quality anywhere in this repo is currently backed by this gate.
+  Fixing it (invoke the model, exit non-zero, then grow the sets per Appendix C)
+  is Phase 7 of the execution phase map.
 
 ## ADR-028 / ADR-029 — audience narrowing + cross-source dedupe (2026-07-25)
 
@@ -250,6 +258,44 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   `make eval-smoke` green (extraction/qualification/explanation all PASS) ·
   `make openapi` regenerated cleanly (the only diff is the deliberate
   `RegisterOut` shape change).
+
+## Phase 0 — baseline re-verification (2026-07-25)
+
+*First phase of the execution phase map. Verification only — no production code
+touched. Every claim below is a command that was run, per rule 11.*
+
+- [x] **Full green baseline re-established on a fresh database.** Migrations apply
+  clean from an EMPTY volume, all 8 in order (`0001` → … → `a1c3e8f92b71`) — the
+  real from-scratch proof, not `downgrade base` against a dirty local DB (the
+  AGENTS.md §6 `down_revision` trap). `make check` green: ruff format (103 files),
+  ruff check, **mypy strict on 76 source files**, 82 unit tests. `make test-int`
+  green: 28 integration tests. **110/110 total.**
+- [x] **Live ingest re-proven on both real sources, idempotency intact.**
+  `worldbank` created=60 → re-run created=0/unchanged=60; `egp` created=263 →
+  re-run created=0/unchanged=255. **323 real tenders.** The 11 `updated` rows on
+  the e-GP re-run are the already-documented deadline-flip quirk, not a bug.
+- [x] **ADR-028 conflict flagging has now fired on REAL data**, not just fixtures:
+  `total_tenders=323`, `distinct_groups=323`, **`has_conflict=1`**. Still zero
+  genuine cross-source overlaps in today's corpus (the honest documented gap), so
+  the one flag most likely came through the e-GP deadline-flip UPDATE path —
+  worth a look, but the mechanism erring toward "flag it" rather than silently
+  picking a deadline is exactly the ADR-028 contract.
+- [x] **The orphaned-path claim is now measured, not asserted.** On the freshly
+  ingested real corpus: `parsed_docs=0 · classified_track=0 · embedded=0 ·
+  qualified=0` (with `with_deadline=271`). Every one of 323 tenders reads
+  `bidding_track='unknown'` because `classify_bidding_track()` is never called;
+  `tender_documents` is empty because `documents.parse_tender_document` is never
+  dispatched. This is the "before" measurement Phase 2 will be judged against.
+- [x] **Two environment traps found and recorded** (both in `HANDOFF.md`, both
+  durable enough for AGENTS.md §6): the local venv was **Python 3.14** while the
+  project targets 3.12 (`mypy python_version`/`ruff target-version` both `py312`),
+  and on 3.14 `uv sync --extra ai` fails outright because litellm 1.92 has no
+  cp314 wheel and falls back to compiling a Rust/pyo3 bridge — nothing pins the
+  interpreter in-repo, and **CI doesn't either**. And: an `OPENROUTER_API_KEY` in
+  `.env` is **silently inert**, because `Settings` never declares the field and
+  pydantic-settings does not export to `os.environ`, while `app/kernel/router.py`
+  depends on litellm reading that env var itself — so the one value the kernel
+  needs is the one value not flowing through `Settings` (rule 7).
 
 ## Reference material / open decisions landed this session (2026-07-23)
 - [x] `docs/COMPETITORS.md` — GetChereta/2Merkato/AfroTender/EthiopianTender/e-GP landscape
