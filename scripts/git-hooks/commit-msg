@@ -10,7 +10,10 @@ set -euo pipefail
 MSG_FILE="$1"
 
 # Case-insensitive match on Co-Authored-By lines naming a known AI tool/vendor.
-PATTERN='^Co-Authored-By:.*(claude|anthropic|gpt|openai|copilot|codeium|cursor\.sh|gemini|bard)'
+# Match the vendor name, not a domain: the trailer that reaches this hook in
+# practice is "Cursor <cursoragent@cursor.com>", which a `cursor\.sh` pattern
+# silently let through for two commits before anyone noticed.
+PATTERN='^Co-Authored-By:.*(claude|anthropic|gpt|openai|copilot|codeium|cursor|gemini|bard)'
 
 if grep -qiE "$PATTERN" "$MSG_FILE"; then
   echo ""
@@ -21,6 +24,10 @@ if grep -qiE "$PATTERN" "$MSG_FILE"; then
   echo "Standing policy (AGENTS.md rule 16): no AI agent is ever a commit"
   echo "co-author, in any ADERA repo. Describe the agent's contribution in the"
   echo "commit body instead, and commit as yourself."
+  echo ""
+  echo "If you did not type that line: the editor appends it to every commit."
+  echo "Turn that setting off rather than deleting the line each time -- it is"
+  echo "re-added on amend, so a retry alone will not clear it."
   echo ""
   exit 1
 fi
