@@ -64,6 +64,24 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
 
 ## Matching — M6/M7 · Phase 1→2
 - [x] Company profile model + embedding service — `feat(profiles)`
+- [x] **Profile HTTP endpoints (PRO-2/PRO-3) — built and proven live, 2026-07-30.**
+  `GET/PUT /api/v1/org/profile` (`app/modules/profiles/router.py`) — the model
+  and `upsert_profile()` service already existed (CLI-only, `seed-profiles`);
+  this is the first time a real registered org can create/edit the profile
+  `match_org()` runs against, closing the gap where every fresh signup was
+  permanently stuck at an empty match feed. Two-org tenant isolation proven
+  (`tests/test_profiles_tenant_isolation.py`). Real bug found and fixed while
+  building this: `qualification/service.py::get_qualified_tender_ids` filters
+  tenders by an exact string match on the LLM-freeform `Qualification.sector`
+  field, and `ingestion/service.py::rank_by_embedding` treats an empty
+  restrict-list as "match nothing," not "no restriction" — so a hand-picked
+  sector chip list could silently and permanently empty a real org's match
+  feed. Fixed with a new `GET /api/v1/tenders/sectors` (TEN-5) sourcing real
+  distinct sectors from the qualified corpus instead
+  (`qualification/service.py::list_qualified_sectors`) — proven live to return
+  actual corpus phrasing (`"ICT / e-payment systems"`, not a guessed "ICT").
+  **PRO-1 (LLM-drafts-chips-from-pasted-text) is explicitly deferred** — a
+  separate, bigger feature (new prompt file, new kernel route, eval).
 - [x] Semantic matching (vector similarity + floor) — `feat(matching)`
 - [x] **Matching spike JUDGED GREEN** (3 profiles → correct, non-overlapping lists) — `make demo`
 - [x] **LLM re-rank + grounded "why this fits you" (B3) — live, proven.**
@@ -260,6 +278,11 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
 ---
 
 ## What's next (the tech lead's build queue)
+0. **MAT-2/MAT-3 (save/dismiss)** — now the top blocker: the profile builder
+   (PRO-2/PRO-3, above) means real matches can finally exist, but there is
+   still no endpoint to save or dismiss one; `adera-web`'s feed keeps that
+   state client-side only today (resets on reload). PRO-1 (LLM-drafted
+   profile chips) is the other explicitly deferred piece from this session.
 1. Extend the eligibility law corpus past Article 2 — the articles that
    actually govern bidder eligibility (bidding methods, nationality
    restrictions) aren't ingested yet; needs careful, non-rushed extraction.
@@ -289,6 +312,12 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   (220+ e-GP tenders, public-API-only, no-login-ever rule enforced by
   construction); the review is about the ADR's `Proposed` status, not the code.
 - ADR-029's Telegram-repurposing question (item 6 above).
+- **ADR-030 (new, 2026-07-29): identity verification/vetting mechanism for all
+  three org-facing actors** — bidder self-declaration (`org_type`), facilitator
+  vetting (M14), poster KYB (M17). The master plan already decided *that* each
+  actor needs checking and sketched a schema (Appendix A); nobody has decided
+  *how* — what documents, what tooling, manual vs. vendor. Blocks Phase 3's own
+  DoD (10 active facilitators, first KYB-verified posted tender). Not started.
 - Whether `adera-mobile`'s offline/low-bandwidth investment still deserves the
   same priority now that its bidder audience is diaspora-abroad, not local SMEs
   on patchy Ethiopian data (see that repo's `docs/PROGRESS.md`).

@@ -168,3 +168,25 @@ async def get_qualified_tender_ids(
     if sectors:
         query = query.where(Qualification.sector.in_(sectors))
     return list((await session.execute(query)).scalars().all())
+
+
+async def list_qualified_sectors(session: AsyncSession) -> list[str]:
+    """Distinct sector strings actually present across QUALIFIED tenders.
+
+    `sector` is LLM-freeform text (prompt B2), not an enum, and
+    `get_qualified_tender_ids` filters on an exact string match against it. A
+    profile-builder UI that offers a hand-picked sector list instead of this
+    one can silently produce a permanently empty match feed the moment a
+    chosen chip never happens to match any real `Qualification.sector` string
+    — this is the real vocabulary a profile must overlap with to ever match.
+    """
+    rows = await session.execute(
+        select(Qualification.sector)
+        .where(
+            Qualification.status == QualificationStatus.QUALIFIED,
+            Qualification.sector.is_not(None),
+        )
+        .distinct()
+        .order_by(Qualification.sector)
+    )
+    return [s for s in rows.scalars().all() if s]

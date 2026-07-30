@@ -26,13 +26,14 @@
 | TEN-2 | GET /tenders/{id} | org | – | **200** full detail: extraction fields+confidences, qualification, eligibility verdict(for org_type), my_match(state), documents[] | 404 |
 | TEN-3 | GET /public/tenders/{slug} | public | – | **200** SEO payload (facts, buyer, deadline, source link) — never full doc text | 404 |
 | TEN-4 | GET /public/sitemap | public | cursor | **200** {items:[{slug,lastmod}],next_cursor} | – |
+| TEN-5 | GET /tenders/sectors | public | – | **200** string[] of distinct `Qualification.sector` values actually present across QUALIFIED tenders (new, 2026-07-30). Feeds the M6 profile builder's sector chip list — a hand-picked list can silently mismatch the LLM's own sector phrasing and produce a permanently empty match feed (`qualification/service.py::get_qualified_tender_ids` filters by exact string); this endpoint is the fix. Must stay routed before TEN-2 or FastAPI parses "sectors" as a tender UUID. | – |
 
 ## 3. Profile & matching (Phase 2)
 | ID | Endpoint | Auth | Request | Success | Errors |
 |---|---|---|---|---|---|
-| PRO-1 | POST /org/profile/draft | org | {text} or {url} | **200** draft chips {sectors[],capabilities[],certifications[],regions[],size} | 429 (rate-limited, no quota) |
-| PRO-2 | PUT /org/profile | org | confirmed chip sets + description | **200** profile; enqueues re-embed | 422 |
-| PRO-3 | GET /org/profile | org | – | **200** | 404 not created |
+| PRO-1 | POST /org/profile/draft | org | {text} or {url} | **200** draft chips {sectors[],capabilities[],certifications[],regions[],size} | 429 (rate-limited, no quota) — **NOT built**, deferred fast-follow (LLM-drafted chips) |
+| PRO-2 | PUT /org/profile | org | confirmed chip sets + description | **200** profile; enqueues re-embed | 422 — **Built and proven live, 2026-07-30** (`app/modules/profiles/router.py`). Re-embed is synchronous in-request today (local CPU BGE-M3), not enqueued to a worker as this row implies — fine at current volume, a future tightening not a contract violation. |
+| PRO-3 | GET /org/profile | org | – | **200** | 404 not created — **Built and proven live, 2026-07-30**, two-org isolation tested |
 | MAT-1 | GET /matches | org | state=new\|saved, limit,cursor | **200** ranked matches (tender summary + score + explanation) — one per opportunity GROUP, never per source row (ADR-028) | **403 `audience_restricted`** (local org, ADR-029) |
 | MAT-2 | POST /matches/{id}/save | org | – | **200** {state:"saved"} | 404 · 409 expired |
 | MAT-3 | POST /matches/{id}/dismiss | org | – | **200** {state:"dismissed"} (never resurfaces, FR-7.3) | 404 |

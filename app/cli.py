@@ -8,6 +8,8 @@
     uv run python -m app.cli qualify           # rule + LLM qualify tenders that lack a verdict
     uv run python -m app.cli seed-law          # ingest Article 2 (definitions) of Proc. 1333/2024
     uv run python -m app.cli demo              # match every profile + print judgment sheet
+    uv run python -m app.cli demo-login <email> <password> [org]
+                                               # attach a login to a demo-profile org
 
 This is the "admin dry-run" surface (FR-11.3) until the real admin UI exists.
 Prefix with DEBUG=false to silence SQL echo.
@@ -169,6 +171,53 @@ async def _seed_profiles() -> None:
         await session.commit()
 
 
+DEFAULT_DEMO_LOGIN_ORG = "Selam Digital Solutions LLC"
+
+
+async def _demo_login(email: str, password: str, org_name: str) -> None:
+    """Attach a real login to one of the authored demo-profile orgs.
+
+    Why this exists: `POST /auth/register` (AUTH-1) always creates a BRAND NEW
+    org, and no endpoint can give that org a company profile yet (the profile
+    API is unbuilt — docs/PROGRESS.md). So a freshly registered account can
+    never have matches, and a browser has no way to reach a populated feed.
+    This binds a password login to an org `seed-profiles` already built, so the
+    web client exercises the real `/auth/*` + `/matches` path against real
+    data. Dev affordance only — it is not reachable over HTTP.
+    """
+    from app.core.security import hash_password
+    from app.modules.identity.models import OrgMember, OrgRole, User
+
+    async with async_session_factory() as session:
+        org = (await session.execute(select(Org).where(Org.name == org_name))).scalar_one_or_none()
+        if org is None:
+            print(f"no org named {org_name!r} — run `seed-profiles` first")
+            return
+
+        user = (await session.execute(select(User).where(User.email == email))).scalar_one_or_none()
+        if user is None:
+            user = User(email=email, password_hash=hash_password(password))
+            session.add(user)
+            await session.flush()
+        else:
+            user.password_hash = hash_password(password)
+
+        member = (
+            (await session.execute(select(OrgMember).where(OrgMember.user_id == user.id)))
+            .scalars()
+            .first()
+        )
+        if member is None:
+            session.add(OrgMember(org_id=org.id, user_id=user.id, role=OrgRole.OWNER))
+        else:
+            # A prior `/auth/register` already gave this email its own brand-new
+            # org. Re-point it, or the caller silently keeps logging into the
+            # profile-less org while this command reports the target one.
+            member.org_id = org.id
+        await session.commit()
+        print(f"login ready: {email} -> {org_name} ({org.org_type.value})")
+
+
 async def _embed() -> None:
     from app.modules.ingestion.service import embed_pending
 
@@ -297,6 +346,12 @@ def main() -> None:
             asyncio.run(_seed_law())
         case "demo":
             asyncio.run(_demo())
+        case "demo-login":
+            if len(rest) < 2:
+                print("usage: demo-login <email> <password> [org_name]")
+                return
+            org_name = rest[2] if len(rest) > 2 else DEFAULT_DEMO_LOGIN_ORG
+            asyncio.run(_demo_login(rest[0], rest[1], org_name))
         case _:
             print(f"unknown command: {cmd}")
             print(__doc__)

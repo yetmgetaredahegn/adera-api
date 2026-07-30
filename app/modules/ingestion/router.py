@@ -23,6 +23,7 @@ from app.modules.ingestion.schemas import (
     TenderQAIn,
     TenderQAOut,
 )
+from app.modules.qualification.service import list_qualified_sectors
 
 router = APIRouter(prefix="/api/v1/tenders", tags=["tenders"])
 
@@ -67,6 +68,14 @@ async def search_tenders(
         items=[TenderOut.model_validate(t) for t in tenders],
         next_after=next_after,
     )
+
+
+@router.get("/sectors", response_model=list[str])
+async def list_sectors(session: AsyncSession = Depends(get_session)) -> list[str]:
+    """Real sector strings seen across qualified tenders (M6 profile builder) --
+    NOT a hand-picked list. Must stay declared before `/{tender_id}` or FastAPI
+    tries to parse "sectors" as a tender UUID and 422s instead of matching here."""
+    return await list_qualified_sectors(session)
 
 
 @router.get("/{tender_id}", response_model=TenderOut)

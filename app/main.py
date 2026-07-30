@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -28,6 +29,17 @@ def create_app() -> FastAPI:
         version="0.1.0",
         debug=settings.debug,
         lifespan=lifespan,
+    )
+
+    # The web client is a separate origin (Next.js on :3000), so the session and
+    # CSRF cookies only travel if credentialed CORS is on and the origin is
+    # named explicitly -- the spec forbids "*" with credentials.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     @app.get("/healthz", tags=["ops"])
@@ -54,11 +66,13 @@ def create_app() -> FastAPI:
     from app.modules.identity.router import router as auth_router
     from app.modules.ingestion.router import router as tenders_router
     from app.modules.matching.router import router as matches_router
+    from app.modules.profiles.router import router as profiles_router
     from app.modules.runledger.router import router as runledger_router
 
     app.include_router(tenders_router)
     app.include_router(auth_router)
     app.include_router(matches_router)
+    app.include_router(profiles_router)
     app.include_router(runledger_router)
     return app
 

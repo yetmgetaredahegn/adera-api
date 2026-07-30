@@ -159,6 +159,123 @@
         "title": "OrgType",
         "type": "string"
       },
+      "ProfileIn": {
+        "description": "PUT body \u2014 confirmed facts only (FR-6.1).\n\nsectors/capabilities are required non-empty: an org that confirms neither\nhas nothing for matching or the grounded explanation to cite, so it can\nnever usefully match \u2014 reject at the boundary rather than silently persist\na profile that can't do its job. certifications/regions stay optional:\nmany real orgs have neither, and \"no certifications\" / \"serves anywhere\"\nare legitimate answers, not missing data.",
+        "properties": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "certifications": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Certifications",
+            "type": "array"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "sectors": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Sectors",
+            "type": "array"
+          },
+          "source_text": {
+            "minLength": 1,
+            "title": "Source Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_text",
+          "sectors",
+          "capabilities"
+        ],
+        "title": "ProfileIn",
+        "type": "object"
+      },
+      "ProfileOut": {
+        "description": "Never includes profile_embedding \u2014 no schema in this repo exposes a raw\nvector (mirrors TenderOut).",
+        "properties": {
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "certifications": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Certifications",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "org_id": {
+            "format": "uuid",
+            "title": "Org Id",
+            "type": "string"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "sectors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sectors",
+            "type": "array"
+          },
+          "source_text": {
+            "title": "Source Text",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "org_id",
+          "source_text",
+          "sectors",
+          "capabilities",
+          "certifications",
+          "regions",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
       "RegisterIn": {
         "properties": {
           "country": {
@@ -1115,6 +1232,146 @@
         ]
       }
     },
+    "/api/v1/org/profile": {
+      "get": {
+        "operationId": "get_my_profile_api_v1_org_profile_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get My Profile",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "put": {
+        "operationId": "upsert_my_profile_api_v1_org_profile_put",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upsert My Profile",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
     "/api/v1/tenders": {
       "get": {
         "operationId": "list_tenders_api_v1_tenders_get",
@@ -1290,6 +1547,32 @@
           }
         },
         "summary": "Search Tenders",
+        "tags": [
+          "tenders"
+        ]
+      }
+    },
+    "/api/v1/tenders/sectors": {
+      "get": {
+        "description": "Real sector strings seen across qualified tenders (M6 profile builder) --\nNOT a hand-picked list. Must stay declared before `/{tender_id}` or FastAPI\ntries to parse \"sectors\" as a tender UUID and 422s instead of matching here.",
+        "operationId": "list_sectors_api_v1_tenders_sectors_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response List Sectors Api V1 Tenders Sectors Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sectors",
         "tags": [
           "tenders"
         ]

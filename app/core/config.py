@@ -31,6 +31,24 @@ class Settings(BaseSettings):
 
     secret_key: str = _INSECURE_SECRET_KEY
 
+    # Browsers that speak plain HTTP silently drop a `Secure` cookie, so a local
+    # web client on http://localhost never gets the session back even though curl
+    # does (AGENTS.md §6 trap). Derived from `env`, deliberately NOT its own
+    # settable flag: there is no environment variable that can turn the Secure
+    # attribute off anywhere but local dev.
+    @property
+    def cookie_secure(self) -> bool:
+        return self.env != "local"
+
+    # Credentialed CORS forbids a wildcard origin, so the allowed web origins are
+    # explicit. Comma-separated in the environment; local default is the Next.js
+    # dev server.
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
     @model_validator(mode="after")
     def _reject_insecure_secret_in_prod(self) -> "Settings":
         # SECURITY.md gap G1: this key signs session cookies (app/core/security.py)
