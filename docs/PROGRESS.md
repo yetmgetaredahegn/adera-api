@@ -64,6 +64,39 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
 
 ## Matching — M6/M7 · Phase 1→2
 - [x] Company profile model + embedding service — `feat(profiles)`
+- [x] **Profile save now auto-triggers matching — built and proven live,
+  2026-07-30 (second pass, same day).** Found live: the founder's own real
+  account had a saved profile but zero matches, because nothing anywhere
+  ever called `match_org()` automatically — the very first version of the
+  profile endpoint shipped that gap. `PUT /api/v1/org/profile` now calls
+  `match_org(session, org.id, kernel=build_kernel())` synchronously right
+  after `upsert_profile()`, best-effort (a matching failure is logged, never
+  fails the profile save; `AudienceRestricted` for local orgs is expected and
+  silently skipped, matching the CLI demo's own behavior). Idempotent per
+  (org, GROUP), so editing an already-matched profile again costs nothing
+  extra. New test proves the actual behavior, not just that it doesn't
+  break anything: `test_put_profile_automatically_triggers_matching` seeds a
+  real qualified/embedded tender, PUTs a matching profile, and asserts a real
+  `Match` row exists afterward via `GET /matches` — no separate endpoint or
+  script involved. **Honest limitation, not fixed here:** still nothing
+  re-runs matching for tenders ingested *after* a profile was last saved — a
+  scheduled sweep is the real fix, out of scope for this pass.
+- [x] `adera-web`: the profile-setup gate is now MANDATORY for bidder orgs
+  (diaspora/foreign) — `AppGate` checks `GET /org/profile` and redirects any
+  `/dashboard/*` visit to `/profile-setup` until one exists; local orgs are
+  exempt (ADR-029, they never receive matching). Editing an existing profile
+  afterward stays entirely optional. Real bug found and fixed in the same
+  pass: without invalidating the gate's cached "no profile" query on save,
+  the very next `/dashboard/*` visit re-read the stale cached result and
+  bounced the user right back to `/profile-setup` even though the save had
+  just succeeded — fixed with `queryClient.removeQueries(...)` on submit, not
+  just `invalidateQueries` (which alone still serves stale data on the next
+  mount under React Query's stale-while-revalidate default). Also added an
+  "All Tenders" link to the dashboard header (`/tenders`, the existing public
+  listing) — logged-in users previously had no way to browse beyond their
+  matched subset. Known trade-off, not fixed: `/tenders` renders the public
+  marketing chrome, not the dashboard header, so the nav visibly changes on
+  that click.
 - [x] **Profile HTTP endpoints (PRO-2/PRO-3) — built and proven live, 2026-07-30.**
   `GET/PUT /api/v1/org/profile` (`app/modules/profiles/router.py`) — the model
   and `upsert_profile()` service already existed (CLI-only, `seed-profiles`);
