@@ -41,7 +41,7 @@
 ## 4. Eligibility & compliance (Phase 2; matrix Phase 4)
 | ID | Endpoint | Auth | Request | Success | Errors |
 |---|---|---|---|---|---|
-| ELI-1 | GET /tenders/{id}/eligibility | org | – | **200** {verdict, conditions[], citations[{doc,article_ref}], confidence, law_version, disclaimer:true} — computed on miss, cached | 404 |
+| ELI-1 | GET /tenders/{id}/eligibility | org | – | **200** {verdict, conditions[], citations[{doc,article_ref}], confidence, law_version, disclaimer:true} — computed on miss, cached | 404 · **403 `audience_restricted`** (local org, ADR-029) — **Built and proven live, 2026-07-30** (`app/modules/eligibility/router.py`, new `eligibility_assessments` cache table). Real live proof: a real tender's first request took ~23s (cold embedding-model load + retrieval, no LLM call reached since nothing cleared the retrieval-similarity floor) and correctly returned `unknown` rather than guess; the identical second request returned in 0.35s from the cache, confirmed by a persisted row. |
 | ELI-2 | GET /tenders/{id}/checklist | org (Pro+) | – | **200** checklist items[{text,category,mandatory,source_ref}] | 402 on Free |
 | ELI-3 | POST /tenders/{id}/matrix | org (Business) | – | **202** {job_id} → GET /jobs/{id} → **200** matrix rows (FR-16.4) | 402 · 409 no docs |
 

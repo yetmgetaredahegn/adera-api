@@ -13,6 +13,79 @@
         "title": "BiddingTrack",
         "type": "string"
       },
+      "Citation": {
+        "properties": {
+          "article_ref": {
+            "title": "Article Ref",
+            "type": "string"
+          },
+          "document_name": {
+            "title": "Document Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_name",
+          "article_ref"
+        ],
+        "title": "Citation",
+        "type": "object"
+      },
+      "EligibilityResponseOut": {
+        "description": "ELI-1's public shape (docs/11_API_REFERENCE.md): `conditions`, not\n`reasons` -- the contract's naming, kept separate from EligibilityOut's\nalready-tested internal field name rather than renaming it everywhere.",
+        "properties": {
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "conditions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "disclaimer": {
+            "default": true,
+            "title": "Disclaimer",
+            "type": "boolean"
+          },
+          "law_version": {
+            "title": "Law Version",
+            "type": "string"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/EligibilityVerdict"
+          }
+        },
+        "required": [
+          "verdict",
+          "conditions",
+          "citations",
+          "confidence",
+          "law_version"
+        ],
+        "title": "EligibilityResponseOut",
+        "type": "object"
+      },
+      "EligibilityVerdict": {
+        "description": "FR-16.2 / FR-7.6 \u2014 the chip on every card.\n\n`UNKNOWN` must be said plainly and must route to a facilitator, never guessed\n(NFR-LEGAL-1). Ineligible tenders are down-ranked and LABELED, never silently\nhidden \u2014 a bidder who can't see why is a bidder who doesn't trust us.",
+        "enum": [
+          "eligible",
+          "conditional",
+          "ineligible",
+          "unknown"
+        ],
+        "title": "EligibilityVerdict",
+        "type": "string"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1801,6 +1874,82 @@
         "summary": "Get Tender",
         "tags": [
           "tenders"
+        ]
+      }
+    },
+    "/api/v1/tenders/{tender_id}/eligibility": {
+      "get": {
+        "operationId": "get_tender_eligibility_api_v1_tenders__tender_id__eligibility_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tender_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tender Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "adera_session",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Adera Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EligibilityResponseOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Tender Eligibility",
+        "tags": [
+          "eligibility"
         ]
       }
     },

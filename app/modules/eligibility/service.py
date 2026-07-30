@@ -17,18 +17,27 @@ first-class, correct answer, never a defect):
    downgraded to `unknown` here, not trusted.
 """
 
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.kernel.prompts import load_prompt
 from app.kernel.router import Kernel
-from app.modules.eligibility.models import LawChunk
+from app.modules.eligibility.models import EligibilityAssessment, LawChunk
 from app.modules.eligibility.schemas import EligibilityOut
 from app.modules.identity.service import Org, require_bidder_audience
 from app.modules.ingestion.service import BiddingTrack, Tender
 from app.modules.matching.service import EligibilityVerdict
 
 PROMPT_VERSION = "v1"
+
+# ELI-1's `law_version`: a real, honest snapshot of what's actually ingested
+# today (docs/PROGRESS.md), not a version number nothing tracks yet. Update
+# this string when the corpus grows past Article 2 -- it exists precisely so
+# a cached verdict from before that day still reads as "computed against the
+# old, narrower corpus," per NFR-LEGAL-1.
+LAW_VERSION = "Proclamation 1333/2024 -- Article 2 (definitions) only"
 
 
 def classify_bidding_track(tender: Tender) -> tuple[BiddingTrack, float, str]:
@@ -153,3 +162,38 @@ async def assess_eligibility(
                 "into the retrieved law chunks -- downgraded rather than trusted"
             )
     return result
+
+
+async def get_cached_assessment(
+    session: AsyncSession, org_id: uuid.UUID, tender_id: uuid.UUID
+) -> EligibilityAssessment | None:
+    """ELI-1's "computed on miss, cached" -- one row per (org, tender), ever.
+    A local org can never have a row here (assess_eligibility always raises
+    AudienceRestricted before a row is written for one), so this alone is
+    never the audience gate -- the router's write path still goes through
+    assess_eligibility(), which re-checks it on every miss."""
+    return (
+        await session.execute(
+            select(EligibilityAssessment).where(
+                EligibilityAssessment.org_id == org_id,
+                EligibilityAssessment.tender_id == tender_id,
+            )
+        )
+    ).scalar_one_or_none()
+
+
+async def cache_assessment(
+    session: AsyncSession, org_id: uuid.UUID, tender_id: uuid.UUID, result: EligibilityOut
+) -> EligibilityAssessment:
+    row = EligibilityAssessment(
+        org_id=org_id,
+        tender_id=tender_id,
+        verdict=result.verdict,
+        reasons=result.reasons,
+        citations=[c.model_dump() for c in result.citations],
+        confidence=result.confidence,
+        law_version=LAW_VERSION,
+    )
+    session.add(row)
+    await session.flush()
+    return row

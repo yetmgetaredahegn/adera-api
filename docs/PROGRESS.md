@@ -198,6 +198,26 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
 - [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key (key now exists; not built)
 
 ## Eligibility & Notifications — later phases
+- [x] **Eligibility HTTP surface (ELI-1) — built and proven live, 2026-07-30.**
+  `assess_eligibility()` existed but had zero HTTP exposure — only the CLI/tests
+  could reach it. `GET /api/v1/tenders/{id}/eligibility`
+  (`app/modules/eligibility/router.py`) is the first client-reachable path.
+  New `eligibility_assessments` cache table (migration `68300cfde630`):
+  computed on miss, cached per (org, tender) so repeat views never re-spend
+  an LLM call. **Real live proof** against the actual corpus: a real
+  IT-equipment tender's first request took ~23s (cold embedding-model load;
+  no LLM call reached at all, since nothing cleared the retrieval-similarity
+  floor against the Article-2-only corpus) and correctly returned `unknown`
+  rather than guessing; the identical second request returned in 0.35s from
+  the cache, confirmed by the persisted row. **Honest gap, not fixed here:**
+  autogenerate's diff for this migration also proposed an unrelated
+  `tenders.group_id` nullability change (a pre-existing drift between the ORM
+  model's `uuid.UUID | None` annotation and the DB's real `NOT NULL`,
+  intentionally set in ADR-028's migration `a1c3e8f92b71` — the model
+  annotation was just never updated to match). Stripped out of this
+  migration rather than silently applied — altering an existing table is
+  founder-review-mandatory (AGENTS.md rule 14) and this had nothing to do
+  with the actual task.
 - [x] **NCB/ICB classifier + eligibility chips v1 (M16) — real MVP built and
   proven live**, ahead of any assignment, same "build now, rework later"
   principle as qualification. `app/modules/eligibility/`: `LawChunk` model +
