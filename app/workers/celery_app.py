@@ -40,11 +40,16 @@ celery_app.conf.update(
         "app.modules.ingestion.tasks",
         "app.modules.notifications.tasks",
         "app.modules.documents.tasks",
+        "app.modules.matching.tasks",
     ),
     beat_schedule={
         "send-digest-sweep-hourly": {
             "task": "notifications.send_digest_sweep",
             "schedule": 3600.0,  # Run hourly sweep
+        },
+        "rerun-matching-sweep-hourly": {
+            "task": "matching.rerun_sweep",
+            "schedule": 3600.0,
         },
     },
 )

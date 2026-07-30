@@ -78,9 +78,17 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   break anything: `test_put_profile_automatically_triggers_matching` seeds a
   real qualified/embedded tender, PUTs a matching profile, and asserts a real
   `Match` row exists afterward via `GET /matches` — no separate endpoint or
-  script involved. **Honest limitation, not fixed here:** still nothing
-  re-runs matching for tenders ingested *after* a profile was last saved — a
-  scheduled sweep is the real fix, out of scope for this pass.
+  script involved. **Honest limitation, closed 2026-07-30**: nothing used to
+  re-run matching for tenders ingested *after* a profile was last saved.
+  `matching.rerun_sweep` (`app/modules/matching/tasks.py`), an hourly Celery
+  Beat task (`rerun-matching-sweep-hourly`), now re-runs `match_org()` for
+  every org with a profile — idempotent per (org, GROUP), so it costs one
+  query and zero writes for an org with nothing new. Proven live against the
+  real dev DB (returned `0` new matches — correct, since existing profiles
+  were already matched by earlier manual runs) and by two tests
+  (`tests/test_matching_sweep.py`): a tender qualified/embedded *after* an
+  org's profile save gets matched by the sweep alone, and a local org's
+  profile is skipped without the sweep raising.
 - [x] `adera-web`: the profile-setup gate is now MANDATORY for bidder orgs
   (diaspora/foreign) — `AppGate` checks `GET /org/profile` and redirects any
   `/dashboard/*` visit to `/profile-setup` until one exists; local orgs are

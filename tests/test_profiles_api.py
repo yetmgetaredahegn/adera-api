@@ -15,7 +15,6 @@ from app.core.db import async_session_factory
 from app.main import app
 from app.modules.identity.models import Org, OrgMember, Session, User
 from app.modules.ingestion.models import BiddingTrack, Tender, TenderGroup
-from app.modules.matching.models import Match
 from app.modules.matching.schemas import ExplanationOut
 from app.modules.profiles.models import CompanyProfile
 from app.modules.qualification.models import Qualification, QualificationMethod, QualificationStatus
