@@ -34,9 +34,9 @@
 | PRO-1 | POST /org/profile/draft | org | {text} or {url} | **200** draft chips {sectors[],capabilities[],certifications[],regions[],size} | 429 (rate-limited, no quota) — **NOT built**, deferred fast-follow (LLM-drafted chips) |
 | PRO-2 | PUT /org/profile | org | confirmed chip sets + description | **200** profile; enqueues re-embed | 422 — **Built and proven live, 2026-07-30** (`app/modules/profiles/router.py`). Re-embed is synchronous in-request today (local CPU BGE-M3), not enqueued to a worker as this row implies — fine at current volume, a future tightening not a contract violation. |
 | PRO-3 | GET /org/profile | org | – | **200** | 404 not created — **Built and proven live, 2026-07-30**, two-org isolation tested |
-| MAT-1 | GET /matches | org | state=new\|saved, limit,cursor | **200** ranked matches (tender summary + score + explanation) — one per opportunity GROUP, never per source row (ADR-028) | **403 `audience_restricted`** (local org, ADR-029) |
-| MAT-2 | POST /matches/{id}/save | org | – | **200** {state:"saved"} | 404 · 409 expired |
-| MAT-3 | POST /matches/{id}/dismiss | org | – | **200** {state:"dismissed"} (never resurfaces, FR-7.3) | 404 |
+| MAT-1 | GET /matches | org | state=new\|saved, limit,cursor | **200** ranked matches (tender summary + score + explanation) — one per opportunity GROUP, never per source row (ADR-028) | **403 `audience_restricted`** (local org, ADR-029) — **Built and proven live, 2026-07-30**: `?state=` implemented as an exact-match filter (not yet `cursor`-paginated — `limit` only, fine at current volume). |
+| MAT-2 | POST /matches/{id}/save | org | – | **200** {state:"saved"} | 404 · 409 expired — **Built and proven live, 2026-07-30** (`app/modules/matching/router.py`). "Expired" = a known `closing_at` in the past; a null/unknown deadline (the common World Bank case) is never treated as expired. |
+| MAT-3 | POST /matches/{id}/dismiss | org | – | **200** {state:"dismissed"} (never resurfaces, FR-7.3) | 404 — **Built and proven live, 2026-07-30**, no expiry rule (a user can always dismiss). |
 
 ## 4. Eligibility & compliance (Phase 2; matrix Phase 4)
 | ID | Endpoint | Auth | Request | Success | Errors |

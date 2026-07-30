@@ -150,6 +150,18 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   test: org A and org B each get a seeded match, org A's default (no
   `?org_id=`) call returns only its own, and an explicit cross-org
   `?org_id=<org B>` request 404s (never 403 — no confirming org B exists).
+- [x] **Save/dismiss (MAT-2/MAT-3) — built and proven live, 2026-07-30.**
+  `POST /api/v1/matches/{id}/save` and `/dismiss`
+  (`app/modules/matching/router.py`, `service.py::save_match`/`dismiss_match`).
+  `GET /matches?state=` now supports an exact-match filter (`new`/`saved`/
+  `dismissed`), which is what makes a real "Saved" tab possible — previously
+  the only client-side state was a `Set` that reset on reload. Save 409s
+  `expired` for a tender whose *known* `closing_at` has passed; a null/unknown
+  deadline (the common World Bank case) is never treated as expired. Dismiss
+  has no expiry rule by design — a user must always be able to dismiss.
+  4 new tests (`tests/test_matches_save_dismiss.py`): save-then-filterable,
+  dismiss-never-resurfaces-in-default-feed, save-on-expired-is-409-but-dismiss-
+  still-works, and a two-org 404 leak check. 118/118 tests pass.
 - [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key (key now exists; not built)
 
 ## Eligibility & Notifications — later phases
@@ -278,11 +290,6 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
 ---
 
 ## What's next (the tech lead's build queue)
-0. **MAT-2/MAT-3 (save/dismiss)** — now the top blocker: the profile builder
-   (PRO-2/PRO-3, above) means real matches can finally exist, but there is
-   still no endpoint to save or dismiss one; `adera-web`'s feed keeps that
-   state client-side only today (resets on reload). PRO-1 (LLM-drafted
-   profile chips) is the other explicitly deferred piece from this session.
 1. Extend the eligibility law corpus past Article 2 — the articles that
    actually govern bidder eligibility (bidding methods, nationality
    restrictions) aren't ingested yet; needs careful, non-rushed extraction.

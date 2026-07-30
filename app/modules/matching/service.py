@@ -14,6 +14,7 @@ Honesty notes still true:
 
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -42,6 +43,12 @@ from app.modules.qualification.service import get_qualified_tender_ids
 SIMILARITY_FLOOR = 0.45
 
 PROMPT_VERSION = "v1"
+
+
+class MatchExpired(Exception):
+    """Raised by `save_match` when the tender has already closed (MAT-2,
+    docs/11_API_REFERENCE.md: 409 expired). Dismissing has no such rule --
+    a user must always be able to dismiss, expired or not."""
 
 
 @dataclass
@@ -185,3 +192,31 @@ async def match_org(
         )
     await session.flush()
     return out
+
+
+async def get_org_match(
+    session: AsyncSession, match_id: uuid.UUID, org_id: uuid.UUID
+) -> Match | None:
+    """Scoped by org_id in the query itself, not checked after the fact --
+    a match belonging to another org must read as `None` (404), never leak
+    that the id exists (AGENTS.md rule 9)."""
+    return (
+        await session.execute(select(Match).where(Match.id == match_id, Match.org_id == org_id))
+    ).scalar_one_or_none()
+
+
+async def save_match(session: AsyncSession, match: Match, tender: Tender) -> None:
+    """MAT-2. Raises `MatchExpired` if the tender's deadline has already
+    passed -- a null closing_at (unknown/no deadline stated, the common World
+    Bank case) is NOT expired; only a known, past deadline is."""
+    if tender.closing_at is not None and tender.closing_at < datetime.now(UTC):
+        raise MatchExpired(f"tender {tender.id} closed at {tender.closing_at.isoformat()}")
+    match.state = MatchState.SAVED
+    await session.flush()
+
+
+async def dismiss_match(session: AsyncSession, match: Match) -> None:
+    """MAT-3, FR-7.3: dismissed never resurfaces -- unconditional, no expiry
+    check, since a user must always be able to dismiss."""
+    match.state = MatchState.DISMISSED
+    await session.flush()

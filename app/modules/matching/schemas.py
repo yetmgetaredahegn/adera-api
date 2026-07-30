@@ -33,3 +33,13 @@ class MatchOut(BaseModel):
     explanation: str | None
     state: MatchState
     tender: TenderOut
+
+
+class MatchStateOut(BaseModel):
+    """MAT-2/MAT-3 response shape (docs/11_API_REFERENCE.md): the target
+    state only -- constructed directly, never by re-serializing the mutated
+    ORM row (the same onupdate=func.now()-triggered MissingGreenlet risk
+    profiles/router.py hit on its UPDATE path; a minimal literal response
+    sidesteps it entirely rather than needing another session.refresh())."""
+
+    state: MatchState
