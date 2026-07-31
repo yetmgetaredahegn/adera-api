@@ -230,6 +230,31 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   bigger problem; streaming the now-real JSON response is a separate,
   smaller follow-up.
 
+## Admin & Ops — M11 · Phase 2
+- [x] **Run-ledger + AI spend endpoints** — `GET /api/v1/admin/run-ledger`
+  (list, filterable by `kind`) and `/admin/run-ledger/spend` (totals over a
+  window). Built in an earlier session, never previously logged in this
+  file — corrected 2026-07-30. Now wired into `adera-web`'s admin dashboard
+  (its own `docs/PROGRESS.md`).
+- [ ] **Security gap, found and NOT fixed 2026-07-30: neither endpoint has
+  any admin-role gate.** Both are reachable by anyone who can reach the API
+  at all — no `Depends(current_org)` (this isn't tenant data) and no
+  "platform admin" check either, because that concept doesn't exist yet in
+  `identity` (only an org's own owner/member roles do, which is a different
+  thing — the master plan's P6 admin persona is the founder operating the
+  whole platform, not an org role). Flagged rather than silently patched:
+  deciding what "is a platform admin" even means (a boolean on `User`? an
+  email allowlist? something else) is an auth-boundary decision, tech-lead-
+  review-mandatory per rule 14's spirit even though it's not literally named
+  in that list.
+- [ ] Review queues (extraction/qualification corrections, poster KYB,
+  facilitator vetting) — FR-11.2, M11's other half. No backend exists for
+  any of them; `adera-web`'s admin "Review queue" tab is 100% demo data.
+  Extraction/qualification correction persistence (recording an admin's
+  fix as a golden label, per FR-5.4) is buildable independently; poster
+  KYB/facilitator vetting queues are blocked on ADR-030 same as the rest of
+  M14/M17.
+
 ## Eligibility & Notifications — later phases
 - [x] **Eligibility HTTP surface (ELI-1) — built and proven live, 2026-07-30.**
   `assess_eligibility()` existed but had zero HTTP exposure — only the CLI/tests
