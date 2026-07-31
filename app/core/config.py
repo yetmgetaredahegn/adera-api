@@ -75,6 +75,15 @@ class Settings(BaseSettings):
     fetch_user_agent: str = "ADERA/0.1 (+https://adera.bid/about/crawler)"
     fetch_timeout_seconds: int = 30
 
+    # Notification delivery (M8, FR-8.1/8.2). Absent locally -- the digest
+    # sweep runs and records idempotency either way; app/modules/notifications
+    # /senders.py skips the actual send (returns False, never raises) when its
+    # key is unset, so the sweep degrades to "scheduling only" exactly as it
+    # does today rather than crashing once only one of the two is configured.
+    brevo_api_key: str | None = None
+    brevo_sender_email: str = "notifications@adera.bid"
+    telegram_bot_token: str | None = None
+
     @property
     def is_prod(self) -> bool:
         return self.env == "prod"

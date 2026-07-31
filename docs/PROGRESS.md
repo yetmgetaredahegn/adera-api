@@ -301,12 +301,34 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   retrieval genuinely worked) while correctly refusing to guess eligibility
   the corpus doesn't yet support — exactly the NFR-LEGAL-1 behavior this was
   built to guarantee.
-- [x] **TZ-aware digest scheduling — built, not yet SENDING.** `app/modules/notifications/`:
+- [x] **TZ-aware digest scheduling** — `app/modules/notifications/`:
   `should_send_digest_now()` (zoneinfo, DST-correct), `record_notification()`
   (insert-then-send idempotency), hourly Celery Beat sweep
-  (`notifications.send_digest_sweep`). **Honest gap: no email/Telegram sender
-  exists** — the scheduling and no-duplicates spine works; nothing is actually
-  delivered yet. Previously listed as `[ ]` in this file in error.
+  (`notifications.send_digest_sweep`).
+- [x] **Real email/Telegram sender integration — built 2026-07-30, honestly
+  UNEXERCISED against a live provider.** `app/modules/notifications/senders.py`:
+  `send_digest_email()` (Brevo transactional email REST API) and
+  `send_digest_telegram()` (Telegram Bot API `sendMessage`), both real httpx
+  calls to the actual provider endpoints, both returning `False` (never
+  raising) when their key/token is unset so the sweep degrades to
+  "scheduling only" — exactly its prior behavior — rather than crashing.
+  `notifications.send_digest_sweep` (`app/modules/notifications/tasks.py`,
+  restructured into a top-level `run_digest_sweep()` for testability) now
+  batches every newly-recorded item per user into ONE real send attempt,
+  instead of recording idempotency and doing nothing. **No `BREVO_API_KEY`
+  or `TELEGRAM_BOT_TOKEN` exists in this environment** — 9 new tests prove
+  the integration correctly (mocked HTTP, no network per R6: skip-without-key,
+  correct request shape, provider-rejection and network-error handling, the
+  sweep batches one email per user and stays idempotent, one user's send
+  failure can't take down the sweep for everyone else) — real live proof
+  against this dev DB confirms the sweep still runs cleanly end-to-end
+  with delivery correctly skipped, not a fabricated "sent" state.
+  **Honest, pre-existing limitation not fixed here**: `record_notification`'s
+  insert-then-send contract writes the idempotency row BEFORE the send is
+  even attempted, so a delivery failure after a successful record still
+  counts as "sent" and won't retry — that's the existing idempotency model's
+  behavior (nothing sent before this either), not a new regression; reworking
+  it is a separate, larger change.
 - [x] **Eval harness — in CI, real but thin.** `evals/harness.py` + `evals/scorers.py`,
   golden sets under `evals/golden/` (1–3 rows each), `make eval-smoke` wired into
   `.github/workflows/ci.yml`. Ran clean this session (`uv run python -m
