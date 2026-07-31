@@ -10,7 +10,7 @@ additive is fine, breaking means /api/v2.
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.ingestion.models import BiddingTrack
 
@@ -67,4 +67,14 @@ class TenderQAOut(BaseModel):
     question: str
     answer: str
     citations: list[str]
-    confidence: float
+
+
+class TenderQAAnswer(BaseModel):
+    """Prompt B4's LLM output contract -- the model's forced output shape AND
+    the validator that rejects malformed responses, same double duty as
+    extraction/matching/eligibility schemas."""
+
+    answer: str
+    answerable: bool
+    citations: list[str] = Field(default_factory=list)
+    confidence: float = Field(ge=0.0, le=1.0, default=0.0)

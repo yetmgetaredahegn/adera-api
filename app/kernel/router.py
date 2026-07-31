@@ -53,6 +53,7 @@ MODEL_ROUTES: dict[str, str] = {
     "qualify": "openrouter/anthropic/claude-haiku-4.5",
     "explain": "openrouter/anthropic/claude-sonnet-5",
     "eligibility": "openrouter/anthropic/claude-sonnet-5",
+    "qa": "openrouter/anthropic/claude-haiku-4.5",
 }
 
 # Hard output cap per task (NFR-COST-1: without this, litellm defaults to the
@@ -63,6 +64,7 @@ MAX_TOKENS: dict[str, int] = {
     "qualify": 500,
     "explain": 1000,
     "eligibility": 1500,
+    "qa": 800,
 }
 
 

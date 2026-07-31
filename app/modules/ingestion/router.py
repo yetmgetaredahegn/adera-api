@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
+from app.kernel.router import build_kernel
 from app.modules.ingestion import service
 from app.modules.ingestion.models import BiddingTrack
 from app.modules.ingestion.schemas import (
@@ -100,7 +101,7 @@ async def tender_qa(
         raise HTTPException(status_code=404, detail="tender not found")
 
     answer, citations, confidence = await service.answer_tender_qa(
-        session, tender_id, body.question
+        session, tender_id, body.question, kernel=build_kernel()
     )
     return TenderQAOut(
         tender_id=tender_id,

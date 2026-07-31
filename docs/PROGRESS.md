@@ -203,7 +203,32 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   4 new tests (`tests/test_matches_save_dismiss.py`): save-then-filterable,
   dismiss-never-resurfaces-in-default-feed, save-on-expired-is-409-but-dismiss-
   still-works, and a two-org 404 leak check. 118/118 tests pass.
-- [ ] Tender-doc Q&A over SSE — Phase 3 — 🔑 needs key (key now exists; not built)
+- [x] **Tender-doc Q&A (prompt B4) — real LLM grounding built and proven
+  live, 2026-07-30, replacing a non-LLM stub.** Found while picking this up
+  as "just needs SSE instead of JSON": `answer_tender_qa` never called the
+  kernel at all — it was a keyword-match heuristic that always returned the
+  same canned string ("Based on the parsed documents (...): excerpt matches
+  query.") whenever any question word appeared anywhere in the doc text,
+  regardless of the actual question. Rewrote it as prompt B4
+  (`prompts/qa/v1.md`, untrusted-data framed per NFR-SEC-2) with the same
+  refusal discipline as eligibility/matching: no parsed docs or no kernel →
+  honest refusal, model says unanswerable → returned as-is with no
+  citations, model cites a filename never actually given to it → downgraded
+  to refusal (citation floor), provider error → graceful refusal, never a
+  crash or a faked answer. New `TenderQAAnswer` schema
+  (`app/modules/ingestion/schemas.py`), `qa` task registered in
+  `app/kernel/router.py` (cheap tier). **Real live proof** (not just the 6
+  new stubbed-kernel unit tests): inserted a real parsed document into the
+  dev DB and asked two real questions through the actual endpoint — an
+  answerable one got the correct grounded answer with the correct citation
+  ("The bid bond amount is ETB 75,000." / `live-qa-proof.pdf`) in ~12s; an
+  unanswerable one (payment currency, GPS coordinates) got a genuinely
+  reasoned refusal that correctly distinguished the bid-bond currency
+  mentioned in the doc from the actual (unstated) payment currency — real
+  understanding, not keyword absence. **SSE transport is still not done** —
+  the underlying answer-generation gap turned out to be the real, much
+  bigger problem; streaming the now-real JSON response is a separate,
+  smaller follow-up.
 
 ## Eligibility & Notifications — later phases
 - [x] **Eligibility HTTP surface (ELI-1) — built and proven live, 2026-07-30.**

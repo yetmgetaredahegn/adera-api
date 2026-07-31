@@ -21,6 +21,7 @@ import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.kernel.router import Kernel
 from app.modules.ingestion.adapters.base import RawTender
 from app.modules.ingestion.models import BiddingTrack as BiddingTrack
 from app.modules.ingestion.models import Tender as Tender
@@ -315,51 +316,68 @@ async def search_tenders(
     return list((await session.execute(query)).scalars().all())
 
 
+QA_PROMPT_VERSION = "v1"
+
+
 async def answer_tender_qa(
     session: AsyncSession,
     tender_id: uuid.UUID,
     question: str,
+    kernel: Kernel | None,
 ) -> tuple[str, list[str], float]:
-    """Answer question over parsed tender documents (FR-9.3).
+    """Answer a question over a tender's parsed documents (FR-9.3, prompt B4).
 
-    Returns (answer, citations, confidence).
+    Returns (answer, citations, confidence). Refuses (empty citations,
+    confidence 0.0) rather than fabricating whenever: no documents are
+    parsed, no kernel is available, the model itself says it can't ground an
+    answer, or it cites a document that was never actually given to it
+    (AGENTS.md rule 11 -- never simulate model output; NFR-SEC-2 -- the
+    document text below is untrusted data, framed as such in the prompt).
     """
+    from app.kernel.prompts import load_prompt
     from app.modules.documents.models import TenderDocument
+    from app.modules.ingestion.schemas import TenderQAAnswer
 
     docs = (
         (await session.execute(select(TenderDocument).where(TenderDocument.tender_id == tender_id)))
         .scalars()
         .all()
     )
+    parsed = [d for d in docs if d.text]
 
-    if not docs or not any(d.text for d in docs):
+    if not parsed:
         return (
             "The tender documents for this opportunity are not available or have not been parsed yet.",
             [],
             0.0,
         )
 
-    context_parts = []
-    citations = []
-    for d in docs:
-        if d.text:
-            context_parts.append(f"Document: {d.filename}\n{d.text[:2000]}")
-            citations.append(f"{d.filename} (page 1)")
+    if kernel is None:
+        return ("Tender Q&A is not available right now (no model configured).", [], 0.0)
 
-    q_lower = question.lower()
-    context = "\n\n".join(context_parts)
-    keywords = [w for w in q_lower.split() if len(w) > 3]
-    has_match = any(kw in context.lower() for kw in keywords)
-
-    if not has_match:
-        return (
-            "The parsed tender documents do not contain an answer to this question.",
-            citations,
-            0.0,
-        )
-
-    return (
-        f"Based on the parsed documents ({citations[0]}): excerpt matches query.",
-        citations[:1],
-        0.85,
+    documents_text = "\n\n".join(f"Document: {d.filename}\n{(d.text or '')[:4000]}" for d in parsed)
+    prompt = (
+        load_prompt("qa", QA_PROMPT_VERSION)
+        .replace("{question}", question)
+        .replace("{documents}", documents_text)
     )
+
+    try:
+        result = await kernel.complete(
+            task="qa", prompt=prompt, schema=TenderQAAnswer, prompt_version=QA_PROMPT_VERSION
+        )
+    except Exception:
+        # rule 2 forbids importing litellm here to catch a narrower type.
+        return ("Tender Q&A failed (provider error) -- please try again.", [], 0.0)
+
+    if not result.answerable:
+        return (result.answer, [], 0.0)
+
+    # Citation floor, mirroring eligibility's: a filename the model invented
+    # (never actually given to it) is downgraded, not trusted.
+    real_filenames = {d.filename for d in parsed}
+    valid_citations = [c for c in result.citations if c in real_filenames]
+    if not valid_citations:
+        return ("The parsed tender documents do not clearly answer this question.", [], 0.0)
+
+    return (result.answer, valid_citations, result.confidence)

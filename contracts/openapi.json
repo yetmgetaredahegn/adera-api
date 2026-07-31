@@ -823,10 +823,6 @@
             "title": "Citations",
             "type": "array"
           },
-          "confidence": {
-            "title": "Confidence",
-            "type": "number"
-          },
           "question": {
             "title": "Question",
             "type": "string"
@@ -841,8 +837,7 @@
           "tender_id",
           "question",
           "answer",
-          "citations",
-          "confidence"
+          "citations"
         ],
         "title": "TenderQAOut",
         "type": "object"
