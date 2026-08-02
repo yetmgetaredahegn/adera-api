@@ -48,7 +48,14 @@ class Settings(BaseSettings):
     # at the CORS preflight (an OPTIONS 400 "Disallowed CORS origin", found
     # live: the app worked fine via curl -- which never triggers preflight at
     # all -- while every real browser login silently failed).
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    # :3001 is also listed because this machine's port 3000 is permanently
+    # squatted by an unrelated project (RideApp), so `next dev` auto-shifts
+    # adera-web to :3001 every time -- found live 2026-08-02 the same way as
+    # the :3000/:127.0.0.1 gap above (curl to :8000 worked, the real browser
+    # sitting on :3001 got a 400). If it drifts again (:3002, ...), add it here.
+    cors_origins: str = (
+        "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
+    )
 
     @property
     def cors_origin_list(self) -> list[str]:
