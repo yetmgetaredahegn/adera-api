@@ -236,17 +236,29 @@ the same chain. Fixed below; the `docs/PROGRESS.md` update-in-the-same-PR rule
   window). Built in an earlier session, never previously logged in this
   file — corrected 2026-07-30. Now wired into `adera-web`'s admin dashboard
   (its own `docs/PROGRESS.md`).
-- [ ] **Security gap, found and NOT fixed 2026-07-30: neither endpoint has
-  any admin-role gate.** Both are reachable by anyone who can reach the API
-  at all — no `Depends(current_org)` (this isn't tenant data) and no
-  "platform admin" check either, because that concept doesn't exist yet in
-  `identity` (only an org's own owner/member roles do, which is a different
-  thing — the master plan's P6 admin persona is the founder operating the
-  whole platform, not an org role). Flagged rather than silently patched:
-  deciding what "is a platform admin" even means (a boolean on `User`? an
-  email allowlist? something else) is an auth-boundary decision, tech-lead-
-  review-mandatory per rule 14's spirit even though it's not literally named
-  in that list.
+- [x] **Security gap (found 2026-07-30) fixed 2026-08-02: both endpoints now
+  gated by a real platform-admin check.** Added `current_platform_admin`
+  (`app/core/deps.py`), which requires `User.is_staff` — a boolean already
+  present on the model and in the live DB, unused everywhere until now.
+  Distinct from `OrgRole` (an org's own owner/member roles, scoped to that
+  org) — this is the master plan's P6 founder-operator persona. Both
+  `list_runs` and `get_spend_summary` (`app/modules/runledger/router.py`)
+  now depend on it. `UserOut` gained an `is_staff` field so `adera-web` can
+  gate its admin nav on the real value. New CLI command
+  `promote-staff <email>` grants it to an existing account (no migration
+  needed). Proven live: unauthenticated → 401, authenticated non-staff →
+  403, promoted staff → 200 with real data (see `tests/test_runledger.py`'s
+  two new integration tests, and the manual curl sequence run against a
+  fresh server process). `adera-web`'s nav/route gating on this field is
+  not yet done — flagged as a follow-up, not assumed in scope here.
+- [x] **CORS preflight bug fixed 2026-08-02: browser logins were silently
+  failing with `OPTIONS /auth/login 400`.** `cors_origins` only listed
+  `http://localhost:3000`; a browser landing on `http://127.0.0.1:3000`
+  (same machine, different origin per browser same-origin rules) got every
+  request killed at the CORS preflight. `curl` never triggers a real
+  preflight, so this was invisible to every curl-based check done earlier
+  this session — only a real browser surfaced it. Fixed by listing both
+  origins in `app/core/config.py`'s default and `.env.example`.
 - [ ] Review queues (extraction/qualification corrections, poster KYB,
   facilitator vetting) — FR-11.2, M11's other half. No backend exists for
   any of them; `adera-web`'s admin "Review queue" tab is 100% demo data.

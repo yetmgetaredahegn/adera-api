@@ -48,6 +48,20 @@ async def current_user(
     return user
 
 
+async def current_platform_admin(user: User = Depends(current_user)) -> User:
+    """The gate `/admin/*` endpoints were missing entirely until now (found
+    2026-08-02, docs/PROGRESS.md): `GET /admin/run-ledger` and `/spend` had
+    no auth check of any kind, tenant-scoped or otherwise -- anyone who could
+    reach the API could read internal pipeline/spend data. `User.is_staff`
+    already existed on the model and in the live DB, unused everywhere;
+    this is its first real consumer. Distinct from `OrgRole` (an org's own
+    owner/member/admin roles, scoped to that one org) -- platform admin is
+    the master plan's P6 founder-operator persona, not tied to any org."""
+    if not user.is_staff:
+        raise APIError(403, "forbidden", "platform admin access required")
+    return user
+
+
 async def current_org(
     org_id: uuid.UUID | None = Query(default=None),
     user: User = Depends(current_user),

@@ -26,6 +26,10 @@ class UserOut(BaseModel):
     id: uuid.UUID
     email: str
     is_verified: bool
+    # Platform admin (master plan P6, the founder-operator persona) -- distinct
+    # from an org's own OrgRole. The web client uses this to gate /dashboard/admin
+    # for real instead of a local demo flag.
+    is_staff: bool
 
 
 class OrgOut(BaseModel):

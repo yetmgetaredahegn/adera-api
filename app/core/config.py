@@ -41,9 +41,14 @@ class Settings(BaseSettings):
         return self.env != "local"
 
     # Credentialed CORS forbids a wildcard origin, so the allowed web origins are
-    # explicit. Comma-separated in the environment; local default is the Next.js
-    # dev server.
-    cors_origins: str = "http://localhost:3000"
+    # explicit. Comma-separated in the environment. Local default covers BOTH
+    # localhost and 127.0.0.1 on :3000 -- browsers treat them as different
+    # origins even though they're the same machine, and a browser landing on
+    # whichever one this env's default didn't list gets every request killed
+    # at the CORS preflight (an OPTIONS 400 "Disallowed CORS origin", found
+    # live: the app worked fine via curl -- which never triggers preflight at
+    # all -- while every real browser login silently failed).
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     @property
     def cors_origin_list(self) -> list[str]:

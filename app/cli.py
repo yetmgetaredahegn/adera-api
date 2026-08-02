@@ -10,6 +10,8 @@
     uv run python -m app.cli demo              # match every profile + print judgment sheet
     uv run python -m app.cli demo-login <email> <password> [org]
                                                # attach a login to a demo-profile org
+    uv run python -m app.cli promote-staff <email>
+                                               # grant platform admin (User.is_staff)
 
 This is the "admin dry-run" surface (FR-11.3) until the real admin UI exists.
 Prefix with DEBUG=false to silence SQL echo.
@@ -218,6 +220,29 @@ async def _demo_login(email: str, password: str, org_name: str) -> None:
         print(f"login ready: {email} -> {org_name} ({org.org_type.value})")
 
 
+async def _promote_staff(email: str) -> None:
+    """Grant platform-admin access (`User.is_staff`) to an existing account.
+
+    Why this exists: `GET /admin/run-ledger` and `/spend` had NO auth check
+    at all until now (found 2026-08-02) -- anyone who could reach the API
+    could read internal pipeline/spend data. Gating them on `is_staff`
+    closes that, but nothing sets the flag anywhere yet (no admin UI, no
+    self-serve path -- this is deliberately not something a user can grant
+    themselves). This is the only way to bootstrap the first platform admin
+    today. Dev/ops affordance only — it is not reachable over HTTP.
+    """
+    from app.modules.identity.models import User
+
+    async with async_session_factory() as session:
+        user = (await session.execute(select(User).where(User.email == email))).scalar_one_or_none()
+        if user is None:
+            print(f"no user with email {email!r}")
+            return
+        user.is_staff = True
+        await session.commit()
+        print(f"granted platform admin: {email}")
+
+
 async def _embed() -> None:
     from app.modules.ingestion.service import embed_pending
 
@@ -352,6 +377,11 @@ def main() -> None:
                 return
             org_name = rest[2] if len(rest) > 2 else DEFAULT_DEMO_LOGIN_ORG
             asyncio.run(_demo_login(rest[0], rest[1], org_name))
+        case "promote-staff":
+            if len(rest) < 1:
+                print("usage: promote-staff <email>")
+                return
+            asyncio.run(_promote_staff(rest[0]))
         case _:
             print(f"unknown command: {cmd}")
             print(__doc__)
